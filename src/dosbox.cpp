@@ -42,10 +42,17 @@
 #include "ints/int10.h"
 #include "render.h"
 #include "pci_bus.h"
-
-Config * control;
+#ifdef __LIBRETRO__
+#include "libretro.h"
+extern retro_log_printf_t log_cb;
+extern MachineType machine;
+extern SVGACards svgaCard;
+#else
 MachineType machine;
 SVGACards svgaCard;
+#endif
+
+Config * control;
 
 /* The whole load of startups for all the subfunctions */
 void MSG_Init(Section_prop *);

@@ -388,12 +388,17 @@ public:
 };
 
 static DISNEY* test;
+extern bool disney_init;
 
 static void DISNEY_ShutDown(Section* sec){
-	delete test;
+	if (disney_init)
+		delete test;
 }
 
 void DISNEY_Init(Section* sec) {
-	test = new DISNEY(sec);
-	sec->AddDestroyFunction(&DISNEY_ShutDown,true);
+	if (disney_init)
+	{
+		test = new DISNEY(sec);
+		sec->AddDestroyFunction(&DISNEY_ShutDown,true);
+    }
 }

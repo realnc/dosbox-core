@@ -36,6 +36,8 @@
 #include <pwd.h>
 #endif
 
+
+
 #ifdef WIN32
 static void W32_ConfDir(std::string& in,bool create) {
 	int c = create?1:0;
@@ -56,7 +58,17 @@ static void W32_ConfDir(std::string& in,bool create) {
 #endif
 
 void Cross::GetPlatformConfigDir(std::string& in) {
-#ifdef WIN32
+#ifdef __LIBRETRO__
+	extern std::string retro_save_directory;
+	extern std::string retro_library_name;
+	char slash;
+#ifdef _WIN32
+	slash = '\\';
+#else
+	slash = '/';
+#endif
+	in = retro_save_directory;
+#elif WIN32
 	W32_ConfDir(in,false);
 	in += "\\DOSBox";
 #elif defined(MACOSX)
@@ -70,12 +82,16 @@ void Cross::GetPlatformConfigDir(std::string& in) {
 }
 
 void Cross::GetPlatformConfigName(std::string& in) {
+#ifndef __LIBRETRO__
 #ifdef WIN32
 #define DEFAULT_CONFIG_FILE "dosbox-" VERSION ".conf"
 #elif defined(MACOSX)
 #define DEFAULT_CONFIG_FILE "DOSBox " VERSION " Preferences"
 #else /*linux freebsd*/
 #define DEFAULT_CONFIG_FILE "dosbox-" VERSION ".conf"
+#endif
+#else
+#define DEFAULT_CONFIG_FILE "DOSBox-SVN.conf"
 #endif
 	in = DEFAULT_CONFIG_FILE;
 }

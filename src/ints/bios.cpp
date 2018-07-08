@@ -31,13 +31,44 @@
 #include "mouse.h"
 #include "setup.h"
 #include "serialport.h"
+#include "libretro.h"
 #include <time.h>
 
-#if defined(DB_HAVE_CLOCK_GETTIME) && ! defined(WIN32)
+#if defined(DB_HAVE_CLOCK_GETTIME) && ! defined(WIN32) || defined(ANDROID)
 //time.h is already included
 #else
 #include <sys/timeb.h>
 #endif
+
+#if defined(ANDROID)
+
+struct FAKEtimeb
+{
+	time_t time;
+	unsigned millitm;
+};
+
+void FAKEftime(struct FAKEtimeb* tb)
+{
+	time(&tb->time);
+
+#if defined(__linux__) || defined(__unix__)
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	tb->millitm = tv.tv_usec/1000;
+#else
+	//windows cant use gettimeofday,but ftime already works on windows
+	tb->millitm = 0;
+#endif
+}
+
+#define ftime FAKEftime
+#define timeb FAKEtimeb
+
+#endif
+
+
+
 
 /* if mem_systems 0 then size_extended is reported as the real size else 
  * zero is reported. ems and xms can increase or decrease the other_memsystems
@@ -989,7 +1020,7 @@ static Bitu Default_IRQ_Handler(void) {
 
 static Bitu Reboot_Handler(void) {
 	// switch to text mode, notify user (let's hope INT10 still works)
-	const char* const text = "\n\n   Reboot requested, quitting now.";
+	const char* const text = "\n\n   Reboot not supported";
 	reg_ax = 0;
 	CALLBACK_RunRealInt(0x10);
 	reg_ah = 0xe;
@@ -1000,8 +1031,8 @@ static Bitu Reboot_Handler(void) {
 	}
 	LOG_MSG(text);
 	double start = PIC_FullIndex();
-	while((PIC_FullIndex()-start)<3000) CALLBACK_Idle();
-	throw 1;
+	/*while((PIC_FullIndex()-start)<3000) CALLBACK_Idle();
+	throw 1;*/
 	return CBRET_NONE;
 }
 

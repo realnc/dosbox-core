@@ -83,7 +83,8 @@ public:
 	Bit32s volmul[2];
 	
 	//This gets added the frequency counter each mixer step
-	Bitu freq_add;
+	Bits last[2];
+	Bitu freq_add, freq_index;
 	//When this flows over a new sample needs to be read from the device
 	Bitu freq_counter;
 	//Timing on how many samples have been done and were needed by th emixer

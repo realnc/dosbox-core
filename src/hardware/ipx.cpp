@@ -37,7 +37,7 @@
 #include "ipx.h"
 #include "ipxserver.h"
 #include "timer.h"
-#include "SDL_net.h"
+#include <SDL/SDL_net.h>
 #include "programs.h"
 #include "pic.h"
 

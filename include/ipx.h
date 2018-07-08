@@ -70,7 +70,7 @@
 #endif
 
 // For Uint8 type
-#include "SDL_net.h"
+#include <SDL/SDL_net.h>
 
 struct PackedIP {
 	Uint32 host;

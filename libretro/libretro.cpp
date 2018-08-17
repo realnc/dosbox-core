@@ -60,6 +60,8 @@
 cothread_t mainThread;
 cothread_t emuThread;
 
+bool dosbox_initialiazed = false;
+
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void * userdata, uint8_t *stream, int len);
 
@@ -132,7 +134,7 @@ bool compare_dosbox_variable(std::string section_string, std::string var_string,
 bool update_dosbox_variable(std::string section_string, std::string var_string, std::string val_string)
 {
     bool ret = false;
-    if (compare_dosbox_variable(section_string, var_string, val_string))
+    if (compare_dosbox_variable(section_string, var_string, val_string) || !dosbox_initialiazed)
         return false;
 
     Section* section = control->GetSection(section_string);
@@ -466,7 +468,6 @@ static void start_dosbox(void)
     CommandLine com_line(loadPath.empty() ? 1 : 2, argv);
     Config myconf(&com_line);
     control = &myconf;
-    check_variables();
 
     /* Init the configuration system and add default values */
     DOSBOX_Init();
@@ -477,7 +478,9 @@ static void start_dosbox(void)
 
     if (!is_restarting)
         control->Init();
+
     check_variables();
+    dosbox_initialiazed = true;
 
     /* Init done, go back to the main thread */
     co_switch(mainThread);

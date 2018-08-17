@@ -1,7 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 CORE_DIR   := $(LOCAL_PATH)/../..
 
-INCFLAGS    := -I$(CORE_DIR)/libretro/deps/include/ -I$(CORE_DIR)/libretro/deps/include/SDL/ -I$(CORE_DIR)/libretro/deps/SDL_net/
+INCFLAGS    := -I$(CORE_DIR)/libretro/deps/sdl/include/ -I$(CORE_DIR)/libretro/deps/sdl/include/SDL/ -I$(CORE_DIR)/libretro/deps/sdl/SDL_net/
 COMMONFLAGS :=
 
 WITH_DYNAREC :=
@@ -26,20 +26,20 @@ WITH_IPX := 1
 include $(CORE_DIR)/libretro/Makefile.common
 
 SOURCES_C += \
-    $(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_syscond.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_sysmutex.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_syssem.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_systhread.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/thread/SDL_thread.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/timer/unix/SDL_systimer.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/timer/SDL_timer.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/cdrom/dummy/SDL_syscdrom.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/cdrom/SDL_cdrom.c \
-    $(CORE_DIR)/libretro/deps/SDL/src/SDL_error.c \
-    $(CORE_DIR)/libretro/deps/SDL_net/SDLnet.c \
-    $(CORE_DIR)/libretro/deps/SDL_net/SDLnetTCP.c \
-    $(CORE_DIR)/libretro/deps/SDL_net/SDLnetUDP.c \
-    $(CORE_DIR)/libretro/deps/SDL_net/SDLnetselect.c
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/thread/pthread/SDL_syscond.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/thread/pthread/SDL_sysmutex.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/thread/pthread/SDL_syssem.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/thread/pthread/SDL_systhread.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/thread/SDL_thread.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/timer/unix/SDL_systimer.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/timer/SDL_timer.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/cdrom/dummy/SDL_syscdrom.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/cdrom/SDL_cdrom.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL/src/SDL_error.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL_net/SDLnet.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL_net/SDLnetTCP.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL_net/SDLnetUDP.c \
+    $(CORE_DIR)/libretro/deps/sdl/SDL_net/SDLnetselect.c
 
 SOURCES_CXX +=\
 	$(CORE_DIR)/libretro/nonlibc/snprintf.cpp

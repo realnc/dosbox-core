@@ -1,5 +1,8 @@
 LIBRETRO_COMM_DIR := \
-	$(CORE_DIR)/libretro/libretro-common
+	$(CORE_DIR)/libretro/deps/common
+
+LIBRETRO_SDL_DIR := \
+	$(CORE_DIR)/libretro/deps/sdl
 
 # include flags
 INCFLAGS += \
@@ -132,45 +135,6 @@ endif
 SOURCES_C := \
 	$(LIBRETRO_COMM_DIR)/libco/libco.c
 
-ifneq ($(STATIC_LINKING), 1)
-SOURCES_C += \
-	$(LIBRETRO_COMM_DIR)/file/retro_dirent.c \
-	$(LIBRETRO_COMM_DIR)/file/retro_stat.c
-endif
-
-ifeq ($(WITH_EMBEDDED_SDL), 1)
-ifeq ($(platform),win)
-	SOURCES_C += \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/win32/SDL_sysmutex.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/win32/SDL_syssem.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/win32/SDL_systhread.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/cdrom/win32/SDL_syscdrom.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/timer/win32/SDL_systimer.c
-	else
-	SOURCES_C += \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_syscond.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_sysmutex.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_syssem.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/pthread/SDL_systhread.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/cdrom/dummy/SDL_syscdrom.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/timer/unix/SDL_systimer.c
-	endif
-	SOURCES_C += \
-		$(CORE_DIR)/libretro/deps/SDL/src/thread/SDL_thread.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/timer/SDL_timer.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/cdrom/SDL_cdrom.c \
-		$(CORE_DIR)/libretro/deps/SDL/src/SDL_error.c \
-		$(CORE_DIR)/libretro/deps/SDL_net/SDLnet.c \
-		$(CORE_DIR)/libretro/deps/SDL_net/SDLnetTCP.c \
-		$(CORE_DIR)/libretro/deps/SDL_net/SDLnetUDP.c \
-		$(CORE_DIR)/libretro/deps/SDL_net/SDLnetselect.c
-	INCFLAGS += \
-		-I$(CORE_DIR)/libretro/deps/include/ \
-		-I$(CORE_DIR)/libretro/deps/include/SDL/ \
-		-I$(CORE_DIR)/libretro/deps/SDL_net/
-endif
-
-
 # dynarec flags
 ifeq ($(WITH_DYNAREC), arm)
 	COMMONFLAGS += -DC_DYNREC="1" -DC_TARGETCPU="ARMV7LE" -DC_UNALIGNED_MEMORY="1"
@@ -179,10 +143,7 @@ else ifeq ($(WITH_DYNAREC), arm64)
 else ifeq ($(WITH_DYNAREC), oldarm)
 	COMMONFLAGS += -DC_DYNREC="1" -DC_TARGETCPU="ARMV4LE"
 else ifeq ($(WITH_DYNAREC), x86_64)
-	# dynarec currently broken in x86_64
-	ifneq ($(platform),win)
-		COMMONFLAGS += -DC_DYNREC="1" -DC_TARGETCPU="X86_64"
-	endif
+	COMMONFLAGS += -DC_DYNREC="1" -DC_TARGETCPU="X86_64"
 else ifeq ($(WITH_DYNAREC), x86)
 	COMMONFLAGS += -DC_DYNAMIC_X86="1" -DC_TARGETCPU="X86"
 else ifeq ($(WITH_DYNAREC), ppc)

@@ -37,6 +37,8 @@
 #include <string>
 #endif
 
+void MSCDEX_SetCDInterface(int intNr, int forceCD);
+
 class CommandLine {
 public:
 	CommandLine(int argc,char const * const argv[]);

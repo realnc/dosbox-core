@@ -31,7 +31,9 @@
 #include "mouse.h"
 #include "setup.h"
 #include "serialport.h"
+#ifdef __LIBRETRO__
 #include "libretro.h"
+#endif
 #include <time.h>
 
 #if defined(DB_HAVE_CLOCK_GETTIME) && ! defined(WIN32) || defined(ANDROID)

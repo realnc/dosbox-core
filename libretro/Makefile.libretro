@@ -178,7 +178,7 @@ else ifeq ($(platform), win)
 	LDFLAGS += -shared -static-libgcc -static-libstdc++ -Wl,--version-script=link.T -lwinmm
 	LDFLAGS += -Wl,-Bstatic `sdl-config --static-libs` -lsdl_net
 	LDFLAGS += -Wl,-Bdynamic -liphlpapi -lws2_32
-	COMMONFLAGS += -D__USE_W32_SOCKETS
+	COMMONFLAGS += -D__USE_W32_SOCKETS -Werror=return-type
 else
 	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
 	TARGET := $(TARGET_NAME)_libretro.so

@@ -24,7 +24,9 @@
 
 #include <SDL/SDL.h>
 
+#ifdef __LIBRETRO__
 #include "libretro.h"
+#endif
 
 #include "dosbox.h"
 #include "midi.h"

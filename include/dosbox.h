@@ -72,4 +72,6 @@ extern bool SDLNetInited;
 #include "logging.h"
 #endif // the logging system.
 
+void DOSBOX_UnlockSpeed( bool pressed );
+
 #endif /* DOSBOX_DOSBOX_H */

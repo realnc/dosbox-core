@@ -7,6 +7,7 @@ Bit8u RDOSGFXbuffer[1024*768*4];
 Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 unsigned RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_0RGB1555;
 void* RDOSGFXhaveFrame;
+float RDOSfps;
 
 Bitu GFX_GetBestMode(Bitu flags)
 {
@@ -25,6 +26,7 @@ Bitu GFX_SetSize(Bitu width,Bitu height,Bitu flags,double scalex,double scaley,G
     RDOSGFXwidth = width;
     RDOSGFXheight = height;
     RDOSGFXpitch = width * 4;
+    RDOSfps = 60.0f;
 
     if(RDOSGFXwidth > 1024 || RDOSGFXheight > 768)
         return 0;

@@ -328,7 +328,7 @@ void DOSBOX_RunMachine(void){
 	} while (!ret);
 }
 
-static void DOSBOX_UnlockSpeed( bool pressed ) {
+void DOSBOX_UnlockSpeed( bool pressed ) {
 	static bool autoadjust = false;
 	if (pressed) {
 		LOG_MSG("Fast Forward ON");

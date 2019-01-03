@@ -22,7 +22,11 @@
 #include <string>
 #include <algorithm>
 
+#ifdef WITH_FAKE_SDL
+#include "SDL/SDL.h"
+#else
 #include <SDL/SDL.h>
+#endif
 
 #ifdef __LIBRETRO__
 #include "libretro.h"

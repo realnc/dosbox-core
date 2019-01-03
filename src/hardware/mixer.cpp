@@ -35,7 +35,11 @@
 #include <mmsystem.h>
 #endif
 
+#ifdef WITH_FAKE_SDL
+#include "SDL/SDL.h"
+#else
 #include <SDL/SDL.h>
+#endif
 #include "mem.h"
 #include "pic.h"
 #include "dosbox.h"

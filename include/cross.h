@@ -66,6 +66,22 @@
 static inline float powf (float x, float y) { return (float) pow (x,y); }
 #endif
 
+// libretro
+#ifdef __LIBRETRO__
+#ifdef GEKKO
+/* With Wii the file/dir is considered always accessible if it exists */
+static int wii_access (const char *pathname, int mode)
+{
+	struct stat st;
+
+	if (stat(pathname, &st) < 0)
+		return -1;
+	return 0;
+}
+#define access wii_access
+#endif
+#endif
+
 class Cross {
 public:
 	static void GetPlatformConfigDir(std::string& in);

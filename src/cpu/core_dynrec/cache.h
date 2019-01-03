@@ -16,6 +16,14 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#ifdef HAVE_LIBNX
+#include "../../../switch/mman.h"
+#endif
+
+#ifdef VITA
+#include <psp2/kernel/sysmem.h>
+static int sceBlock;
+#endif
 
 class CodePageHandlerDynRec;	// forward
 
@@ -529,25 +537,49 @@ static void cache_closeblock(void) {
 
 // place an 8bit value into the cache
 static INLINE void cache_addb(Bit8u val) {
+#ifdef HAVE_LIBNX
+	Bit8u* rwPos = (Bit8u*)((intptr_t)cache.pos - (intptr_t)jit_rx_addr + (intptr_t)jit_rw_addr);
+	*rwPos=val;
+	cache.pos++;
+#else
 	*cache.pos++=val;
+#endif
 }
 
 // place a 16bit value into the cache
 static INLINE void cache_addw(Bit16u val) {
+#ifdef HAVE_LIBNX
+	Bit16u* rwPos = (Bit16u*)((intptr_t)cache.pos - (intptr_t)jit_rx_addr + (intptr_t)jit_rw_addr);
+	*rwPos=val;
+	cache.pos+=2;
+#else
 	*(Bit16u*)cache.pos=val;
 	cache.pos+=2;
+#endif
 }
 
 // place a 32bit value into the cache
 static INLINE void cache_addd(Bit32u val) {
+#ifdef HAVE_LIBNX
+	Bit32u* rwPos = (Bit32u*)((intptr_t)cache.pos - (intptr_t)jit_rx_addr + (intptr_t)jit_rw_addr);
+	*rwPos=val;
+	cache.pos+=4;
+#else
 	*(Bit32u*)cache.pos=val;
 	cache.pos+=4;
+#endif
 }
 
 // place a 64bit value into the cache
 static INLINE void cache_addq(Bit64u val) {
+#ifdef HAVE_LIBNX
+	Bit64u* rwPos = (Bit64u*)((intptr_t)cache.pos - (intptr_t)jit_rx_addr + (intptr_t)jit_rw_addr);
+	*rwPos=val;
+	cache.pos+=8;
+#else
 	*(Bit64u*)cache.pos=val;
 	cache.pos+=8;
+#endif
 }
 
 
@@ -590,6 +622,16 @@ static void cache_init(bool enable) {
 				MEM_COMMIT,PAGE_EXECUTE_READWRITE);
 			if (!cache_code_start_ptr)
 				cache_code_start_ptr=(Bit8u*)malloc(CACHE_TOTAL+CACHE_MAXSIZE+PAGESIZE_TEMP-1+PAGESIZE_TEMP);
+#elif defined (HAVE_LIBNX)
+			cache_code_start_ptr=(Bit8u*)mmap(NULL, CACHE_TOTAL+CACHE_MAXSIZE+PAGESIZE_TEMP-1+PAGESIZE_TEMP, 0, 0, 0, 0);
+#elif defined (VITA)
+			sceBlock = sceKernelAllocMemBlockForVM("code", CACHE_TOTAL+CACHE_MAXSIZE+PAGESIZE_TEMP-1+PAGESIZE_TEMP);
+  			if (sceBlock >= 0) {
+    				int ret = sceKernelGetMemBlockBase(sceBlock, (void **)&cache_code_start_ptr);
+				if(ret < 0) {
+					cache_code_start_ptr = null;
+				}
+			}
 #else
 			cache_code_start_ptr=(Bit8u*)malloc(CACHE_TOTAL+CACHE_MAXSIZE+PAGESIZE_TEMP-1+PAGESIZE_TEMP);
 #endif

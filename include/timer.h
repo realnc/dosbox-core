@@ -20,7 +20,11 @@
 #define DOSBOX_TIMER_H
 
 /* underlying clock rate in HZ */
+#ifdef WITH_FAKE_SDL
+#include "SDL/SDL.h"
+#else
 #include <SDL/SDL.h>
+#endif
 
 #define PIT_TICK_RATE 1193182
 

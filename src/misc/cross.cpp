@@ -119,7 +119,7 @@ void Cross::ResolveHomedir(std::string & temp_line) {
 	if(temp_line.size() == 1 || temp_line[1] == CROSS_FILESPLIT) { //The ~ and ~/ variant
 		char * home = getenv("HOME");
 		if(home) temp_line.replace(0,1,std::string(home));
-#if defined HAVE_SYS_TYPES_H && defined HAVE_PWD_H
+#if defined HAVE_SYS_TYPES_H && defined HAVE_PWD_H && !defined HAVE_LIBNX
 	} else { // The ~username variant
 		std::string::size_type namelen = temp_line.find(CROSS_FILESPLIT);
 		if(namelen == std::string::npos) namelen = temp_line.size();

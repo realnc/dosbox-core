@@ -26,10 +26,15 @@
 #include <unistd.h>
 
 #include "dosbox.h"
+#ifdef WITH_FAKE_SDL
+#include "SDL/SDL.h"
+#else
 #include <SDL/SDL.h>
+#endif
 #include "support.h"
 #include "cdrom.h"
 
+#ifndef WITH_FAKE_SDL
 CDROM_Interface_SDL::CDROM_Interface_SDL(void) {
 	driveID		= 0;
 	oldLeadOut	= 0;
@@ -142,6 +147,7 @@ bool CDROM_Interface_SDL::LoadUnloadMedia(bool unload) {
 	bool success = (SDL_CDEject(cd)==0);
 	return success;
 }
+#endif
 
 int CDROM_GetMountType(char* path, int forceCD) {
 // 0 - physical CDROM

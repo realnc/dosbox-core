@@ -424,8 +424,8 @@ bool CDROM_Interface_Image::CanReadPVD(TrackFile *file, int sectorSize, bool mod
 			(pvd[8] == 1 && !strncmp((char*)(&pvd[9]), "CDROM", 5) && pvd[14] == 1));
 }
 
-#if defined(WIN32)
-static string dirname(char * file) {
+#if defined(WIN32) || defined(HAVE_LIBNX) || defined(WIIU) || defined (GEKKO) || defined (_CTR) || defined(_3DS)
+static string FAKEdirname(char * file) {
 	char * sep = strrchr(file, '\\');
 	if (sep == NULL)
 		sep = strrchr(file, '/');
@@ -438,6 +438,7 @@ static string dirname(char * file) {
 		return tmp;
 	}
 }
+#define dirname FAKEdirname
 #endif
 
 bool CDROM_Interface_Image::LoadCueSheet(char *cuefile)

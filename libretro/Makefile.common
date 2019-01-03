@@ -4,6 +4,11 @@ LIBRETRO_COMM_DIR := \
 LIBRETRO_SDL_DIR := \
 	$(CORE_DIR)/libretro/deps/sdl
 
+ifeq ($(WITH_FAKE_SDL), 1)
+INCFLAGS += \
+		-I$(CORE_DIR)/libretro/fakesdl
+endif
+
 # include flags
 INCFLAGS += \
 	-I$(CORE_DIR)/src \
@@ -48,6 +53,7 @@ SOURCES_CXX := \
 	$(CORE_DIR)/src/dos/drive_iso.cpp \
 	$(CORE_DIR)/src/dos/drive_local.cpp \
 	$(CORE_DIR)/src/dos/drive_virtual.cpp \
+    $(CORE_DIR)/src/dos/drive_overlay.cpp \
 	$(CORE_DIR)/src/dos/drives.cpp \
 	$(CORE_DIR)/src/dosbox.cpp \
 	$(CORE_DIR)/src/fpu/fpu.cpp \
@@ -126,14 +132,20 @@ SOURCES_CXX := \
 	$(CORE_DIR)/src/hardware/mame/sn76496.cpp \
 	$(CORE_DIR)/src/hardware/mame/ymf262.cpp
 
+ifneq ($(WITH_FAKE_SDL), 1)
 ifeq ($(WITH_IPX), 1)
 SOURCES_CXX += \
 	$(CORE_DIR)/src/hardware/ipx.cpp \
 	$(CORE_DIR)/src/hardware/ipxserver.cpp
 endif
+endif
 
 SOURCES_C := \
-	$(LIBRETRO_COMM_DIR)/libco/libco.c
+	$(LIBRETRO_COMM_DIR)/libco/libco.c \
+	$(LIBRETRO_COMM_DIR)/file/file_path.c \
+	$(LIBRETRO_COMM_DIR)/encodings/encoding_utf.c \
+	$(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c \
+	$(LIBRETRO_COMM_DIR)/compat/compat_strl.c
 
 # dynarec flags
 ifeq ($(WITH_DYNAREC), arm)

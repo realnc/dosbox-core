@@ -285,6 +285,7 @@ int CMscdex::AddDrive(Bit16u _drive, char* physicalPath, Bit8u& subUnit)
 			break;
 		}
 #endif
+#ifndef WITH_FAKE_SDL
 #if defined (LINUX) || defined(OS2)
 		// Always use IOCTL in Linux or OS/2
 		cdrom[numDrives] = new CDROM_Interface_Ioctl();
@@ -294,6 +295,7 @@ int CMscdex::AddDrive(Bit16u _drive, char* physicalPath, Bit8u& subUnit)
 		cdrom[numDrives] = new CDROM_Interface_SDL();
 		LOG(LOG_MISC,LOG_NORMAL)("MSCDEX: SDL Interface.");
 #endif
+#endif // __LIBRETRO__
 		} break;
 	case 0x01:	// iso cdrom interface	
 		LOG(LOG_MISC,LOG_NORMAL)("MSCDEX: Mounting iso file as cdrom: %s", physicalPath);

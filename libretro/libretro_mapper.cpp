@@ -26,6 +26,9 @@ extern bool connected[16];
 extern bool gamepad[16];
 extern bool emulated_mouse;
 
+extern unsigned deadzone;
+extern unsigned sensitivity;
+
 static bool keyboardState[KBD_LAST];
 
 static const struct { unsigned retroID; KBD_KEYS dosboxID; } keyMap[] =
@@ -549,8 +552,6 @@ void MAPPER_Run(bool pressed)
     int16_t mouseX = input_cb(0, RDEV(MOUSE), 0, RDID(MOUSE_X));
     int16_t mouseY = input_cb(0, RDEV(MOUSE), 0, RDID(MOUSE_Y));
 
-    const int deadzone = 30;
-    const int speed = 8;
 
     if (emulated_mouse)
     {
@@ -562,8 +563,8 @@ void MAPPER_Run(bool pressed)
        if (abs(emulated_mouseY) <= deadzone * 32768 / 100)
             emulated_mouseY = 0;
 
-       emulated_mouseX = emulated_mouseX * speed / 32768;
-       emulated_mouseY = emulated_mouseY * speed / 32768;
+       emulated_mouseX = emulated_mouseX * sensitivity / 32768;
+       emulated_mouseY = emulated_mouseY * sensitivity / 32768;
 
         Mouse_CursorMoved(emulated_mouseX, emulated_mouseY, 0, 0, true);
     }

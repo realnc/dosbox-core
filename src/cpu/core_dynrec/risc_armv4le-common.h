@@ -88,7 +88,9 @@ typedef Bit8u HostReg;
 
 
 static void cache_block_closing(Bit8u* block_start,Bitu block_size) {
-#if (__ARM_EABI__)
+#if defined(VITA)
+	sceKernelSyncVMDomain(sceBlock, block_start, block_size);
+#elif (__ARM_EABI__)
 	//flush cache - eabi
 	register unsigned long _beg __asm ("a1") = (unsigned long)(block_start);				// block start
 	register unsigned long _end __asm ("a2") = (unsigned long)(block_start+block_size);		// block end

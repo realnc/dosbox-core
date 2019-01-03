@@ -9,7 +9,7 @@
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
@@ -20,7 +20,10 @@
 
 #include <algorithm>
 #include <string>
+#include <libgen.h>
+
 #include <stdlib.h>
+#include <stdarg.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -33,6 +36,7 @@
 #include <libco.h>
 #include "libretro.h"
 #include "libretro_dosbox.h"
+#include "file/file_path.h"
 
 #include "setup.h"
 #include "dosbox.h"
@@ -45,6 +49,10 @@
 #include "ints/int10.h"
 #include "dos/drives.h"
 #include "programs.h"
+
+#ifdef ANDROID
+#include "nonlibc.h"
+#endif
 
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
 
@@ -62,12 +70,32 @@
 #endif
 #endif
 
+#ifdef WITH_FAKE_SDL
+bool startup_state_capslock;
+bool startup_state_numlock;
+#endif
+
+#ifdef HAVE_LIBNX
+#include <switch.h>
+extern "C" Jit dynarec_jit;
+#endif
+
+#ifdef _WIN32
+char slash = '\\';
+#else
+char slash = '/';
+#endif
+
 cothread_t mainThread;
 cothread_t emuThread;
 
+bool autofire;
 bool dosbox_initialiazed = false;
 bool midi_enable = false;
 bool fast_forward = false;
+
+unsigned deadzone;
+unsigned sensitivity = 8;
 
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void * userdata, uint8_t *stream, int len);
@@ -79,8 +107,6 @@ SVGACards svgaCard = SVGA_None;
 enum { CDROM_USE_SDL, CDROM_USE_ASPI, CDROM_USE_IOCTL_DIO, CDROM_USE_IOCTL_DX, CDROM_USE_IOCTL_MCI };
 
 /* input variables */
-int current_port;
-bool autofire;
 bool gamepad[16]; /* true means gamepad, false means joystick */
 bool connected[16];
 bool emulated_mouse;
@@ -107,6 +133,7 @@ extern struct retro_midi_interface *retro_midi_interface;
 
 /* DOSBox state */
 static std::string loadPath;
+static std::string gamePath;
 static std::string configPath;
 static bool dosbox_exit;
 static bool frontend_exit;
@@ -139,11 +166,153 @@ unsigned disk_index = 0;
 unsigned disk_count = 0;
 bool disk_tray_ejected;
 char disk_load_image[PATH_MAX_LENGTH];
+bool mount_overlay = true;
 
 /* helper functions */
-bool mount_disk_image(char *path)
+static char last_written_character = 0;
+
+void write_out_buffer(const char * format,...) {
+    char buf[2048];
+    va_list msg;
+
+    va_start(msg,format);
+#ifdef ANDROID
+    portable_vsnprintf(buf,2047,format,msg);
+#else
+    vsnprintf(buf,2047,format,msg);
+#endif
+    va_end(msg);
+
+    Bit16u size = (Bit16u)strlen(buf);
+    dos.internal_output=true;
+    for(Bit16u i = 0; i < size;i++) {
+        Bit8u out;Bit16u s=1;
+        if (buf[i] == 0xA && last_written_character != 0xD) {
+            out = 0xD;DOS_WriteFile(STDOUT,&out,&s);
+        }
+        last_written_character = out = buf[i];
+        DOS_WriteFile(STDOUT,&out,&s);
+    }
+    dos.internal_output=false;
+}
+
+void write_out (const char * format,...)
 {
-    log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk %s\n", path);
+    write_out_buffer("\n");
+    write_out_buffer(format);
+}
+
+bool mount_overlay_filesystem(char drive, const char* path)
+{
+    Bit16u sizes[4];
+    Bit8u mediaid;
+    Bit8u o_error = 0;
+    std::string str_size;
+    str_size="512,32,32765,16000";
+    mediaid=0xF8;
+    Bit8u bit8size=(Bit8u) sizes[1];
+
+    DOS_Drive * overlay;
+
+    localDrive* ldp = dynamic_cast<localDrive*>(Drives[drive-'A']);
+    cdromDrive* cdp = dynamic_cast<cdromDrive*>(Drives[drive-'A']);
+
+    if (log_cb)
+        log_cb(RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path, drive);
+
+    struct stat path_stat;
+
+    if (stat(path, &path_stat) == 0 && S_ISDIR(path_stat.st_mode))
+    {
+        if (log_cb)
+            log_cb(RETRO_LOG_INFO, "[dosbox] save directory already exists %s\n", path);
+    }
+    else
+    {
+        if (log_cb)
+            log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path);
+#if (WIN32)
+        if (mkdir(path) == -1)
+#else
+        if (mkdir(path, 0700) == -1)
+#endif
+        {
+            if (log_cb)
+                log_cb(RETRO_LOG_INFO, "[dosbox] error creating save directory %s\n", path);
+            return false;
+        }
+    }
+    if (!Drives[drive-'A'])
+    {
+        if (log_cb)
+            log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not mounted\n", drive);
+        write_out("No basedrive mounted yet!");
+        return false;
+    }
+
+    if (!ldp || cdp)
+    {
+        if (log_cb)
+            log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not compatible\n", drive);
+        return false;
+    }
+    std::string base = ldp->getBasedir();
+    overlay = new Overlay_Drive(base.c_str(), path, sizes[0], bit8size, sizes[2], sizes[3], mediaid, o_error);
+
+
+    if (overlay)
+    {
+        if (o_error)
+        {
+            if (o_error == 1)
+            {
+                if (log_cb)
+                    log_cb(RETRO_LOG_INFO, "[dosbox] can't mix absolute and relative paths");
+            }
+            else if (o_error == 2)
+            {
+                if (log_cb)
+                    log_cb(RETRO_LOG_INFO, "[dosbox] overlay can't be in the same unrelying file system");
+            }
+            else
+            {
+                if (log_cb)
+                    log_cb(RETRO_LOG_INFO, "[dosbox] something went wrong");
+            }
+            delete overlay;
+            return false;
+        }
+        delete Drives[drive-'A'];
+        Drives[drive-'A'] = 0;
+    }
+    else
+    {
+        if (log_cb)
+            log_cb(RETRO_LOG_INFO, "[dosbox] ocerlay construction failed");
+        return false;
+    }
+    Drives[drive - 'A'] = overlay;
+    mem_writeb(Real2Phys(dos.tables.mediaid) + (drive-'A') * 9, overlay->GetMediaByte());
+    std::string label;
+    label = drive; label += "_OVERLAY";
+    overlay->dirCache.SetLabel(label.c_str(), false, false);
+    return true;
+}
+
+bool mount_disk_image(const char *path, bool silent)
+{
+    char msg[256];
+    std::string extension = strrchr(path, '.');
+    if (extension == ".img")
+        log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as floppy %s\n", path);
+    else if (extension == ".iso" || extension == ".cue")
+        log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as cdrom %s\n", path);
+    else
+    {
+        log_cb(RETRO_LOG_INFO, "[dosbox] unsupported disk image\n %s", extension.c_str());
+        return false;
+    }
+
     if(control->SecureMode())
     {
         if (log_cb)
@@ -158,56 +327,147 @@ bool mount_disk_image(char *path)
         return false;
     }
 
-    int error = -1;
+    if (extension == ".img")
+    {
 
-    Bit32u imagesize;
-    char drive = 'D';
+        int error = -1;
+        char drive = 'A';
 
-    Bit8u mediaid = 0xF8;
-    std::string fstype="iso";
+        Bit8u mediaid=0xF0;
+        Bit16u sizes[4];
+        std::string fstype="floppy";
 
-    MSCDEX_SetCDInterface(CDROM_USE_SDL, -1);
+        std::string str_size;
+        std::string label;
 
-    DOS_Drive* iso = new isoDrive(drive, path, mediaid, error);
-    switch (error) {
-        case 0:	break;
-        case 1:
-            log_cb(RETRO_LOG_INFO, "[dosbox] MSCDEX: Failure: Drive-letters of multiple CD-ROM drives have to be continuous.\n");
+        DOS_Drive* floppy = new fatDrive(path, sizes[0],sizes[1],sizes[2],sizes[3],0);
+        if(!(dynamic_cast<fatDrive*>(floppy))->created_successfully)
             return false;
-        case 2:
-            log_cb(RETRO_LOG_INFO, "[dosbox] MSCDEX: Failure: Not yet supported.\n");
-            return false;
-        case 3:
-            log_cb(RETRO_LOG_INFO, "[dosbox] MSCDEX: Specified location is not a CD-ROM drive.\n");
-            return false;
-        case 4:
-            log_cb(RETRO_LOG_INFO, "[dosbox] MSCDEX: Failure: Invalid file or unable to open.\n");
-            return false;
-        case 5:
-            log_cb(RETRO_LOG_INFO, "[dosbox] MSCDEX: Failure: Too many CD-ROM drives (max: 5). MSCDEX Installation failed.\n");
-            return false;
-        case 6:
-            log_cb(RETRO_LOG_INFO, "[dosbox] MSCDEX: Mounted subdirectory: limited support.\n");
-            return false;
-        default:
-            log_cb(RETRO_LOG_INFO, "[dosbox] MSCDEX: Failure: Unknown error.\n");
-            return false;
+
+        DriveManager::AppendDisk(drive - 'A', floppy);
+        DriveManager::InitializeDrive(drive - 'A');
+
+        /* set the correct media byte in the table */
+        mem_writeb(Real2Phys(dos.tables.mediaid) + (drive - 'A') * 9, mediaid);
+
+        /* command uses dta so set it to our internal dta */
+        RealPt save_dta = dos.dta();
+        dos.dta(dos.tables.tempdta);
+
+        for(Bitu i = 0; i < DOS_DRIVES; i++)
+            if (Drives[i]) Drives[i]->EmptyCache();
+
+        DriveManager::CycleDisks(drive - 'A', true);
+
+        snprintf(msg, sizeof(msg), "Drive %c is mounted as %s.\n", drive, path);
+        if (!silent) write_out(msg);
+            return true;
+    }
+    else if (extension == ".iso" || extension == ".cue")
+    {
+        int error = -1;
+        char drive = 'D';
+
+        Bit8u mediaid = 0xF8;
+        std::string fstype="iso";
+
+        MSCDEX_SetCDInterface(CDROM_USE_SDL, -1);
+
+        DOS_Drive* iso = new isoDrive(drive, path, mediaid, error);
+        switch (error) {
+            case 0:    break;
+            case 1:
+                snprintf(msg, sizeof(msg), "MSCDEX: Failure: Drive-letters of multiple CD-ROM drives have to be continuous.\n");
+                log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+                if (!silent) write_out(msg);
+                    return false;
+            case 2:
+                snprintf(msg, sizeof(msg), "MSCDEX: Failure: Not yet supported.");
+                log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+                if (!silent) write_out(msg);
+                    return false;
+            case 3:
+                snprintf(msg, sizeof(msg), "MSCDEX: Specified location is not a CD-ROM drive.\n");
+                log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+                if (!silent) write_out(msg);
+                    return false;
+            case 4:
+                snprintf(msg, sizeof(msg), "MSCDEX: Failure: Invalid file or unable to open.\n");
+                log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+                if (!silent) write_out(msg);
+                    return false;
+            case 5:
+                snprintf(msg, sizeof(msg), "MSCDEX: Failure: Too many CD-ROM drives (max: 5). MSCDEX Installation failed.\n");
+                log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+                if (!silent) write_out(msg);
+                    return false;
+            case 6:
+                snprintf(msg, sizeof(msg), "MSCDEX: Mounted subdirectory: limited support.\n");
+                log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+                if (!silent) write_out(msg);
+                    return false;
+            default:
+                snprintf(msg, sizeof(msg), "MSCDEX: Failure: Unknown error.\n");
+                log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+                if (!silent) write_out(msg);
+                    return false;
+        }
+
+        DriveManager::AppendDisk(drive - 'A', iso);
+        DriveManager::InitializeDrive(drive - 'A');
+
+        /* set the correct media byte in the table */
+        mem_writeb(Real2Phys(dos.tables.mediaid) + (drive - 'A') * 9, mediaid);
+
+        for(Bitu i = 0; i < DOS_DRIVES; i++)
+            if (Drives[i]) Drives[i]->EmptyCache();
+
+        DriveManager::CycleDisks(drive - 'A', true);
+
+        snprintf(msg, sizeof(msg), "Drive %c is mounted as %s.\n", drive, path);
+        log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
+        if (!silent) write_out(msg);
+            return true;
+    }
+    else
+        return false;
+    return false;
+}
+
+bool unmount_disk_image(char *path)
+{
+    char drive;
+    std::string extension = strrchr(path, '.');
+
+    if (disk_count == 0)
+    {
+        if (log_cb)
+            log_cb(RETRO_LOG_INFO, "[dosbox] no disks added to index\n");
+        return false;
     }
 
-    DriveManager::AppendDisk(drive - 'A', iso);
-    DriveManager::InitializeDrive(drive - 'A');
-
-    /* set the correct media byte in the table */
-    mem_writeb(Real2Phys(dos.tables.mediaid) + (drive - 'A') * 9, mediaid);
-
-    for(Bitu i = 0; i < DOS_DRIVES; i++)
-        if (Drives[i]) Drives[i]->EmptyCache();
-
+    if (extension == ".img")
+    {
+        log_cb(RETRO_LOG_INFO, "[dosbox] unmounting floppy %s\n", path);
+        drive = 'A';
+    }
+    else if (extension == ".iso" || extension == ".cue")
+    {
+        log_cb(RETRO_LOG_INFO, "[dosbox] umounting cdrom %s\n", path);
+        drive = 'D';
+    }
+    else
+    {
+        log_cb(RETRO_LOG_INFO, "[dosbox] unsupported disk image\n %s", extension.c_str());
+        return false;
+    }
+    if (Drives[drive - 'A'])
+        DriveManager::UnmountDrive(drive - 'A');
+    Drives[drive - 'A'] = 0;
     DriveManager::CycleDisks(drive - 'A', true);
 
     return true;
 }
-
 
 bool compare_dosbox_variable(std::string section_string, std::string var_string, std::string val_string)
 {
@@ -257,27 +517,31 @@ static unsigned disk_get_image_index()
 
 static bool disk_set_eject_state(bool ejected)
 {
-    char drive = 'D';
-    Bit8u mediaid = 0xF8;
-
     if (log_cb && ejected)
         log_cb(RETRO_LOG_INFO, "[dosbox] tray open\n");
     else if (!ejected)
         log_cb(RETRO_LOG_INFO, "[dosbox] tray closed\n");
     disk_tray_ejected = ejected;
 
+    if (disk_count == 0)
+        return true;
+
     if (ejected)
     {
-        if (Drives[drive - 'A'])
-        DriveManager::UnmountDrive(drive - 'A');
-        Drives[drive - 'A'] = 0;
+        if(unmount_disk_image(disk_array[disk_get_image_index()]))
+            return true;
+        else
+            return false;
     }
     else
     {
-        mount_disk_image(disk_array[disk_get_image_index()]);
+        if(mount_disk_image(disk_array[disk_get_image_index()], false))
+            return true;
+        else
+            return false;
     }
-    DriveManager::CycleDisks(drive - 'A', true);
-    return true;
+
+    return false;
 }
 
 static bool disk_set_image_index(unsigned index)
@@ -304,8 +568,11 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
 {
     if (index < disk_get_num_images())
         snprintf(disk_array[index], sizeof(char) * PATH_MAX_LENGTH, "%s", info->path);
-    mount_disk_image(disk_array[index]);
-    return true;
+    if(mount_disk_image(disk_array[index], true))
+        return true;
+    else
+        disk_count--;
+    return false;
 }
 
 static struct retro_disk_control_callback disk_interface = {
@@ -319,62 +586,67 @@ static struct retro_disk_control_callback disk_interface = {
 };
 
 struct retro_variable vars[] = {
-    { "dosbox_svn_use_options",           "Enable core-options (restart); true|false"},
-    { "dosbox_svn_adv_options",           "Enable advanced core-options (restart); false|true"},
-    { "dosbox_svn_machine_type",          "Emulated machine (restart); svga_s3|svga_et3000|svga_et4000|svga_paradise|vesa_nolfb|vesa_oldvbe|hercules|cga|tandy|pcjr|ega|vgaonly" },
-    { "dosbox_svn_memory_size",           "Memory size (restart); 16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15" },
+    { "dosbox_svn_use_options",             "Enable core-options (restart); true|false"},
+    { "dosbox_svn_adv_options",             "Enable advanced core-options (restart); false|true"},
+    { "dosbox_svn_save_overlay",            "Redirect writes to save directory (restart)(experimental); disable|enable" },
+    { "dosbox_svn_machine_type",            "Emulated machine (restart); svga_s3|svga_et3000|svga_et4000|svga_paradise|vesa_nolfb|vesa_oldvbe|hercules|cga|tandy|pcjr|ega|vgaonly" },
+    { "dosbox_svn_memory_size",             "Memory size (restart); 16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15" },
 #if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
-    { "dosbox_svn_cpu_core",              "CPU core; auto|dynamic|normal|simple" },
+    { "dosbox_svn_cpu_core",                "CPU core; auto|dynamic|normal|simple" },
 #else
-    { "dosbox_svn_cpu_core",              "CPU core; auto|normal|simple" },
+    { "dosbox_svn_cpu_core",                "CPU core; auto|normal|simple" },
 #endif
-    { "dosbox_svn_cpu_type",              "CPU type; auto|386|386_slow|486|486_slow|pentium_slow|386_prefetch" },
-    { "dosbox_svn_cpu_cycles_mode",       "CPU cycle mode; auto|fixed|max" },
-    { "dosbox_svn_cpu_cycles_multiplier", "CPU cycle multiplier; 1000|10000|100000|100" },
-    { "dosbox_svn_cpu_cycles",            "CPU cycles; 1|2|3|4|5|6|7|8|9" },
-    { "dosbox_svn_scaler",                "Video scaler; none|normal2x|normal3x|advmame2x|advmame3x|advinterp2x|advinterp3x|hq2x|hq3x|2xsai|super2xsai|supereagle|tv2x|tv3x|rgb2x|rgb3x|scan2x|scan3x" },
-    { "dosbox_svn_joystick_timed",        "Joystick timed intervals; true|false" },
-    { "dosbox_svn_emulated_mouse",        "Gamepad emulated mouse; enable|disable" },
-    { "dosbox_svn_sblaster_type",         "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
-    { "dosbox_svn_pcspeaker",             "Enable PC-Speaker; false|true" },
-    { "dosbox_svn_ipx",                   "Enable IPX over UDP; false|true" },
+    { "dosbox_svn_cpu_type",                "CPU type; auto|386|386_slow|486|486_slow|pentium_slow|386_prefetch" },
+    { "dosbox_svn_cpu_cycles_mode",         "CPU cycle mode; auto|fixed|max" },
+    { "dosbox_svn_cpu_cycles_multiplier",   "CPU cycle multiplier; 1000|10000|100000|100" },
+    { "dosbox_svn_cpu_cycles",              "CPU cycles; 1|2|3|4|5|6|7|8|9" },
+    { "dosbox_svn_scaler",                  "Video scaler; none|normal2x|normal3x|advmame2x|advmame3x|advinterp2x|advinterp3x|hq2x|hq3x|2xsai|super2xsai|supereagle|tv2x|tv3x|rgb2x|rgb3x|scan2x|scan3x" },
+    { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
+    { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; enable|disable" },
+    { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
+    { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
+#if defined(C_IPX)
+    { "dosbox_svn_ipx",                     "Enable IPX over UDP; false|true" },
+#endif
     { NULL, NULL },
 };
 
 struct retro_variable vars_advanced[] = {
-    { "dosbox_svn_use_options",           "Enable core-options (restart); true|false"},
-    { "dosbox_svn_adv_options",           "Enable advanced core-options (restart); false|true"},
-    { "dosbox_svn_machine_type",          "Emulated machine (restart); svga_s3|svga_et3000|svga_et4000|svga_paradise|vesa_nolfb|vesa_oldvbe|hercules|cga|tandy|pcjr|ega|vgaonly" },
-    { "dosbox_svn_memory_size",           "Memory size (restart); 16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15" },
+    { "dosbox_svn_use_options",             "Enable core-options (restart); true|false"},
+    { "dosbox_svn_adv_options",             "Enable advanced core-options (restart); false|true"},
+    { "dosbox_svn_save_overlay",            "Redirect writes to save directory (restart)(experimental); disable|enable" },
+    { "dosbox_svn_machine_type",            "Emulated machine (restart); svga_s3|svga_et3000|svga_et4000|svga_paradise|vesa_nolfb|vesa_oldvbe|hercules|cga|tandy|pcjr|ega|vgaonly" },
+    { "dosbox_svn_memory_size",             "Memory size (restart); 16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15" },
 #if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
-    { "dosbox_svn_cpu_core",              "CPU core; auto|dynamic|normal|simple" },
+    { "dosbox_svn_cpu_core",                "CPU core; auto|dynamic|normal|simple" },
 #else
-    { "dosbox_svn_cpu_core",              "CPU core; auto|normal|simple" },
+    { "dosbox_svn_cpu_core",                "CPU core; auto|normal|simple" },
 #endif
-    { "dosbox_svn_cpu_type",              "CPU type; auto|386|386_slow|486|486_slow|pentium_slow|386_prefetch" },
-    { "dosbox_svn_cpu_cycles_mode",       "CPU cycle mode; auto|fixed|max" },
-    { "dosbox_svn_cpu_cycles_multiplier", "CPU cycle multiplier; 1000|10000|100000|100" },
-    { "dosbox_svn_cpu_cycles",            "CPU cycles; 1|2|3|4|5|6|7|8|9" },
+    { "dosbox_svn_cpu_type",                "CPU type; auto|386|386_slow|486|486_slow|pentium_slow|386_prefetch" },
+    { "dosbox_svn_cpu_cycles_mode",         "CPU cycle mode; auto|fixed|max" },
+    { "dosbox_svn_cpu_cycles_multiplier",   "CPU cycle multiplier; 1000|10000|100000|100" },
+    { "dosbox_svn_cpu_cycles",              "CPU cycles; 1|2|3|4|5|6|7|8|9" },
     { "dosbox_svn_cpu_cycles_multiplier_fine",
-                                          "CPU fine cycles multiplier; 100|1|10" },
-    { "dosbox_svn_cpu_cycles_fine",       "CPU fine cycles; 1|2|3|4|5|6|7|9" },
-    { "dosbox_svn_scaler",                "Video scaler; none|normal2x|normal3x|advmame2x|advmame3x|advinterp2x|advinterp3x|hq2x|hq3x|2xsai|super2xsai|supereagle|tv2x|tv3x|rgb2x|rgb3x|scan2x|scan3x" },
-    { "dosbox_svn_use_native_refresh",    "Refresh rate switching; false|true"},
-    { "dosbox_svn_joystick_timed",        "Joystick timed intervals; true|false" },
-    { "dosbox_svn_emulated_mouse",        "Gamepad emulated mouse; enable|disable" },
-    { "dosbox_svn_sblaster_type",         "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
-    { "dosbox_svn_sblaster_base",         "Sound Blaster base address; 220|240|260|280|2a0|2c0|2e0|300" },
-    { "dosbox_svn_sblaster_irq",          "Sound Blaster IRQ; 5|7|9|10|11|12|3" },
-    { "dosbox_svn_sblaster_dma",          "Sound Blaster DMA; 1|3|5|6|7|0" },
-    { "dosbox_svn_sblaster_hdma",         "Sound Blaster High DMA; 7|0|1|3|5|6" },
-    { "dosbox_svn_sblaster_opl_mode",     "Sound Blaster OPL Mode; auto|cms|op12|dualop12|op13|op13gold|none" },
-    { "dosbox_svn_sblaster_opl_emu",      "Sound Blaster OPL Provider; default|compat|fast|mame" },
-    { "dosbox_svn_midi",                  "Enable MIDI passthrough; false|true" },
-    { "dosbox_svn_pcspeaker",             "Enable PC-Speaker; false|true" },
-    { "dosbox_svn_tandy",                 "Enable Tandy Sound System (restart); auto|on|off" },
-    { "dosbox_svn_disney",                "Enable Disney Sound Source (restart); false|true" },
+                                            "CPU fine cycles multiplier; 1000|1|10|100" },
+    { "dosbox_svn_cpu_cycles_fine",         "CPU fine cycles; 1|2|3|4|5|6|7|9" },
+    { "dosbox_svn_scaler",                  "Video scaler; none|normal2x|normal3x|advmame2x|advmame3x|advinterp2x|advinterp3x|hq2x|hq3x|2xsai|super2xsai|supereagle|tv2x|tv3x|rgb2x|rgb3x|scan2x|scan3x" },
+    { "dosbox_svn_use_native_refresh",      "Refresh rate switching; false|true"},
+    { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
+    { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; enable|disable" },
+    { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
+    { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
+    { "dosbox_svn_sblaster_base",           "Sound Blaster base address; 220|240|260|280|2a0|2c0|2e0|300" },
+    { "dosbox_svn_sblaster_irq",            "Sound Blaster IRQ; 5|7|9|10|11|12|3" },
+    { "dosbox_svn_sblaster_dma",            "Sound Blaster DMA; 1|3|5|6|7|0" },
+    { "dosbox_svn_sblaster_hdma",           "Sound Blaster High DMA; 7|0|1|3|5|6" },
+    { "dosbox_svn_sblaster_opl_mode",       "Sound Blaster OPL Mode; auto|cms|opl2|dualopl2|opl3|opl3gold|none" },
+    { "dosbox_svn_sblaster_opl_emu",        "Sound Blaster OPL Provider; default|compat|fast|mame" },
+    { "dosbox_svn_midi",                    "Enable MIDI passthrough; false|true" },
+    { "dosbox_svn_pcspeaker",               "Enable PC-Speaker; false|true" },
+    { "dosbox_svn_tandy",                   "Enable Tandy Sound System (restart); auto|on|off" },
+    { "dosbox_svn_disney",                  "Enable Disney Sound Source (restart); false|true" },
 #if defined(C_IPX)
-    { "dosbox_svn_ipx",                   "Enable IPX over UDP; false|true" },
+    { "dosbox_svn_ipx",                     "Enable IPX over UDP; false|true" },
 #endif
     { NULL, NULL },
 };
@@ -403,10 +675,10 @@ void check_machine_variables()
     var.value = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
-	    svgaCard = SVGA_None;
-	    machine = MCH_VGA;
-	    int10.vesa_nolfb = false;
-	    int10.vesa_oldvbe = false;
+        svgaCard = SVGA_None;
+        machine = MCH_VGA;
+        int10.vesa_nolfb = false;
+        int10.vesa_oldvbe = false;
         if (strcmp(var.value, "hercules") == 0)
             machine = MCH_HERC;
         else if (strcmp(var.value, "cga") == 0)
@@ -499,6 +771,16 @@ void check_variables()
     if (!use_core_options)
         return;
 
+    var.key = "dosbox_svn_save_overlay";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
+    {
+        if (strcmp(var.value, "enable") == 0)
+            mount_overlay = true;
+        else
+            mount_overlay = false;
+    }
+
     var.key = "dosbox_svn_emulated_mouse";
     var.value = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -510,6 +792,17 @@ void check_variables()
             emulated_mouse = false;
 
         if (prev != emulated_mouse)
+            MAPPER_Init();
+    }
+
+    var.key = "dosbox_svn_emulated_mouse_deadzone";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
+        unsigned prev = deadzone;
+        deadzone = atoi(var.value);
+
+        if (prev != deadzone)
             MAPPER_Init();
     }
 
@@ -602,7 +895,7 @@ void check_variables()
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
         update_dosbox_variable("joystick", "timed", var.value);
 
-#if defined(IPX)
+#if defined(C_IPX)
     var.key = "dosbox_svn_ipx";
     var.value = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -851,7 +1144,7 @@ void retro_set_environment(retro_environment_t cb)
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
     connected[port] = false;
-    gamepad[port]	= false;
+    gamepad[port]    = false;
     switch (device)
     {
         case RETRO_DEVICE_JOYPAD:
@@ -881,7 +1174,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #else
     info->library_version = CORE_VERSION;
 #endif
-    info->valid_extensions = "exe|com|bat|conf|cue|iso";
+    info->valid_extensions = "exe|com|bat|conf|cue|iso|img";
     info->need_fullpath = true;
     info->block_extract = false;
 }
@@ -947,17 +1240,14 @@ void retro_deinit(void)
         co_delete(emuThread);
         emuThread = 0;
     }
+
+#ifdef HAVE_LIBNX
+	jitClose(&dynarec_jit);
+#endif
 }
 
 bool retro_load_game(const struct retro_game_info *game)
 {
-char slash;
-#ifdef _WIN32
-    slash = '\\';
-#else
-    slash = '/';
-#endif
-
     if(emuThread)
     {
         if(game)
@@ -965,6 +1255,9 @@ char slash;
             /* Copy the game path */
             loadPath = normalize_path(game->path);
             const size_t lastDot = loadPath.find_last_of('.');
+            char tmp[PATH_MAX_LENGTH];
+            snprintf(tmp, sizeof(tmp), "%s", game->path);
+            gamePath = path_basename(tmp);
 
             /* Find any config file to load */
             if(std::string::npos != lastDot)
@@ -1033,7 +1326,7 @@ void retro_run (void)
 
     if (disk_load_image[0]!='\0')
     {
-        mount_disk_image(disk_load_image);
+        mount_disk_image(disk_load_image, false);
         snprintf(disk_array[0], sizeof(char) * PATH_MAX_LENGTH, "%s", disk_load_image);
         disk_load_image[0] = '\0';
     }
@@ -1077,6 +1370,14 @@ void retro_run (void)
 
     if(emuThread)
     {
+        /* Once C is mounted, mount the overlay */
+        if (Drives['C' - 'A'] && mount_overlay)
+        {
+            std::string save_directory = retro_save_directory + slash + gamePath + slash;
+            normalize_path(save_directory);
+            mount_overlay_filesystem('C', save_directory.c_str());
+            mount_overlay = false;
+        }
         /* Read input */
         MAPPER_Run(false);
 

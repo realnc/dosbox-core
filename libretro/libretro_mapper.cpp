@@ -30,6 +30,8 @@ extern unsigned deadzone;
 extern unsigned sensitivity;
 
 static bool keyboardState[KBD_LAST];
+static bool slowMouse;
+static bool fastMouse;
 
 static const struct { unsigned retroID; KBD_KEYS dosboxID; } keyMap[] =
 {
@@ -145,8 +147,24 @@ struct EmulatedMouseButton : public Processable
         retroPort(rP), retroID(rID), dosboxButton(dosbox) { }
 
     void process()       { item.process(*this, input_cb(retroPort, RDEV(JOYPAD), 0, retroID)); }
-    void press() const   { Mouse_ButtonPressed(dosboxButton);  }
-    void release() const { Mouse_ButtonReleased(dosboxButton); }
+    void press() const
+    {
+        if (dosboxButton == 2)
+            slowMouse = true;
+        else if (dosboxButton == 3)
+            fastMouse = true;
+        else
+            Mouse_ButtonPressed(dosboxButton);
+    }
+    void release() const
+    {
+        if (dosboxButton == 2)
+            slowMouse = false;
+        else if (dosboxButton == 3)
+            fastMouse = false;
+        else
+            Mouse_ButtonReleased(dosboxButton);
+    }
 };
 
 struct JoystickButton : public Processable
@@ -268,6 +286,8 @@ void MAPPER_Init()
     {
         inputList.push_back(new EmulatedMouseButton(0, RDID(JOYPAD_R2), 0));
         inputList.push_back(new EmulatedMouseButton(0, RDID(JOYPAD_L2), 1));
+        inputList.push_back(new EmulatedMouseButton(0, RDID(JOYPAD_R), 2));
+        inputList.push_back(new EmulatedMouseButton(0, RDID(JOYPAD_L), 3));
     }
 
     struct retro_input_descriptor desc[64];
@@ -277,6 +297,8 @@ void MAPPER_Init()
         { 0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, "Emulated Mouse Y Axis" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Emulated Mouse Left Click" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Emulated Mouse Right Click" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Emulated Mouse Slow Down" },
+        { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Emulated Mouse Speed Up" },
         { 255, 255, 255, 255, "" },
     };
 
@@ -563,10 +585,20 @@ void MAPPER_Run(bool pressed)
        if (abs(emulated_mouseY) <= deadzone * 32768 / 100)
             emulated_mouseY = 0;
 
-       emulated_mouseX = emulated_mouseX * sensitivity / 32768;
-       emulated_mouseY = emulated_mouseY * sensitivity / 32768;
+       float slowdown = 32768.0;
+       if (fastMouse)
+       {
+           slowdown /= 3.0;
+       }
+       if (slowMouse)
+       {
+           slowdown *= 8.0;
+       }
 
-        Mouse_CursorMoved(emulated_mouseX, emulated_mouseY, 0, 0, true);
+       float adjusted_emulated_mouseX = (float) emulated_mouseX * (float) sensitivity / slowdown;
+       float adjusted_emulated_mouseY = (float) emulated_mouseY * (float) sensitivity / slowdown;
+
+       Mouse_CursorMoved(adjusted_emulated_mouseX, adjusted_emulated_mouseY, 0, 0, true);
     }
     if(mouseX || mouseY)
         Mouse_CursorMoved(mouseX, mouseY, 0, 0, true);

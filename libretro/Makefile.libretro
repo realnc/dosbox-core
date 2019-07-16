@@ -5,7 +5,7 @@ SVN_VERSION := " $(shell cat svn)"
 UNAME=$(shell uname -s)
 UNAMEM=$(shell uname -m)
 
-platform = unix
+platform ?= unix
 ifneq ($(findstring MINGW,$(UNAME)),)
 	platform = win
 else ifneq ($(findstring Darwin,$(UNAME)),)

@@ -142,6 +142,7 @@ else ifeq ($(platform), ctr)
 	COMMONFLAGS += -mword-relocations
 	COMMONFLAGS += -fomit-frame-pointer -fstrict-aliasing -ffast-math
 	COMMONFLAGS += -DDISABLE_EXCEPTIONS -DWITH_FAKE_SDL -fpermissive
+	COMMONFLAGS += -I$(DEVKITPRO)/libctru/include
 	STATIC_LINKING = 1
 else ifeq ($(platform), ngc)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
@@ -165,7 +166,7 @@ else ifeq ($(platform), wiiu)
 	CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
 	AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
 	WITH_FAKE_SDL = 1
-	COMMONFLAGS += -DGEKKO -DWIIU -DHW_RVL -mwup -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1 -I./deps/include/
+	COMMONFLAGS += -DGEKKO -DWIIU -DHW_RVL -mcpu=750 -meabi -mhard-float -D__POWERPC__ -D__ppc__ -DMSB_FIRST -DWORDS_BIGENDIAN=1 -I./deps/include/
 	COMMONFLAGS += -U__INT32_TYPE__ -U __UINT32_TYPE__ -D__INT32_TYPE__=int -DWITH_FAKE_SDL
 	STATIC_LINKING = 1
 	WITH_DYNAREC =

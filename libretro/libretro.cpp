@@ -95,7 +95,7 @@ bool midi_enable = false;
 bool fast_forward = false;
 
 unsigned deadzone;
-unsigned sensitivity = 8;
+float mouse_speed_factor = 1.0;
 
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void * userdata, uint8_t *stream, int len);
@@ -604,6 +604,7 @@ struct retro_variable vars[] = {
     { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
     { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; enable|disable" },
     { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
+    { "dosbox_svn_mouse_speed_factor",      "Mouse speed; 1.00|1.25|1.50|1.75|2.00|2.25|2.50|2.75|3.00|0.25|0.50|0.75" },
     { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
 #if defined(C_IPX)
     { "dosbox_svn_ipx",                     "Enable IPX over UDP; false|true" },
@@ -634,6 +635,7 @@ struct retro_variable vars_advanced[] = {
     { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
     { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; enable|disable" },
     { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
+    { "dosbox_svn_mouse_speed_factor",      "Mouse speed; 1.00|1.25|1.50|1.75|2.00|2.25|2.50|2.75|3.00|0.25|0.50|0.75" },
     { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
     { "dosbox_svn_sblaster_base",           "Sound Blaster base address; 220|240|260|280|2a0|2c0|2e0|300" },
     { "dosbox_svn_sblaster_irq",            "Sound Blaster IRQ; 5|7|9|10|11|12|3" },
@@ -805,6 +807,11 @@ void check_variables()
         if (prev != deadzone)
             MAPPER_Init();
     }
+
+    var.key = "dosbox_svn_mouse_speed_factor";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        mouse_speed_factor = atof(var.value);
 
     var.key = "dosbox_svn_cpu_cycles_mode";
     var.value = NULL;

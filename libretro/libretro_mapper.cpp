@@ -27,7 +27,7 @@ extern bool gamepad[16];
 extern bool emulated_mouse;
 
 extern unsigned deadzone;
-extern unsigned sensitivity;
+extern float mouse_speed_factor;
 
 static bool keyboardState[KBD_LAST];
 static bool slowMouse;
@@ -580,28 +580,33 @@ void MAPPER_Run(bool pressed)
         int16_t emulated_mouseX = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
         int16_t emulated_mouseY = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
 
-       if (abs(emulated_mouseX) <= deadzone * 32768 / 100)
+        if (abs(emulated_mouseX) <= deadzone * 32768 / 100)
             emulated_mouseX = 0;
-       if (abs(emulated_mouseY) <= deadzone * 32768 / 100)
+        if (abs(emulated_mouseY) <= deadzone * 32768 / 100)
             emulated_mouseY = 0;
 
-       float slowdown = 32768.0;
-       if (fastMouse)
-       {
-           slowdown /= 3.0;
-       }
-       if (slowMouse)
-       {
-           slowdown *= 8.0;
-       }
+        float slowdown = 32768.0;
+        if (fastMouse)
+            slowdown /= 3.0;
+        if (slowMouse)
+            slowdown *= 8.0;
 
-       float adjusted_emulated_mouseX = (float) emulated_mouseX * (float) sensitivity / slowdown;
-       float adjusted_emulated_mouseY = (float) emulated_mouseY * (float) sensitivity / slowdown;
+        float adjusted_emulated_mouseX = (float) emulated_mouseX * mouse_speed_factor * 8.0 / slowdown;
+        float adjusted_emulated_mouseY = (float) emulated_mouseY * mouse_speed_factor * 8.0 / slowdown;
 
        Mouse_CursorMoved(adjusted_emulated_mouseX, adjusted_emulated_mouseY, 0, 0, true);
     }
     if(mouseX || mouseY)
-        Mouse_CursorMoved(mouseX, mouseY, 0, 0, true);
+    {
+        float slowdown = 1.0;
+        if (fastMouse)
+            slowdown /= 3.0;
+        if (slowMouse)
+            slowdown *= 8.0;
+        float adjusted_mouseX = (float) mouseX * mouse_speed_factor / slowdown;
+        float adjusted_mouseY = (float) mouseY * mouse_speed_factor / slowdown;
+        Mouse_CursorMoved(adjusted_mouseX, adjusted_mouseY, 0, 0, true);
+    }
     for (std::vector<Processable*>::iterator i = inputList.begin(); i != inputList.end(); i ++)
         (*i)->process();
 }

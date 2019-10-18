@@ -1722,7 +1722,7 @@ public:
 		if (sb.type==SBT_16) temp << " H" << (Bitu)sb.hw.dma16;
 		temp << " T" << static_cast<unsigned int>(sb.type) << ends;
 
-		autoexecline.Install(temp.str());
+		autoexecline.InstallBefore(temp.str());
 
 		/* Soundblaster midi interface */
 		if (!MIDI_Available()) sb.midi = false;

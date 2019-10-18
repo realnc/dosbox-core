@@ -1,8 +1,8 @@
-## DOSBox-SVN libretro
+# DOSBox-SVN libretro
 
 Upstream port of DOSBox to libretro.
 
-### Keeping up-to-date
+## Keeping up-to-date
 Clone the repo from the svn upstream:
 
 ```bash
@@ -13,7 +13,7 @@ This takes a few hours. Then add a remote for the git repo:
 
 ```bash
 cd dosbox-svn
-git remote add origin https://github.com/fr500/dosbox-svn.git --> replace this with your repo URL if you're working in a fork
+git remote add origin git@git.retromods.org:dev/dosbox-svn.git --> replace this with your repo URL if you're working in a fork
 git fetch
 git checkout master
 git svn rebase
@@ -31,18 +31,19 @@ Do your work, resolve conflicts if any, and then:
 git push --force
 ```
 
-### Compilation
-So far it's compiling on Windows, Linux, Android and OSX.
+## Compilation
 
-####Requirements
+### Requirements
 
 - SDL1.2
 - SDL_net
 
+#### Windows
+
 To build on Windows we recommend MSYS2 (https://www.msys2.org/).
 Install MSYS2, and follow these instructions:
 
-#### Update Environment
+##### Update Environment
 
 Start the MSYS2 shell and run:
 
@@ -57,7 +58,7 @@ Restart MSYS2 and run:
 pacman --noconfirm -Su
 ```
 
-#### Install the Toolchain
+##### Install the Toolchain
 
 For 32-bit builds run:
 
@@ -71,9 +72,23 @@ For 64-bit builds run:
 pacman -S --noconfirm --needed wget git make mingw-w64-x86_64-toolchain mingw-w64-x86_64-ntldd mingw-w64-x86_64-zlib mingw-w64-x86_64-pkg-config mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL mingw-w64-x86_64-SDL_net
 ```
 
-#### Building
+#### Linux
+
+You need to install the libsdl1.2 and libsdlnet1.2 development headers, refer to your distribution documentation for reference
+
+### Building
+
+Clone the repository
+```bash
+git clone git@git.retromods.org:dev/dosbox-svn.git
+git fetch libretro
+git checkout libretro
+```
+
+Now enter the repo directory and build
 
 ```bash
+cd dosbox-svn
 cd libretro
 make -j4
 ```
@@ -86,29 +101,12 @@ make -j8 WITH_DYNAREC=$ABI
 
 The valid ABI choices are `arm, oldarm, x86_64, x86, ppc, mips`
 
-The `x86_64` dynarec doesn't work on windows so far. For better performance x86 is recommended
+## Usage
 
-### Usage
+You can load exe, bat, iso, cue, and conf files directly
 
-Use like normal DOSbox, you can load exe files or conf files directly.
+DOSBox hotkeys do not work, you need to use **libretro core options**. Check your libretro frontend documentation for more information.
 
-Cycle increase hot-keys **do-not-work**. Instead you should leverage *Core Options*. Refer to your libretro frontend documentation for reference on how to access these options.
+You can also insert disk media at runtime by using the **libretro disk control interface**. Check your libretro frontend documentation for more information.
 
-For GLIDE support (non-hw accelerated) use the glide branch.
-
-### Screenshots
-
-![RetroArch GUI](docs/images/screenshot_gui.png "RetroArch GUI")
-![DOOM II](docs/images/screenshot_doom.png "DOOM II")
-![Duke Nukem 3D](docs/images/screenshot_duke.png "Duke Nukem 3D")
-![Tyrian](docs/images/screenshot_tyrian.png "Tyrian")
-
-As with official DOSBox, Windows is not officially supported (but it works)
-
-![Windows 95](docs/images/screenshot_win.png "Windows 95")
-
-
-
-
-
-
+The SDL keymapper is not available, you can remap keyboard and gamepad buttons using the **libretro controllers API**. Check your libretro frontend documentation for more information.

@@ -143,7 +143,7 @@ static bool is_restarting = false;
 extern Bit8u RDOSGFXbuffer[1024*768*4];
 extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 extern unsigned RDOSGFXcolorMode;
-extern void* RDOSGFXhaveFrame;
+extern Bit8u RDOSGFXhaveFrame[sizeof(RDOSGFXbuffer)];
 unsigned currentWidth, currentHeight;
 float currentFPS = 60.0f;
 
@@ -272,7 +272,7 @@ bool mount_overlay_filesystem(char drive, const char* path)
             else if (o_error == 2)
             {
                 if (log_cb)
-                    log_cb(RETRO_LOG_INFO, "[dosbox] overlay can't be in the same unrelying file system");
+                    log_cb(RETRO_LOG_INFO, "[dosbox] overlay can't be in the same underlying file system");
             }
             else
             {
@@ -288,7 +288,7 @@ bool mount_overlay_filesystem(char drive, const char* path)
     else
     {
         if (log_cb)
-            log_cb(RETRO_LOG_INFO, "[dosbox] ocerlay construction failed");
+            log_cb(RETRO_LOG_INFO, "[dosbox] overlay construction failed");
         return false;
     }
     Drives[drive - 'A'] = overlay;
@@ -302,6 +302,14 @@ bool mount_overlay_filesystem(char drive, const char* path)
 bool mount_disk_image(const char *path, bool silent)
 {
     char msg[256];
+
+    if(control->SecureMode())
+    {
+        if (log_cb)
+            log_cb(RETRO_LOG_INFO, "[dosbox] this operation is not permitted in secure mode\n");
+        return false;
+    }
+
     std::string extension = strrchr(path, '.');
     if (extension == ".img")
         log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as floppy %s\n", path);
@@ -310,13 +318,6 @@ bool mount_disk_image(const char *path, bool silent)
     else
     {
         log_cb(RETRO_LOG_INFO, "[dosbox] unsupported disk image\n %s", extension.c_str());
-        return false;
-    }
-
-    if(control->SecureMode())
-    {
-        if (log_cb)
-            log_cb(RETRO_LOG_INFO, "[dosbox] this operation is not permitted in secure mode\n");
         return false;
     }
 
@@ -535,7 +536,7 @@ static bool disk_set_eject_state(bool ejected)
     }
     else
     {
-        if(mount_disk_image(disk_array[disk_get_image_index()], false))
+        if(mount_disk_image(disk_array[disk_get_image_index()], true))
             return true;
         else
             return false;
@@ -568,8 +569,6 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
 {
     if (index < disk_get_num_images())
         snprintf(disk_array[index], sizeof(char) * PATH_MAX_LENGTH, "%s", info->path);
-    if(mount_disk_image(disk_array[index], true))
-        return true;
     else
         disk_count--;
     return false;
@@ -988,6 +987,7 @@ static void start_dosbox(void)
     dosbox_initialiazed = false;
 
     /* Init the configuration system and add default values */
+
     DOSBOX_Init();
 
     /* Load config */
@@ -1393,7 +1393,6 @@ void retro_run (void)
 
         /* Upload video */
         video_cb(RDOSGFXhaveFrame, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
-        RDOSGFXhaveFrame = 0;
 
         /* Upload audio */
         audio_batch_cb((int16_t*)audioData, samplesPerFrame);

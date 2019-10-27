@@ -27,7 +27,8 @@ extern bool gamepad[16];
 extern bool emulated_mouse;
 
 extern unsigned deadzone;
-extern float mouse_speed_factor;
+extern float mouse_speed_factor_x;
+extern float mouse_speed_factor_y;
 
 static bool keyboardState[KBD_LAST];
 static bool slowMouse;
@@ -591,8 +592,8 @@ void MAPPER_Run(bool pressed)
         if (slowMouse)
             slowdown *= 8.0;
 
-        float adjusted_emulated_mouseX = (float) emulated_mouseX * mouse_speed_factor * 8.0 / slowdown;
-        float adjusted_emulated_mouseY = (float) emulated_mouseY * mouse_speed_factor * 8.0 / slowdown;
+        float adjusted_emulated_mouseX = (float) emulated_mouseX * mouse_speed_factor_x * 8.0 / slowdown;
+        float adjusted_emulated_mouseY = (float) emulated_mouseY * mouse_speed_factor_y * 8.0 / slowdown;
 
        Mouse_CursorMoved(adjusted_emulated_mouseX, adjusted_emulated_mouseY, 0, 0, true);
     }
@@ -603,8 +604,8 @@ void MAPPER_Run(bool pressed)
             slowdown /= 3.0;
         if (slowMouse)
             slowdown *= 8.0;
-        float adjusted_mouseX = (float) mouseX * mouse_speed_factor / slowdown;
-        float adjusted_mouseY = (float) mouseY * mouse_speed_factor / slowdown;
+        float adjusted_mouseX = (float) mouseX * mouse_speed_factor_x / slowdown;
+        float adjusted_mouseY = (float) mouseY * mouse_speed_factor_y / slowdown;
         Mouse_CursorMoved(adjusted_mouseX, adjusted_mouseY, 0, 0, true);
     }
     for (std::vector<Processable*>::iterator i = inputList.begin(); i != inputList.end(); i ++)

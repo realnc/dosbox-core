@@ -115,7 +115,6 @@ bool emulated_mouse;
 
 /* core option variables */
 static bool use_core_options;
-static bool adv_core_options;
 static bool variable_refresh;
 
 /* directories */
@@ -588,37 +587,8 @@ static struct retro_disk_control_callback disk_interface = {
 
 #define MOUSE_SPEED_FACTORS "1.00|1.25|1.50|1.75|2.00|2.25|2.50|2.75|3.00|3.25|3.50|3.75|4.00|4.25|4.50|4.75|5.00|0.25|0.50|0.75"
 
-struct retro_variable vars[] = {
-    { "dosbox_svn_use_options",             "Enable core-options (restart); true|false"},
-    { "dosbox_svn_adv_options",             "Enable advanced core-options (restart); false|true"},
-    { "dosbox_svn_save_overlay",            "Redirect writes to save directory (restart)(experimental); false|true" },
-    { "dosbox_svn_machine_type",            "Emulated machine (restart); svga_s3|svga_et3000|svga_et4000|svga_paradise|vesa_nolfb|vesa_oldvbe|hercules|cga|tandy|pcjr|ega|vgaonly" },
-    { "dosbox_svn_memory_size",             "Memory size (restart); 16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15" },
-#if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
-    { "dosbox_svn_cpu_core",                "CPU core; auto|dynamic|normal|simple" },
-#else
-    { "dosbox_svn_cpu_core",                "CPU core; auto|normal|simple" },
-#endif
-    { "dosbox_svn_cpu_type",                "CPU type; auto|386|386_slow|486|486_slow|pentium_slow|386_prefetch" },
-    { "dosbox_svn_cpu_cycles_mode",         "CPU cycle mode; auto|fixed|max" },
-    { "dosbox_svn_cpu_cycles_multiplier",   "CPU cycle multiplier; 1000|10000|100000|100" },
-    { "dosbox_svn_cpu_cycles",              "CPU cycles; 1|2|3|4|5|6|7|8|9" },
-    { "dosbox_svn_scaler",                  "Video scaler; none|normal2x|normal3x|advmame2x|advmame3x|advinterp2x|advinterp3x|hq2x|hq3x|2xsai|super2xsai|supereagle|tv2x|tv3x|rgb2x|rgb3x|scan2x|scan3x" },
-    { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
-    { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; true|false" },
-    { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
-    { "dosbox_svn_mouse_speed_factor_x",    "Horizontal mouse speed; " MOUSE_SPEED_FACTORS },
-    { "dosbox_svn_mouse_speed_factor_y",    "Vertical mouse speed; " MOUSE_SPEED_FACTORS },
-    { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
-#if defined(C_IPX)
-    { "dosbox_svn_ipx",                     "Enable IPX over UDP; false|true" },
-#endif
-    { NULL, NULL },
-};
-
 struct retro_variable vars_advanced[] = {
     { "dosbox_svn_use_options",             "Enable core-options (restart); true|false"},
-    { "dosbox_svn_adv_options",             "Enable advanced core-options (restart); false|true"},
     { "dosbox_svn_save_overlay",            "Redirect writes to save directory (restart)(experimental); false|true" },
     { "dosbox_svn_machine_type",            "Emulated machine (restart); svga_s3|svga_et3000|svga_et4000|svga_paradise|vesa_nolfb|vesa_oldvbe|hercules|cga|tandy|pcjr|ega|vgaonly" },
     { "dosbox_svn_memory_size",             "Memory size (restart); 16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15" },
@@ -754,25 +724,6 @@ void check_variables()
             use_core_options = true;
         else
             use_core_options = false;
-    }
-
-    var.key = "dosbox_svn_adv_options";
-    var.value = NULL;
-    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
-    {
-        bool prev = adv_core_options;
-        if (strcmp(var.value, "true") == 0)
-        {
-            adv_core_options = true;
-            if (prev != adv_core_options)
-                environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars_advanced);
-        }
-        else
-        {
-            adv_core_options = false;
-            if (prev != adv_core_options)
-                environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
-        }
     }
 
     if (!use_core_options)
@@ -919,8 +870,6 @@ void check_variables()
         update_dosbox_variable("ipx", "ipx", var.value);
 #endif
 
-    if (adv_core_options)
-    {
         var.key = "dosbox_svn_sblaster_base";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -976,7 +925,6 @@ void check_variables()
             else
                 variable_refresh = false;
         }
-    }
 }
 
 static void leave_thread(Bitu)
@@ -1129,7 +1077,7 @@ void retro_set_environment(retro_environment_t cb)
     bool allow_no_game = true;
 
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allow_no_game);
-    cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
+    cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars_advanced);
     cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
     static const struct retro_controller_description ports_default[] =
@@ -1275,7 +1223,7 @@ bool retro_load_game(const struct retro_game_info *game)
             const size_t lastDot = loadPath.find_last_of('.');
             char tmp[PATH_MAX_LENGTH];
             snprintf(tmp, sizeof(tmp), "%s", game->path);
-            gamePath = path_basename(tmp);
+            gamePath = std::string(tmp);
 
             /* Find any config file to load */
             if(std::string::npos != lastDot)
@@ -1391,7 +1339,12 @@ void retro_run (void)
         /* Once C is mounted, mount the overlay */
         if (Drives['C' - 'A'] && mount_overlay)
         {
-            std::string save_directory = retro_save_directory + slash + gamePath + slash;
+            std::size_t last_slash = gamePath.find_last_of("/\\");
+            std::string s1 = gamePath.substr(0, last_slash);
+            std::size_t second_to_last_slash = s1.find_last_of("/\\");
+            std::string s2 = s1.substr(second_to_last_slash + 1, last_slash);
+
+            std::string save_directory = retro_save_directory + slash + s2 + slash;
             normalize_path(save_directory);
             mount_overlay_filesystem('C', save_directory.c_str());
             mount_overlay = false;

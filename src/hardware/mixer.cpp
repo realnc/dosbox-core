@@ -17,11 +17,7 @@
  */
 
 
-/*
-	Remove the sdl code from here and have it handeld in the sdlmain.
-	That should call the mixer start from there or something.
-*/
-
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <math.h>
@@ -35,11 +31,6 @@
 #include <mmsystem.h>
 #endif
 
-#ifdef WITH_FAKE_SDL
-#include "SDL/SDL.h"
-#else
-#include <SDL/SDL.h>
-#endif
 #include "mem.h"
 #include "pic.h"
 #include "dosbox.h"
@@ -96,6 +87,8 @@ Bit8u MixTemp[MIXER_BUFSIZE];
 
 MixerChannel * MIXER_AddChannel(MIXER_Handler handler,Bitu freq,const char * name) {
 	MixerChannel * chan=new MixerChannel();
+	if (!chan)
+		return NULL;
 	chan->scale = 1.0;
 	chan->handler=handler;
 	chan->name=name;
@@ -152,9 +145,7 @@ void MixerChannel::Enable(bool _yesno) {
 	enabled=_yesno;
 	if (enabled) {
 		freq_counter = 0;
-		SDL_LockAudio();
 		if (done<mixer.done) done=mixer.done;
-		SDL_UnlockAudio();
 	}
 }
 
@@ -386,21 +377,16 @@ void MixerChannel::AddSamples_s32_nonnative(Bitu len,const Bit32s * data) {
 }
 
 void MixerChannel::FillUp(void) {
-	SDL_LockAudio();
 	if (!enabled || done<mixer.done) {
-		SDL_UnlockAudio();
 		return;
 	}
 	float index=PIC_TickIndex();
 	Mix((Bitu)(index*mixer.needed));
-	SDL_UnlockAudio();
 }
 
 extern bool ticksLocked;
 static inline bool Mixer_irq_important(void) {
-	/* In some states correct timing of the irqs is more important then
-	 * non stuttering audo */
-	return (ticksLocked || (CaptureState & (CAPTURE_WAVE|CAPTURE_VIDEO)));
+	return (ticksLocked);
 }
 
 static Bit32u calc_tickadd(Bit32u freq) {
@@ -421,21 +407,6 @@ static void MIXER_MixData(Bitu needed) {
 		chan->Mix(needed);
 		chan=chan->next;
 	}
-	if (CaptureState & (CAPTURE_WAVE|CAPTURE_VIDEO)) {
-		Bit16s convert[1024][2];
-		Bitu added=needed-mixer.done;
-		if (added>1024)
-			added=1024;
-		Bitu readpos=(mixer.pos+mixer.done)&MIXER_BUFMASK;
-		for (Bitu i=0;i<added;i++) {
-			Bits sample=mixer.work[readpos][0] >> MIXER_VOLSHIFT;
-			convert[i][0]=MIXER_CLIP(sample);
-			sample=mixer.work[readpos][1] >> MIXER_VOLSHIFT;
-			convert[i][1]=MIXER_CLIP(sample);
-			readpos=(readpos+1)&MIXER_BUFMASK;
-		}
-		CAPTURE_AddWave( mixer.freq, added, (Bit16s*)convert );
-	}
 	//Reset the the tick_add for constant speed
 	if( Mixer_irq_important() )
 		mixer.tick_add = calc_tickadd(mixer.freq);
@@ -443,12 +414,10 @@ static void MIXER_MixData(Bitu needed) {
 }
 
 static void MIXER_Mix(void) {
-	SDL_LockAudio();
 	MIXER_MixData(mixer.needed);
 	mixer.tick_counter += mixer.tick_add;
 	mixer.needed+=(mixer.tick_counter >> TICK_SHIFT);
 	mixer.tick_counter &= TICK_MASK;
-	SDL_UnlockAudio();
 }
 
 static void MIXER_Mix_NoSound(void) {
@@ -471,7 +440,7 @@ static void MIXER_Mix_NoSound(void) {
 	mixer.done=0;
 }
 
-static void SDLCALL MIXER_CallBack(void * userdata, Uint8 *stream, int len) {
+void MIXER_CallBack(void * userdata, Uint8 *stream, int len) {
 	Bitu need=(Bitu)len/MIXER_SSIZE;
 	Bit16s * output=(Bit16s *)stream;
 	Bitu reduce;
@@ -683,35 +652,14 @@ void MIXER_Init(Section* sec) {
 	mixer.mastervol[0]=1.0f;
 	mixer.mastervol[1]=1.0f;
 
-	/* Start the Mixer using SDL Sound at 22 khz */
-	SDL_AudioSpec spec;
-	SDL_AudioSpec obtained;
-
-	spec.freq=mixer.freq;
-	spec.format=AUDIO_S16SYS;
-	spec.channels=2;
-	spec.callback=MIXER_CallBack;
-	spec.userdata=NULL;
-	spec.samples=(Uint16)mixer.blocksize;
-
 	mixer.tick_counter=0;
-	if (mixer.nosound) {
+	if (mixer.nosound || mixer.freq > 49716) {
 		LOG_MSG("MIXER: No Sound Mode Selected.");
 		mixer.tick_add=calc_tickadd(mixer.freq);
 		TIMER_AddTickHandler(MIXER_Mix_NoSound);
-	} else if (SDL_OpenAudio(&spec, &obtained) <0 ) {
-		mixer.nosound = true;
-		LOG_MSG("MIXER: Can't open audio: %s , running in nosound mode.",SDL_GetError());
-		mixer.tick_add=calc_tickadd(mixer.freq);
-		TIMER_AddTickHandler(MIXER_Mix_NoSound);
 	} else {
-		if((mixer.freq != obtained.freq) || (mixer.blocksize != obtained.samples))
-			LOG_MSG("MIXER: Got different values from SDL: freq %d, blocksize %d",obtained.freq,obtained.samples);
-		mixer.freq=obtained.freq;
-		mixer.blocksize=obtained.samples;
 		mixer.tick_add=calc_tickadd(mixer.freq);
 		TIMER_AddTickHandler(MIXER_Mix);
-		SDL_PauseAudio(0);
 	}
 	mixer.min_needed=section->Get_int("prebuffer");
 	if (mixer.min_needed>100) mixer.min_needed=100;
@@ -719,4 +667,10 @@ void MIXER_Init(Section* sec) {
 	mixer.max_needed=mixer.blocksize * 2 + 2*mixer.min_needed;
 	mixer.needed=mixer.min_needed+1;
 	PROGRAMS_MakeFile("MIXER.COM",MIXER_ProgramStart);
+}
+
+// Need to put it in the av_info struct
+Bit32u MIXER_RETRO_GetFrequency()
+{
+	return mixer.freq;
 }

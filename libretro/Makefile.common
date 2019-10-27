@@ -21,7 +21,6 @@ INCFLAGS += \
 SOURCES_CXX := \
 	$(CORE_DIR)/libretro/libretro_gfx.cpp \
 	$(CORE_DIR)/libretro/libretro_mapper.cpp \
-	$(CORE_DIR)/libretro/libretro_mixer.cpp \
 	$(CORE_DIR)/libretro/libretro.cpp \
 	$(CORE_DIR)/src/cpu/callback.cpp \
 	$(CORE_DIR)/src/cpu/core_dyn_x86.cpp \
@@ -72,6 +71,7 @@ SOURCES_CXX := \
 	$(CORE_DIR)/src/hardware/joystick.cpp \
 	$(CORE_DIR)/src/hardware/keyboard.cpp \
 	$(CORE_DIR)/src/hardware/memory.cpp \
+	$(CORE_DIR)/src/hardware/mixer.cpp \
 	$(CORE_DIR)/src/hardware/mpu401.cpp \
 	$(CORE_DIR)/src/hardware/pci_bus.cpp \
 	$(CORE_DIR)/src/hardware/pcspeaker.cpp \

@@ -136,7 +136,7 @@ extern struct retro_midi_interface *retro_midi_interface;
 static std::string loadPath;
 static std::string gamePath;
 static std::string configPath;
-static bool dosbox_exit;
+bool dosbox_exit;
 static bool frontend_exit;
 static bool is_restarting = false;
 

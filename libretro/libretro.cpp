@@ -965,8 +965,11 @@ static void start_dosbox(void)
     dosbox_initialiazed = false;
 
     /* Init the configuration system and add default values */
-
     DOSBOX_Init();
+
+    /* Load config */
+    if(!configPath.empty())
+        control->ParseConfigFile(configPath.c_str());
 
     check_variables();
     control->Init();

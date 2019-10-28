@@ -48,45 +48,6 @@ extern "C" {
  * - Will be used as a fallback for any missing entries in
  *   frontend language definition */
 
-/*
-struct retro_variable vars_advanced[] = {
-#if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
-    { "dosbox_svn_cpu_core",                "CPU core; auto|dynamic|normal|simple" },
-#else
-    { "dosbox_svn_cpu_core",                "CPU core; auto|normal|simple" },
-#endif
-    { "dosbox_svn_cpu_type",                "CPU type; auto|386|386_slow|486|486_slow|pentium_slow|386_prefetch" },
-    { "dosbox_svn_cpu_cycles_mode",         "CPU cycle mode; auto|fixed|max" },
-    { "dosbox_svn_cpu_cycles_multiplier",   "CPU cycle multiplier; 1000|10000|100000|100" },
-    { "dosbox_svn_cpu_cycles",              "CPU cycles; 1|2|3|4|5|6|7|8|9" },
-    { "dosbox_svn_cpu_cycles_multiplier_fine",
-                                            "CPU fine cycles multiplier; 1000|1|10|100" },
-    { "dosbox_svn_cpu_cycles_fine",         "CPU fine cycles; 1|2|3|4|5|6|7|9" },
-    { "dosbox_svn_scaler",                  "Video scaler; none|normal2x|normal3x|advmame2x|advmame3x|advinterp2x|advinterp3x|hq2x|hq3x|2xsai|super2xsai|supereagle|tv2x|tv3x|rgb2x|rgb3x|scan2x|scan3x" },
-    { "dosbox_svn_use_native_refresh",      "Refresh rate switching; false|true"},
-    { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
-    { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; enable|disable" },
-    { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
-    { "dosbox_svn_mouse_speed_factor",      "Mouse speed; 1.00|1.25|1.50|1.75|2.00|2.25|2.50|2.75|3.00|3.25|3.50|3.75|4.00|4.25|4.50|4.75|5.00|0.25|0.50|0.75" },
-    { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
-    { "dosbox_svn_sblaster_base",           "Sound Blaster base address; 220|240|260|280|2a0|2c0|2e0|300" },
-    { "dosbox_svn_sblaster_irq",            "Sound Blaster IRQ; 5|7|9|10|11|12|3" },
-    { "dosbox_svn_sblaster_dma",            "Sound Blaster DMA; 1|3|5|6|7|0" },
-    { "dosbox_svn_sblaster_hdma",           "Sound Blaster High DMA; 7|0|1|3|5|6" },
-    { "dosbox_svn_sblaster_opl_mode",       "Sound Blaster OPL Mode; auto|cms|opl2|dualopl2|opl3|opl3gold|none" },
-    { "dosbox_svn_sblaster_opl_emu",        "Sound Blaster OPL Provider; default|compat|fast|mame" },
-    { "dosbox_svn_midi",                    "Enable MIDI passthrough; false|true" },
-    { "dosbox_svn_pcspeaker",               "Enable PC-Speaker; false|true" },
-    { "dosbox_svn_tandy",                   "Enable Tandy Sound System (restart); auto|on|off" },
-    { "dosbox_svn_disney",                  "Enable Disney Sound Source (restart); false|true" },
-#if defined(C_IPX)
-    { "dosbox_svn_ipx",                     "Enable IPX over UDP; false|true" },
-#endif
-    { NULL, NULL },
-};
-*/
-
-
 struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_use_options",
@@ -101,7 +62,7 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_adv_options",
-      "Core advanced options (restart)",
+      "Core: Enable advanced options",
       "Enable advanced options that are not required for normal operation.",
       {
          { "true", NULL },
@@ -112,8 +73,8 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_save_overlay",
-      "System: Enable overlay file system (restart)",
-      "Enable overlay file system to redirect filesystem changes to the save directory. Disable if you have problems starting some games.",
+      "Core: Enable overlay file system",
+      "Enable overlay file system to redirect filesystem changes to the save directory. Disable if you have problems starting some games. (Requires a restart).",
       {
          { "true", NULL },
          { "false", NULL },
@@ -123,29 +84,29 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_machine_type",
-      "Core: Emulated machine (restart)",
-      "The type of machine that DOSBox will try to emulate.",
+      "System: Emulated machine",
+      "The type of machine that DOSBox will try to emulate. (Requires a restart).",
       {
-         { "hercules", NULL },
-         { "cga", NULL },
-         { "tandy", NULL },
-         { "pcjr", NULL },
-         { "ega", NULL },
-         { "vgaonly", NULL },
-         { "svga_s3", NULL },
-         { "svga_et3000", NULL },
-         { "svga_et4000", NULL },
-         { "svga_paradise", NULL },
-         { "vesa_nolfb", NULL },
-         { "vesa_oldvbe", NULL },
+         { "hercules", "Hercules (Hercules Graphics Card)" },
+         { "cga", "CGA (Color Graphics Adapter)" },
+         { "tandy", "Tandy (Tandy Graphics Adapter" },
+         { "pcjr", "PCjr" },
+         { "ega", "EGA (Enhanced Graphics Adapter" },
+         { "vgaonly", "VGA (Video Graphics Array)" },
+         { "svga_s3", "SVGA (Super Video Graphics Array) (S3 Trio64)" },
+         { "svga_et3000", "SVGA (Super Video Graphics Array) (Tseng Labs ET3000)" },
+         { "svga_et4000", "SVGA (Super Video Graphics Array) (Tseng Labs ET4000)" },
+         { "svga_paradise", "SVGA (Super Video Graphics Array) (Paradise PVGA1A)" },
+         { "vesa_nolfb", "SVGA (Super Video Graphics Array) (S3 Trio64 no-line buffer hack)" },
+         { "vesa_oldvbe", "SVGA (Super Video Graphics Array) (S3 Trio64 VESA 1.3)" },
          { NULL, NULL },
       },
       "svga_s3"
    },
    {
       "dosbox_svn_memory_size",
-      "System: Memory size (restart)",
-      "The amount of memory that the emulated machine has.",
+      "System: Memory size",
+      "The amount of memory that the emulated machine has. (Requires a restart).",
       {
          { "4", NULL },
          { "8", NULL },
@@ -163,15 +124,19 @@ struct retro_core_option_definition option_defs_us[] = {
       "dosbox_svn_cpu_core",
       "System: CPU core",
 #if defined(C_DYNREC)
-      "CPU core used for emulation. Auto will switch to dynamic if appropiate. Dynamic core DYNREC available",
+      "CPU core used for emulation. Auto will switch to dynamic if appropiate. Dynamic core DYNREC available.",
 #else
-      "CPU core used for emulation. Auto will switch to dynamic if appropiate. Dynamic core DYNAMIC_X86 available",
+      "CPU core used for emulation. Auto will switch to dynamic if appropiate. Dynamic core DYNAMIC_X86 available.",
 #endif
       {
-         { "auto", NULL },
-         { "dynamic", NULL },
-         { "normal", NULL },
-         { "simple", NULL },
+         { "auto", "auto (real-mode games use normal, protected-mode games use dynamic if available)" },
+#if defined(C_DYNREC)
+         { "dynamic", "dynamic (dynarec using dynrec implementation)" },
+#else
+         { "dynamic", "dynamic (dynarec using dynamic_x86 implementation)" },
+#endif
+         { "normal", "normal (interpreter)" },
+         { "simple", "simple (interpreter optimized for old real-mode games)" },
          { NULL, NULL },
       },
       "auto"
@@ -182,9 +147,8 @@ struct retro_core_option_definition option_defs_us[] = {
       "System: CPU core",
       "CPU core used for emulation. Theare are no dynamic cores available on this platform.",
       {
-         { "auto", NULL },
-         { "normal", NULL },
-         { "simple", NULL },
+         { "normal", "normal (interpreter)" },
+         { "simple", "simple (interpreter optimized for old real-mode games)" },
          { NULL, NULL },
       },
       "auto"
@@ -195,13 +159,13 @@ struct retro_core_option_definition option_defs_us[] = {
       "System: CPU type",
       "Emulated CPU type. Auto is the fastest choice.",
       {
-         { "auto", NULL },
-         { "386", NULL },
-         { "386_slow", NULL },
-         { "386_prefetch", NULL },
-         { "486", NULL },
-         { "486_slow", NULL },
-         { "pentium_slow", NULL },
+         { "auto", "auto (fastest choice)" },
+         { "386", "386" },
+         { "386_slow", "386 (slow)" },
+         { "386_prefetch", "386 (prefetch queue emulation)" },
+         { "486", "486" },
+         { "486_slow", "486 (slow)" },
+         { "pentium_slow", "pentium (slow)" },
          { NULL, NULL },
       },
       "auto"
@@ -211,9 +175,9 @@ struct retro_core_option_definition option_defs_us[] = {
       "System: CPU cycles mode",
       "Method to determine the amount of CPU cycles that DOSBox tries to emulate per milisecond. Use auto unless you have performance problems. A value that is too high for your system may cause slowdown.",
       {
-         { "auto", NULL },
-         { "fixed", NULL },
-         { "max", NULL },
+         { "auto", "auto (real-mode games use fixed cycles 3000, protected-mode games use max)" },
+         { "fixed", "fixed (set emulated CPU speed to a amount of cycles" },
+         { "max", "max (sets cycles to default value of the host CPU)" }, /*TO-DO: add limit*/
          { NULL, NULL },
       },
       "auto"
@@ -258,28 +222,10 @@ struct retro_core_option_definition option_defs_us[] = {
          { "100", NULL },
          { NULL, NULL },
       },
-      "1000"
+      "100"
    },
    {
-      "dosbox_svn_cpu_cycles",
-      "System: Fine CPU cycles value",
-      "Value for fine CPU cycles tuning.",
-      {
-         { "1", NULL },
-         { "2", NULL },
-         { "3", NULL },
-         { "4", NULL },
-         { "5", NULL },
-         { "6", NULL },
-         { "7", NULL },
-         { "8", NULL },
-         { "9", NULL },
-         { NULL, NULL },
-      },
-      "1"
-   },
-   {
-      "dosbox_svn_cpu_cycles",
+      "dosbox_svn_cpu_cycles_fine",
       "System: Fine CPU cycles value",
       "Value for fine CPU cycles tuning.",
       {
@@ -325,7 +271,7 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_use_native_refresh",
-      "Video: Enable efresh rate switching",
+      "Video: Enable refresh rate switching",
       "Enable refresh rate switching to match running content. This is a expensive operation and may cause the screen to flicker.",
       {
          { "false", NULL },
@@ -409,37 +355,161 @@ struct retro_core_option_definition option_defs_us[] = {
          { "sbpro2", "SoundBlaster Pro 2" },
          { "sb16", "SoundBlaster 16" },
          { "gb", "GameBlaster" },
+         { "none", "none" },
          { NULL, NULL },
       },
       "sb16"
    },
+   {
+      "dosbox_svn_sblaster_base",
+      "Sound: SoundBlaster Base Address",
+      "The I/O address for the emulated SoundBlaster card.",
+      {
+         { "220", NULL },
+         { "240", NULL },
+         { "260", NULL },
+         { "280", NULL },
+         { "2a0", NULL },
+         { "2c0", NULL },
+         { "2e0", NULL },
+         { "300", NULL },
+         { NULL, NULL },
+      },
+      "220"
+   },
+   {
+      "dosbox_svn_sblaster_irq",
+      "Sound: SoundBlaster IRQ Number",
+      "The IRQ number for the emulated SoundBlaster card.",
+      {
+         { "3", NULL },
+         { "5", NULL },
+         { "7", NULL },
+         { "9", NULL },
+         { "10", NULL },
+         { "11", NULL },
+         { "12", NULL },
+         { NULL, NULL },
+      },
+      "7"
+   },
+   {
+      "dosbox_svn_sblaster_dma",
+      "Sound: SoundBlaster DMA Number",
+      "The DMA number for the emulated SoundBlaster card.",
+      {
+         { "1", NULL },
+         { "3", NULL },
+         { "5", NULL },
+         { "6", NULL },
+         { "7", NULL },
+         { "0", NULL },
+         { NULL, NULL },
+      },
+      "1"
+   },
+   {
+      "dosbox_svn_sblaster_hdma",
+      "Sound: SoundBlaster High DMA Number",
+      "The High DMA number for the emulated SoundBlaster card.",
+      {
+         { "1", NULL },
+         { "3", NULL },
+         { "5", NULL },
+         { "6", NULL },
+         { "7", NULL },
+         { "0", NULL },
+         { NULL, NULL },
+      },
+      "7"
+   },
+   {
+      "dosbox_svn_sblaster_opl_mode",
+      "Sound: SoundBlaster OPL mode",
+      "The SoundBlaster emulated OPL mode. All modes are Adlib compatible except cms.",
+      {
+         { "auto", "auto (select based on the SoundBlaster type)" },
+         { "cms", "CMS (Creative Music System / GameBlaster)" },
+         { "opl2", "OPL-2 (AdLib / OPL-2 / Yamaha 3812)" },
+         { "dualopl2", "Dual OPL-2 (Dual OPL-2 used by SoundBlaster Pro 1.0 for stereo sound)" },
+         { "opl3", "OPL-3 (AdLib / OPL-3 / Yamaha YMF262)" },
+         { "opl3gold", "OPL-3 Gold (AdLib Gold / OPL-3 / Yamaha YMF262)" },
+         { "none", NULL },
+         { NULL, NULL },
+      },
+      "auto"
+   },
+   {
+      "dosbox_svn_sblaster_opl_emu",
+      "Sound: SoundBlaster OPL provider",
+      "Provider for the OPL emulation. Compat might provide the best quality.",
+      {
+         { "default", NULL },
+         { "compat", NULL },
+         { "fast", NULL },
+         { "mame", NULL },
+         { NULL, NULL },
+      },
+      "default"
+   },
+   {
+      "dosbox_svn_midi",
+      "Sound: Enable libretro MIDI passthrough",
+      "Enable libretro MIDI passthrough.",
+      {
+         { "false", NULL },
+         { "true", NULL },
+         { NULL, NULL },
+      },
+      "false"
+   },
+   {
+      "dosbox_svn_pcspeaker",
+      "Sound: Enable PC speaker",
+      "Enable PC speaker emulation.",
+      {
+         { "false", NULL },
+         { "true", NULL },
+         { NULL, NULL },
+      },
+      "false"
+   },
+   {
+      "dosbox_svn_tandy",
+      "Sound: Enable Tandy Sound System",
+      "Enable Tandy Sound System Emulation. Auto only works if machine is set to tandy.",
+      {
+         { "auto", NULL },
+         { "on", "true" },
+         { "off", "false" },
+         { NULL, NULL },
+      },
+      "off"
+   },
+   {
+      "dosbox_svn_disney",
+      "Sound: Enable Disney Sound Source",
+      "Enable Disney Sound Source Emulation.",
+      {
+         { "off", "false" },
+         { "on", "true" },
+         { NULL, NULL },
+      },
+      "off"
+   },
+   {
+      "dosbox_svn_ipx",
+      "Network: Enable IPX",
+      "Enable IPX over UDP tunneling.",
+      {
+         { "false", NULL },
+         { "true", NULL },
+         { NULL, NULL },
+      },
+      "false"
+   },
    { NULL, NULL, NULL, {{0}}, NULL },
 };
-
-
-
-
-/*
-    { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
-    { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; enable|disable" },
-    { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
-    { "dosbox_svn_mouse_speed_factor",      "Mouse speed; 1.00|1.25|1.50|1.75|2.00|2.25|2.50|2.75|3.00|3.25|3.50|3.75|4.00|4.25|4.50|4.75|5.00|0.25|0.50|0.75" },
-    { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
-    { "dosbox_svn_sblaster_base",           "Sound Blaster base address; 220|240|260|280|2a0|2c0|2e0|300" },
-    { "dosbox_svn_sblaster_irq",            "Sound Blaster IRQ; 5|7|9|10|11|12|3" },
-    { "dosbox_svn_sblaster_dma",            "Sound Blaster DMA; 1|3|5|6|7|0" },
-    { "dosbox_svn_sblaster_hdma",           "Sound Blaster High DMA; 7|0|1|3|5|6" },
-    { "dosbox_svn_sblaster_opl_mode",       "Sound Blaster OPL Mode; auto|cms|opl2|dualopl2|opl3|opl3gold|none" },
-    { "dosbox_svn_sblaster_opl_emu",        "Sound Blaster OPL Provider; default|compat|fast|mame" },
-    { "dosbox_svn_midi",                    "Enable MIDI passthrough; false|true" },
-    { "dosbox_svn_pcspeaker",               "Enable PC-Speaker; false|true" },
-    { "dosbox_svn_tandy",                   "Enable Tandy Sound System (restart); auto|on|off" },
-    { "dosbox_svn_disney",                  "Enable Disney Sound Source (restart); false|true" },
-#if defined(C_IPX)
-    { "dosbox_svn_ipx",                     "Enable IPX over UDP; false|true" },
-#endif
-*/
-
 
 /*
  ********************************
@@ -451,7 +521,7 @@ struct retro_core_option_definition option_defs_us[] = {
 struct retro_core_option_definition *option_defs_intl[RETRO_LANGUAGE_LAST] = {
    option_defs_us, /* RETRO_LANGUAGE_ENGLISH */
    NULL,           /* RETRO_LANGUAGE_JAPANESE */
-   NULL, /* RETRO_LANGUAGE_FRENCH */
+   NULL,           /* RETRO_LANGUAGE_FRENCH */
    NULL,           /* RETRO_LANGUAGE_SPANISH */
    NULL,           /* RETRO_LANGUAGE_GERMAN */
    NULL,           /* RETRO_LANGUAGE_ITALIAN */
@@ -467,7 +537,7 @@ struct retro_core_option_definition *option_defs_intl[RETRO_LANGUAGE_LAST] = {
    NULL,           /* RETRO_LANGUAGE_VIETNAMESE */
    NULL,           /* RETRO_LANGUAGE_ARABIC */
    NULL,           /* RETRO_LANGUAGE_GREEK */
-   NULL, /* RETRO_LANGUAGE_TURKISH */
+   NULL,           /* RETRO_LANGUAGE_TURKISH */
 };
 #endif
 
@@ -502,7 +572,7 @@ static INLINE void libretro_set_core_options(retro_environment_t environ_cb)
       core_options_intl.local = NULL;
 
       if (environ_cb(RETRO_ENVIRONMENT_GET_LANGUAGE, &language) &&
-          (language < RETRO_LANGUAGE_LAST) && (language != RETRO_LANGUAGE_ENGLISH))
+            (language < RETRO_LANGUAGE_LAST) && (language != RETRO_LANGUAGE_ENGLISH))
          core_options_intl.local = option_defs_intl[language];
 
       environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL, &core_options_intl);

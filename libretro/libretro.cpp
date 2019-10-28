@@ -115,6 +115,7 @@ bool emulated_mouse;
 
 /* core option variables */
 static bool use_core_options;
+static bool adv_core_options;
 static bool variable_refresh;
 
 /* directories */
@@ -587,48 +588,6 @@ static struct retro_disk_control_callback disk_interface = {
 
 #define MOUSE_SPEED_FACTORS "1.00|1.25|1.50|1.75|2.00|2.25|2.50|2.75|3.00|3.25|3.50|3.75|4.00|4.25|4.50|4.75|5.00|0.25|0.50|0.75"
 
-struct retro_variable vars_advanced[] = {
-    { "dosbox_svn_use_options",             "Enable core-options (restart); true|false"},
-    { "dosbox_svn_save_overlay",            "Redirect writes to save directory (restart)(experimental); false|true" },
-    { "dosbox_svn_machine_type",            "Emulated machine (restart); svga_s3|svga_et3000|svga_et4000|svga_paradise|vesa_nolfb|vesa_oldvbe|hercules|cga|tandy|pcjr|ega|vgaonly" },
-    { "dosbox_svn_memory_size",             "Memory size (restart); 16|17|18|19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48|49|50|51|52|53|54|55|56|57|58|59|60|61|62|63|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15" },
-#if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
-    { "dosbox_svn_cpu_core",                "CPU core; auto|dynamic|normal|simple" },
-#else
-    { "dosbox_svn_cpu_core",                "CPU core; auto|normal|simple" },
-#endif
-    { "dosbox_svn_cpu_type",                "CPU type; auto|386|386_slow|486|486_slow|pentium_slow|386_prefetch" },
-    { "dosbox_svn_cpu_cycles_mode",         "CPU cycle mode; auto|fixed|max" },
-    { "dosbox_svn_cpu_cycles_multiplier",   "CPU cycle multiplier; 1000|10000|100000|100" },
-    { "dosbox_svn_cpu_cycles",              "CPU cycles; 1|2|3|4|5|6|7|8|9" },
-    { "dosbox_svn_cpu_cycles_multiplier_fine",
-                                            "CPU fine cycles multiplier; 1000|1|10|100" },
-    { "dosbox_svn_cpu_cycles_fine",         "CPU fine cycles; 1|2|3|4|5|6|7|9" },
-    { "dosbox_svn_scaler",                  "Video scaler; none|normal2x|normal3x|advmame2x|advmame3x|advinterp2x|advinterp3x|hq2x|hq3x|2xsai|super2xsai|supereagle|tv2x|tv3x|rgb2x|rgb3x|scan2x|scan3x" },
-    { "dosbox_svn_use_native_refresh",      "Refresh rate switching; false|true"},
-    { "dosbox_svn_joystick_timed",          "Joystick timed intervals; true|false" },
-    { "dosbox_svn_emulated_mouse",          "Gamepad emulated mouse; true|false" },
-    { "dosbox_svn_emulated_mouse_deadzone", "Gamepad emulated deadzone; 5%|10%|15%|20%|25%|30%|0%" },
-    { "dosbox_svn_mouse_speed_factor_x",    "Horizontal mouse speed; " MOUSE_SPEED_FACTORS },
-    { "dosbox_svn_mouse_speed_factor_y",    "Vertical mouse speed; " MOUSE_SPEED_FACTORS },
-    { "dosbox_svn_sblaster_type",           "Sound Blaster type; sb16|sb1|sb2|sbpro1|sbpro2|gb|none" },
-    { "dosbox_svn_sblaster_base",           "Sound Blaster base address; 220|240|260|280|2a0|2c0|2e0|300" },
-    { "dosbox_svn_sblaster_irq",            "Sound Blaster IRQ; 5|7|9|10|11|12|3" },
-    { "dosbox_svn_sblaster_dma",            "Sound Blaster DMA; 1|3|5|6|7|0" },
-    { "dosbox_svn_sblaster_hdma",           "Sound Blaster High DMA; 7|0|1|3|5|6" },
-    { "dosbox_svn_sblaster_opl_mode",       "Sound Blaster OPL Mode; auto|cms|opl2|dualopl2|opl3|opl3gold|none" },
-    { "dosbox_svn_sblaster_opl_emu",        "Sound Blaster OPL Provider; default|compat|fast|mame" },
-    { "dosbox_svn_midi",                    "Enable MIDI passthrough; false|true" },
-    { "dosbox_svn_pcspeaker",               "Enable PC-Speaker; false|true" },
-    { "dosbox_svn_tandy",                   "Enable Tandy Sound System (restart); auto|on|off" },
-    { "dosbox_svn_disney",                  "Enable Disney Sound Source (restart); false|true" },
-#if defined(C_IPX)
-    { "dosbox_svn_ipx",                     "Enable IPX over UDP; false|true" },
-#endif
-    { NULL, NULL },
-};
-
-
 void check_machine_variables()
 {
     struct retro_variable var = {0};
@@ -728,6 +687,51 @@ void check_variables()
 
     if (!use_core_options)
         return;
+
+
+    var.key = "dosbox_svn_adv_options";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
+        struct retro_core_option_display option_display;
+        adv_core_options = option_display.visible = strcmp(var.value, "true") == 0 ? true : false;
+
+		option_display.key     = "dosbox_svn_save_overlay";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_use_native_refresh";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_sblaster_base";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_sblaster_irq";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_sblaster_dma";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_sblaster_hdma";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_sblaster_opl_mode";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_sblaster_opl_emu";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_midi";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_tandy";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+		option_display.key     = "dosbox_svn_disney";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        option_display.key     = "dosbox_svn_ipx";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+    }
 
     var.key = "dosbox_svn_save_overlay";
     var.value = NULL;
@@ -846,7 +850,32 @@ void check_variables()
     var.key = "dosbox_svn_sblaster_type";
     var.value = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
         update_dosbox_variable("sblaster", "sbtype", var.value);
+
+        /* hide blaster options if sbtype is none */
+        struct retro_core_option_display option_display;
+        bool blaster = strcmp(var.value, "none") != 0 ? true : false;
+        option_display.visible = adv_core_options && blaster;
+
+        option_display.key     = "dosbox_svn_sblaster_base";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        option_display.key     = "dosbox_svn_sblaster_irq";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        option_display.key     = "dosbox_svn_sblaster_dma";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        option_display.key     = "dosbox_svn_sblaster_hdma";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        option_display.key     = "dosbox_svn_sblaster_opl_mode";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        option_display.key     = "dosbox_svn_sblaster_opl_emu";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+    }
 
     var.key = "dosbox_svn_pcspeaker";
     var.value = NULL;
@@ -870,61 +899,61 @@ void check_variables()
         update_dosbox_variable("ipx", "ipx", var.value);
 #endif
 
-        var.key = "dosbox_svn_sblaster_base";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "sbbase", var.value);
+    var.key = "dosbox_svn_sblaster_base";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable("sblaster", "sbbase", var.value);
 
-        var.key = "dosbox_svn_sblaster_irq";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "irq", var.value);
+    var.key = "dosbox_svn_sblaster_irq";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable("sblaster", "irq", var.value);
 
-        var.key = "dosbox_svn_sblaster_dma";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "dma", var.value);
+    var.key = "dosbox_svn_sblaster_dma";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable("sblaster", "dma", var.value);
 
-        var.key = "dosbox_svn_sblaster_hdma";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "hdma", var.value);
+    var.key = "dosbox_svn_sblaster_hdma";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable("sblaster", "hdma", var.value);
 
-        var.key = "dosbox_svn_sblaster_opl_mode";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "oplmode", var.value);
+    var.key = "dosbox_svn_sblaster_opl_mode";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable("sblaster", "oplmode", var.value);
 
-        var.key = "dosbox_svn_sblaster_opl_emu";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "oplemu", var.value);
+    var.key = "dosbox_svn_sblaster_opl_emu";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable("sblaster", "oplemu", var.value);
 
-        var.key = "dosbox_svn_tandy";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
-            update_dosbox_variable("speaker", "tandy", var.value);
+    var.key = "dosbox_svn_tandy";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
+        update_dosbox_variable("speaker", "tandy", var.value);
 
-        var.key = "dosbox_svn_disney";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
-        {
-            update_dosbox_variable("speaker", "disney", var.value);
-            if (!strcmp(var.value,"true"))
-                disney_init = true;
-            else
-                disney_init = false;
-        }
+    var.key = "dosbox_svn_disney";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
+    {
+        update_dosbox_variable("speaker", "disney", var.value);
+        if (!strcmp(var.value,"on"))
+            disney_init = true;
+        else
+            disney_init = false;
+    }
 
-        var.key = "dosbox_svn_use_native_refresh";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-        {
-            if (!strcmp(var.value,"true"))
-                variable_refresh = true;
-            else
-                variable_refresh = false;
-        }
+    var.key = "dosbox_svn_use_native_refresh";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
+        if (!strcmp(var.value,"true"))
+            variable_refresh = true;
+        else
+            variable_refresh = false;
+    }
 }
 
 static void leave_thread(Bitu)
@@ -1077,8 +1106,9 @@ void retro_set_environment(retro_environment_t cb)
     bool allow_no_game = true;
 
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allow_no_game);
-    cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars_advanced);
     cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
+
+    libretro_set_core_options(cb);
 
     static const struct retro_controller_description ports_default[] =
     {

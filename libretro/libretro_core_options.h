@@ -51,8 +51,8 @@ extern "C" {
 struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_use_options",
-      "Core: Enable options (restart)",
-      "Enable options. Disable in-case of using pre-generated configuration files.",
+      "Core: Enable options",
+      "Enable options. Disable in-case of using pre-generated configuration files (restart).",
       {
          { "true", NULL },
          { "false", NULL },
@@ -74,7 +74,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_save_overlay",
       "Core: Enable overlay file system",
-      "Enable overlay file system to redirect filesystem changes to the save directory. Disable if you have problems starting some games. (Requires a restart).",
+      "Enable overlay file system to redirect filesystem changes to the save directory. Disable if you have problems starting some games (restart).",
       {
          { "true", NULL },
          { "false", NULL },
@@ -85,7 +85,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_machine_type",
       "System: Emulated machine",
-      "The type of machine that DOSBox will try to emulate. (Requires a restart).",
+      "The type of machine that DOSBox will try to emulate (restart).",
       {
          { "hercules", "Hercules (Hercules Graphics Card)" },
          { "cga", "CGA (Color Graphics Adapter)" },
@@ -106,7 +106,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_memory_size",
       "System: Memory size",
-      "The amount of memory that the emulated machine has. (Requires a restart).",
+      "The amount of memory that the emulated machine has (restart).",
       {
          { "4", NULL },
          { "8", NULL },
@@ -283,7 +283,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_joystick_timed",
       "Input: Enable joystick timed intervals",
-      "Enable timed intervals for joystick axes. Experiment with this option if your joystick drifts.",
+      "Enable timed intervals for joystick axes. Experiment with this option if your joystick drifts (restart).",
       {
          { "false", NULL },
          { "true", NULL },
@@ -347,7 +347,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_type",
       "Sound: SoundBlaster type",
-      "Type of emulated SoundBlaster card.",
+      "Type of emulated SoundBlaster card (restart).",
       {
          { "sb1", "SoundBlaster 1.0" },
          { "sb2", "SoundBlaster 2.0" },
@@ -363,7 +363,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_base",
       "Sound: SoundBlaster Base Address",
-      "The I/O address for the emulated SoundBlaster card.",
+      "The I/O address for the emulated SoundBlaster card (restart).",
       {
          { "220", NULL },
          { "240", NULL },
@@ -380,7 +380,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_irq",
       "Sound: SoundBlaster IRQ Number",
-      "The IRQ number for the emulated SoundBlaster card.",
+      "The IRQ number for the emulated SoundBlaster card (restart).",
       {
          { "3", NULL },
          { "5", NULL },
@@ -396,7 +396,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_dma",
       "Sound: SoundBlaster DMA Number",
-      "The DMA number for the emulated SoundBlaster card.",
+      "The DMA number for the emulated SoundBlaster card (restart).",
       {
          { "1", NULL },
          { "3", NULL },
@@ -411,7 +411,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_hdma",
       "Sound: SoundBlaster High DMA Number",
-      "The High DMA number for the emulated SoundBlaster card.",
+      "The High DMA number for the emulated SoundBlaster card (restart).",
       {
          { "1", NULL },
          { "3", NULL },
@@ -426,7 +426,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_opl_mode",
       "Sound: SoundBlaster OPL mode",
-      "The SoundBlaster emulated OPL mode. All modes are Adlib compatible except cms.",
+      "The SoundBlaster emulated OPL mode. All modes are Adlib compatible except cms (restart).",
       {
          { "auto", "auto (select based on the SoundBlaster type)" },
          { "cms", "CMS (Creative Music System / GameBlaster)" },
@@ -442,7 +442,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_opl_emu",
       "Sound: SoundBlaster OPL provider",
-      "Provider for the OPL emulation. Compat might provide the best quality.",
+      "Provider for the OPL emulation. Compat might provide the best quality (restart).",
       {
          { "default", NULL },
          { "compat", NULL },

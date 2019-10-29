@@ -617,12 +617,6 @@ void check_variables()
         struct retro_core_option_display option_display;
         adv_core_options = option_display.visible = strcmp(var.value, "true") == 0 ? true : false;
 
-		option_display.key     = "dosbox_svn_save_overlay";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_use_native_refresh";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
 		option_display.key     = "dosbox_svn_sblaster_base";
         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
@@ -641,16 +635,10 @@ void check_variables()
 		option_display.key     = "dosbox_svn_sblaster_opl_emu";
         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
-		option_display.key     = "dosbox_svn_midi";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
 		option_display.key     = "dosbox_svn_tandy";
         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
 		option_display.key     = "dosbox_svn_disney";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-        option_display.key     = "dosbox_svn_ipx";
         environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
     }
 
@@ -763,11 +751,6 @@ void check_variables()
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
             update_dosbox_variable("sblaster", "sbbase", var.value);
-
-        var.key = "dosbox_svn_joystick_timed";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("joystick", "timed", var.value);
     }
 
     var.key = "dosbox_svn_sblaster_irq";
@@ -885,6 +868,11 @@ void check_variables()
     var.value = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
         update_dosbox_variable("render", "scaler", var.value);
+
+    var.key = "dosbox_svn_joystick_timed";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable("joystick", "timed", var.value);
 
     if (update_cycles)
     {

@@ -48,6 +48,31 @@ extern "C" {
  * - Will be used as a fallback for any missing entries in
  *   frontend language definition */
 
+#define MOUSE_SPEED_FACTORS \
+    { \
+        { "0.25", NULL }, \
+        { "0.50", NULL }, \
+        { "0.75", NULL }, \
+        { "1.00", NULL }, \
+        { "1.25", NULL }, \
+        { "1.50", NULL }, \
+        { "1.75", NULL }, \
+        { "2.00", NULL }, \
+        { "2.25", NULL }, \
+        { "2.50", NULL }, \
+        { "2.75", NULL }, \
+        { "3.00", NULL }, \
+        { "3.25", NULL }, \
+        { "3.50", NULL }, \
+        { "3.75", NULL }, \
+        { "4.00", NULL }, \
+        { "4.25", NULL }, \
+        { "4.50", NULL }, \
+        { "4.75", NULL }, \
+        { "5.00", NULL }, \
+        { NULL, NULL } \
+    }
+
 struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_use_options",
@@ -319,29 +344,17 @@ struct retro_core_option_definition option_defs_us[] = {
       "30%"
    },
    {
-      "dosbox_svn_mouse_speed_factor",
-      "Input: Gamepad emulated mouse speed",
-      "Speed of the gamepad emulated mouse. Experiment with this value if the cursor moves too fast or too slow with your gamepad.",
-      {
-         { "1.00", NULL },
-         { "1.25", NULL },
-         { "1.50", NULL },
-         { "1.75", NULL },
-         { "2.00", NULL },
-         { "2.25", NULL },
-         { "2.50", NULL },
-         { "2.75", NULL },
-         { "3.00", NULL },
-         { "3.25", NULL },
-         { "3.50", NULL },
-         { "3.75", NULL },
-         { "4.00", NULL },
-         { "4.25", NULL },
-         { "4.50", NULL },
-         { "4.75", NULL },
-         { "5.00", NULL },
-         { NULL, NULL },
-      },
+      "dosbox_svn_mouse_speed_factor_x",
+      "Input: Horizontal mouse sensitivity.",
+      "Experiment with this value if the mouse is too fast when moving left/right.",
+      MOUSE_SPEED_FACTORS,
+      "1.00"
+   },
+   {
+      "dosbox_svn_mouse_speed_factor_y",
+      "Input: Vertical mouse sensitivity.",
+      "Experiment with this value if the mouse is too fast when moving up/down.",
+      MOUSE_SPEED_FACTORS,
       "1.00"
    },
    {

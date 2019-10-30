@@ -129,6 +129,18 @@ struct retro_core_option_definition option_defs_us[] = {
       "svga_s3"
    },
    {
+      "dosbox_svn_machine_hercules_palette",
+      "System: Hercules color mode",
+      "The color scheme for hercules emulation.",
+      {
+         { "white", "Black & White" },
+         { "green", "Black & Green" },
+         { "amber", "Black & Amber" },
+         { NULL, NULL },
+      },
+      "white"
+   },
+   {
       "dosbox_svn_memory_size",
       "System: Memory size",
       "The amount of memory that the emulated machine has (restart).",

@@ -476,12 +476,15 @@ retro::CoreOptions retro::core_options {
         {
             "sblaster_opl_emu",
             "Sound: SoundBlaster OPL provider",
-            "Provider for the OPL emulation. Compat might provide the best quality.",
+            "\"Nuked OPL3\" is a cycle-accurate OPL3 (YMF262) emulator. It offers the best "
+                "quality, but is quite demanding on the CPU. \"Compat\" is the next best option. "
+                "It is less accurate, but also less demanding.",
             {
                 { "default" },
                 { "compat" },
                 { "fast" },
                 { "mame" },
+                { "nuked", "Nuked OPL3" },
             },
             "default"
         },

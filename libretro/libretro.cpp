@@ -592,7 +592,7 @@ static struct retro_disk_control_callback disk_interface = {
 void check_variables()
 {
     struct retro_variable var = {0};
-    static unsigned cycles, cycles_fine;
+    static unsigned cycles, cycles_fine, cycles_limit;
     static unsigned cycles_multiplier, cycles_multiplier_fine;
     static bool update_cycles = false;
     char   cycles_mode[12];
@@ -851,6 +851,33 @@ void check_variables()
         {
             snprintf(cycles_mode, sizeof(cycles_mode), "%s", var.value);
             update_cycles = true;
+
+            option_display.visible = strcmp(var.value, "fixed") == 0 ? true : false;
+
+            option_display.key     = "dosbox_svn_cpu_cycles";
+            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+            option_display.key     = "dosbox_svn_cpu_cycles_multiplier";
+            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+            option_display.key     = "dosbox_svn_cpu_cycles_fine";
+            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+            option_display.key     = "dosbox_svn_cpu_cycles_multiplier_fine";
+            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+            option_display.visible = strcmp(var.value, "max") == 0 ? true : false;
+
+            option_display.key     = "dosbox_svn_cpu_cycles_limit";
+            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+        }
+
+        var.key = "dosbox_svn_cpu_cycles_limit";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        {
+            cycles_limit = atoi(var.value);
+            update_cycles = true;
         }
 
         var.key = "dosbox_svn_cpu_cycles";
@@ -909,8 +936,14 @@ void check_variables()
         {
             if (!strcmp(cycles_mode, "fixed"))
             {
-                char s[8];
+                char s[32];
                 snprintf(s, sizeof(s), "%d", cycles * cycles_multiplier + cycles_fine * cycles_multiplier_fine);
+                update_dosbox_variable("cpu", "cycles", s);
+            }
+            else if (!strcmp(cycles_mode, "max"))
+            {
+                char s[32];
+                snprintf(s, sizeof(s), "%s %d%%", cycles_mode, cycles_limit);
                 update_dosbox_variable("cpu", "cycles", s);
             }
             else

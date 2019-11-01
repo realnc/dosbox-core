@@ -257,6 +257,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "1", NULL },
          { "10", NULL },
          { "100", NULL },
+         { "1000", NULL },
          { NULL, NULL },
       },
       "100"
@@ -266,6 +267,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "System: Fine CPU cycles value",
       "Value for fine CPU cycles tuning.",
       {
+         { "0", NULL },
          { "1", NULL },
          { "2", NULL },
          { "3", NULL },
@@ -278,6 +280,26 @@ struct retro_core_option_definition option_defs_us[] = {
          { NULL, NULL },
       },
       "1"
+   },
+   {
+      "dosbox_svn_cpu_cycles_limit",
+      "System: Max CPU cycles limit",
+      "Limit the maximum amount of CPU cycles used.",
+      {
+         { "10", "10%" },
+         { "20", "20%" },
+         { "30", "30%" },
+         { "40", "40%" },
+         { "50", "50%" },
+         { "60", "60%" },
+         { "70", "70%" },
+         { "80", "80%" },
+         { "90", "90%" },
+         { "100", "100%" },
+         { "105", "105%" },
+         { NULL, NULL },
+      },
+      "100"
    },
    {
       "dosbox_svn_scaler",

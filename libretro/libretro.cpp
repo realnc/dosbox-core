@@ -102,7 +102,8 @@ float mouse_speed_factor_y = 1.0;
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void * userdata, uint8_t *stream, int len);
 
-extern Config * control;
+extern Config* control;
+extern Bit8u herc_pal;
 MachineType machine = MCH_VGA;
 SVGACards svgaCard = SVGA_None;
 
@@ -722,7 +723,7 @@ void check_variables()
     }
     else
     {
-
+        /* hercules core options */
         bool hercules = machine == MCH_HERC;
         option_display.visible = adv_core_options && hercules;
 
@@ -733,22 +734,30 @@ void check_variables()
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && machine == MCH_HERC)
         {
-            if (strcmp(var.value, "white") == 0)
-            {
-                VGA_DAC_SetEntry(0x7,0x2a,0x2a,0x2a);
-                VGA_DAC_SetEntry(0xf,0x3f,0x3f,0x3f);
-            }
-            else if (strcmp(var.value, "green") == 0)
-            {
-                VGA_DAC_SetEntry(0x7,0x34,0x20,0x00);
-                VGA_DAC_SetEntry(0xf,0x3f,0x34,0x00);
-            }
-            else
-            {
-                VGA_DAC_SetEntry(0x7,0x00,0x26,0x00);
-                VGA_DAC_SetEntry(0xf,0x00,0x3f,0x00);
-            }
+            herc_pal = atoi(var.value);
+            Herc_Palette();
+            VGA_DAC_CombineColor(1,7);
         }
+
+        /* cga core options */
+        bool cga = machine == MCH_CGA;
+        option_display.visible = adv_core_options && cga;
+
+        option_display.key     = "dosbox_svn_machine_cga_composite_mode";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        option_display.key     = "dosbox_svn_machine_cga_model";
+        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+        var.key = "dosbox_svn_machine_cga_composite_mode";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && machine == MCH_CGA)
+            CGA_Composite_Mode(atoi(var.value));
+
+        var.key = "dosbox_svn_machine_cga_model";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && machine == MCH_CGA)
+            CGA_Model(var.value == 0 ? true : false);
 
         var.key = "dosbox_svn_sblaster_type";
         var.value = NULL;

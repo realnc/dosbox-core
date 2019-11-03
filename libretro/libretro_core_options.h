@@ -133,12 +133,35 @@ struct retro_core_option_definition option_defs_us[] = {
       "System: Hercules color mode",
       "The color scheme for hercules emulation.",
       {
-         { "white", "Black & White" },
-         { "green", "Black & Green" },
-         { "amber", "Black & Amber" },
+         { "0", "black & white" },
+         { "1", "black & amber" },
+         { "2", "black & green" },
          { NULL, NULL },
       },
-      "white"
+      "0"
+   },
+   {
+      "dosbox_svn_machine_cga_composite_mode",
+      "System: CGA composite mode toggle",
+      "Enable or disable CGA composite mode.",
+      {
+         { "0", "auto" },
+         { "1", "true" },
+         { "2", "false" },
+         { NULL, NULL },
+      },
+      "0"
+   },
+   {
+      "dosbox_svn_machine_cga_model",
+      "System: CGA model",
+      "They type of CGA model in the emulated system.",
+      {
+         { "0", "late" },
+         { "1", "early" },
+         { NULL, NULL },
+      },
+      "0"
    },
    {
       "dosbox_svn_memory_size",

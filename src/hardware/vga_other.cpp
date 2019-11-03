@@ -181,7 +181,11 @@ static bool new_cga = 0;
 
 static Bit8u cga16_val = 0;
 static void update_cga16_color(void);
+#ifndef __LIBRETRO__
 static Bit8u herc_pal = 0;
+#else
+Bit8u herc_pal = 0;
+#endif
 
 static void cga16_color_select(Bit8u val) {
 	cga16_val = val;
@@ -424,15 +428,31 @@ static void CGAModel(bool pressed) {
 	update_cga16_color();
 	LOG_MSG("%s model CGA selected", new_cga ? "Late" : "Early");
 }
- 
+
+#ifdef __LIBRETRO__
+void CGA_Model(bool model)
+{
+	new_cga = model;
+	update_cga16_color();
+}
+
+void CGA_Composite_Mode(Bitu mode) {
+	cga_comp = mode;
+	if (vga.tandy.mode_control & 0x2)
+		write_cga(0x3d8,vga.tandy.mode_control,1);
+	update_cga16_color();
+}
+#endif
 static void Composite(bool pressed) {
-	if (!pressed) return;
+		if (!pressed) return;
 	if (++cga_comp>2) cga_comp=0;
 	LOG_MSG("Composite output: %s",(cga_comp==0)?"auto":((cga_comp==1)?"on":"off"));
 	// switch RGB and Composite if in graphics mode
 	if (vga.tandy.mode_control & 0x2)
 		write_cga(0x3d8,vga.tandy.mode_control,1);
 }
+
+
 
 static void tandy_update_palette() {
 	// TODO mask off bits if needed
@@ -692,8 +712,8 @@ static void CycleHercPal(bool pressed) {
 	Herc_Palette();
 	VGA_DAC_CombineColor(1,7);
 }
-	
-void Herc_Palette(void) {	
+
+void Herc_Palette(void) {
 	switch (herc_pal) {
 	case 0:	// White
 		VGA_DAC_SetEntry(0x7,0x2a,0x2a,0x2a);

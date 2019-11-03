@@ -409,6 +409,13 @@ typedef struct {
 	VGA_LFB lfb;
 } VGA_Type;
 
+#ifdef __LIBRETRO__
+/* CGA Composite Mode function */
+void CGA_Composite_Mode(Bitu);
+
+/* CGA Model function */
+void CGA_Model(bool);
+#endif
 
 /* Hercules Palette function */
 void Herc_Palette(void);

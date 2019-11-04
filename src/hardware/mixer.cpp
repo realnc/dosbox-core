@@ -24,6 +24,7 @@
 
 #ifdef __LIBRETRO__
 #include <stdlib.h>
+#include "libretro_dosbox.h"
 #endif
 #include <string.h>
 #include <sys/types.h>
@@ -418,7 +419,8 @@ static inline bool Mixer_irq_important(void) {
 	 * non stuttering audo */
 	return (ticksLocked || (CaptureState & (CAPTURE_WAVE|CAPTURE_VIDEO)));
 #else
-	return (ticksLocked);
+	/* In synced mode, prefer non stuttering audio */
+	return ticksLocked && core_timing != CORE_TIMING_SYNCED;
 #endif
 }
 

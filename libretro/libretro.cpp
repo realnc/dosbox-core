@@ -93,7 +93,6 @@ cothread_t emuThread;
 bool autofire;
 bool dosbox_initialiazed = false;
 bool midi_enable = false;
-bool fast_forward = false;
 
 unsigned deadzone;
 float mouse_speed_factor_x = 1.0;
@@ -117,7 +116,7 @@ bool emulated_mouse;
 /* core option variables */
 static bool use_core_options;
 static bool adv_core_options;
-static bool variable_refresh;
+CoreTimingMethod core_timing = CORE_TIMING_UNSYNCED;
 
 /* directories */
 std::string retro_save_directory;
@@ -144,11 +143,12 @@ static bool is_restarting = false;
 
 /* video variables */
 extern Bit8u RDOSGFXbuffer[1024*768*4];
+extern Bit8u RDOSGFXhaveFrame[sizeof(RDOSGFXbuffer)];
 extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 extern unsigned RDOSGFXcolorMode;
-extern Bit8u RDOSGFXhaveFrame[sizeof(RDOSGFXbuffer)];
 unsigned currentWidth, currentHeight;
-float currentFPS = 60.0f;
+#define DEFAULT_FPS 60.0f
+float currentFPS = DEFAULT_FPS;
 
 /* audio variables */
 static uint8_t audioData[829 * 4]; // 49716hz max
@@ -590,6 +590,54 @@ static struct retro_disk_control_callback disk_interface = {
     disk_add_image_index,
 };
 
+static void leave_thread(Bitu)
+{
+    MIXER_CallBack(0, audioData, samplesPerFrame * 4);
+    co_switch(mainThread);
+
+    if (core_timing != CORE_TIMING_SYNCED)
+        /* Schedule the next frontend interrupt */
+        PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+}
+
+static void update_gfx_mode(bool change_fps)
+{
+    const float old_fps = currentFPS;
+    struct retro_system_av_info new_av_info;
+    bool cb_error = false;
+    retro_get_system_av_info(&new_av_info);
+
+    new_av_info.geometry.base_width = RDOSGFXwidth;
+    new_av_info.geometry.base_height = RDOSGFXheight;
+
+    if (change_fps)
+    {
+        const float new_fps = (core_timing == CORE_TIMING_SYNCED || core_timing == CORE_TIMING_MATCH_FPS)
+                              ? render.src.fps
+                              : DEFAULT_FPS;
+
+        new_av_info.timing.fps = new_fps;
+        new_av_info.timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
+        cb_error = !environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
+        if (cb_error && log_cb)
+            log_cb(RETRO_LOG_WARN, "[dosbox] SET_SYSTEM_AV_INFO failed\n");
+        currentFPS = new_fps;
+    }
+    else
+    {
+        cb_error = !environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
+        if (cb_error && log_cb)
+            log_cb(RETRO_LOG_WARN, "[dosbox] SET_GEOMETRY failed\n");
+    }
+
+    if (!cb_error && log_cb)
+        log_cb(RETRO_LOG_INFO,"[dosbox] resolution changed %dx%d @ %.3fHz => %dx%d @ %.3fHz\n",
+               currentWidth, currentHeight, old_fps, RDOSGFXwidth, RDOSGFXheight, currentFPS);
+
+    currentWidth = RDOSGFXwidth;
+    currentHeight = RDOSGFXheight;
+}
+
 void check_variables()
 {
     struct retro_variable var = {0};
@@ -607,6 +655,33 @@ void check_variables()
             use_core_options = true;
         else
             use_core_options = false;
+    }
+
+    var.key = "dosbox_svn_core_timing";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+    {
+        CoreTimingMethod old_timing = core_timing;
+
+        if (strcmp(var.value, "synced") == 0)
+            core_timing = CORE_TIMING_SYNCED;
+        else if (strcmp(var.value, "match_fps") == 0)
+            core_timing = CORE_TIMING_MATCH_FPS;
+        else
+            core_timing = CORE_TIMING_UNSYNCED;
+
+        if (dosbox_initialiazed)
+        {
+            if (old_timing == CORE_TIMING_SYNCED && core_timing != CORE_TIMING_SYNCED)
+            {
+                DOSBOX_UnlockSpeed(false);
+                PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+            }
+            if (old_timing != CORE_TIMING_SYNCED && core_timing == CORE_TIMING_SYNCED)
+                DOSBOX_UnlockSpeed(true);
+            if (old_timing != CORE_TIMING_UNSYNCED && core_timing == CORE_TIMING_UNSYNCED)
+                update_gfx_mode(true);
+        }
     }
 
     if (!use_core_options)
@@ -993,26 +1068,7 @@ void check_variables()
             else
                 disney_init = false;
         }
-
-        var.key = "dosbox_svn_use_native_refresh";
-        var.value = NULL;
-        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-        {
-            if (!strcmp(var.value,"true"))
-                variable_refresh = true;
-            else
-                variable_refresh = false;
-        }
     }
-}
-
-static void leave_thread(Bitu)
-{
-    MIXER_CallBack(0, audioData, samplesPerFrame * 4);
-    co_switch(mainThread);
-
-    /* Schedule the next frontend interrupt */
-    PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
 }
 
 static void start_dosbox(void)
@@ -1052,8 +1108,12 @@ static void start_dosbox(void)
                 retro_midi_interface ? "initialized" : "unavailable\n");
     }
 
-    /* Schedule the next frontend interrupt */
-    PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+    if (core_timing == CORE_TIMING_SYNCED)
+        /* In synced mode, frontend takes care of timing, not dosbox */
+        DOSBOX_UnlockSpeed(true);
+    else
+        /* When not synced, schedule the first frontend interrupt */
+        PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
 
     try
     {
@@ -1366,8 +1426,11 @@ void retro_run (void)
         return;
     }
 
-    environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward);
-    DOSBOX_UnlockSpeed(fast_forward);
+    if (core_timing != CORE_TIMING_SYNCED) {
+        bool fast_forward = false;
+        environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward);
+        DOSBOX_UnlockSpeed(fast_forward);
+    }
 
     if (disk_load_image[0]!='\0')
     {
@@ -1378,35 +1441,9 @@ void retro_run (void)
 
     /* Dynamic resolution switching */
     if (RDOSGFXwidth != currentWidth || RDOSGFXheight != currentHeight ||
-        (fabs(currentFPS - render.src.fps) > 0.05f && render.src.fps != 0 && variable_refresh))
+        (core_timing != CORE_TIMING_UNSYNCED && fabs(currentFPS - render.src.fps) > 0.05f && render.src.fps != 0))
     {
-        struct retro_system_av_info new_av_info;
-        retro_get_system_av_info(&new_av_info);
-
-        new_av_info.geometry.base_width = RDOSGFXwidth;
-        new_av_info.geometry.base_height = RDOSGFXheight;
-
-        if (fabs(currentFPS - render.src.fps) > 0.05f && variable_refresh)
-        {
-            new_av_info.timing.fps = render.src.fps;
-            new_av_info.timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
-
-            environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO , &new_av_info);
-            if (log_cb)
-                log_cb(RETRO_LOG_INFO,"[dosbox] refresh rate changed %f => %f\n", currentFPS, render.src.fps);
-
-            currentFPS = render.src.fps;
-        }
-        else
-        {
-            environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
-            if (log_cb)
-                log_cb(RETRO_LOG_INFO,"[dosbox] resolution changed %dx%d => %dx%d\n",
-                    currentWidth, currentHeight, RDOSGFXwidth, RDOSGFXheight);
-
-            currentWidth = RDOSGFXwidth;
-            currentHeight = RDOSGFXheight;
-        }
+        update_gfx_mode(core_timing != CORE_TIMING_UNSYNCED);
     }
 
     bool updated = false;
@@ -1434,9 +1471,11 @@ void retro_run (void)
         /* Run emulator */
         co_switch(emuThread);
 
-        /* Upload video */
-        video_cb(RDOSGFXhaveFrame, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
-
+        if (core_timing == CORE_TIMING_SYNCED)
+            MIXER_CallBack(0, audioData, samplesPerFrame * 4);
+        else
+            /* Upload video */
+            video_cb(RDOSGFXhaveFrame, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
         /* Upload audio */
         audio_batch_cb((int16_t*)audioData, samplesPerFrame);
     }

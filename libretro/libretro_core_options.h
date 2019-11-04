@@ -108,6 +108,28 @@ struct retro_core_option_definition option_defs_us[] = {
       "false"
    },
    {
+      "dosbox_svn_core_timing",
+      "Core: Timing method",
+      "The independent modes allow DOSBox to ignore the frontend's frame timing. DOSBox will "
+      "render frames at its own pace rather than at the request of the frontend. This adds about 1 "
+      "frame of input lag, can introduce stutter/judder, but allows the \"auto\" and \"max\" "
+      "cycles settings to work correctly.\n"
+      "\n"
+      "Syncing to the frontend offers about 1 frame of lower input lag. However, this prevents the "
+      "\"auto\" and \"max\" cycles settings from working correctly and you need to use a fixed "
+      "cycle count instead. In this mode, the framerate is chosen by the frontend; if the emulated "
+      "DOSBox video card refresh rate is near the refresh rate of your display, it will reclock "
+      "the core to match your display in order to eliminate stutter. Otherwise, the core will run "
+      "at the emulated framerate.",
+      {
+         { "unsynced", "Independent, run frontend at 60FPS" },
+         { "match_fps", "Independent, run frontend at emulated refresh rate" },
+         { "synced", "Synchronize to frontend" },
+         { NULL, NULL },
+      },
+      "unsynced"
+   },
+   {
       "dosbox_svn_machine_type",
       "System: Emulated machine",
       "The type of machine that DOSBox will try to emulate (restart).",
@@ -350,17 +372,6 @@ struct retro_core_option_definition option_defs_us[] = {
          { NULL, NULL },
       },
       "none"
-   },
-   {
-      "dosbox_svn_use_native_refresh",
-      "Video: Enable refresh rate switching",
-      "Enable refresh rate switching to match running content. This is a expensive operation and may cause the screen to flicker.",
-      {
-         { "false", NULL },
-         { "true", NULL },
-         { NULL, NULL },
-      },
-      "false"
    },
    {
       "dosbox_svn_joystick_timed",

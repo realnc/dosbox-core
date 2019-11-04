@@ -20,6 +20,10 @@
 #include <sys/types.h>
 #include <assert.h>
 #include <math.h>
+#ifdef __LIBRETRO__
+#include <libco.h>
+#include "libretro_dosbox.h"
+#endif
 
 #include "dosbox.h"
 #include "video.h"
@@ -202,7 +206,17 @@ static void RENDER_Halt( void ) {
 extern Bitu PIC_Ticks;
 void RENDER_EndUpdate( bool abort ) {
 	if (GCC_UNLIKELY(!render.updating))
+#ifdef __LIBRETRO__
+	{
+		if (core_timing == CORE_TIMING_SYNCED) {
+			GFX_EndUpdate( NULL );
+			co_switch(mainThread);
+		}
 		return;
+	}
+#else
+		return;
+#endif
 	RENDER_DrawLine = RENDER_EmptyLineHandler;
 	if (GCC_UNLIKELY(CaptureState & (CAPTURE_IMAGE|CAPTURE_VIDEO))) {
 		Bitu pitch, flags;
@@ -222,6 +236,10 @@ void RENDER_EndUpdate( bool abort ) {
 		GFX_EndUpdate( abort? NULL : Scaler_ChangedLines );
 		render.frameskip.hadSkip[render.frameskip.index] = 0;
 	} else {
+#ifdef __LIBRETRO__
+		if (core_timing == CORE_TIMING_SYNCED)
+			GFX_EndUpdate( NULL );
+#endif
 #if 0
 		Bitu total = 0, i;
 		render.frameskip.hadSkip[render.frameskip.index] = 1;
@@ -232,6 +250,10 @@ void RENDER_EndUpdate( bool abort ) {
 	}
 	render.frameskip.index = (render.frameskip.index + 1) & (RENDER_SKIP_CACHE - 1);
 	render.updating=false;
+#ifdef __LIBRETRO__
+	if (core_timing == CORE_TIMING_SYNCED)
+		co_switch(mainThread);
+#endif
 }
 
 static Bitu MakeAspectTable(Bitu skip,Bitu height,double scaley,Bitu miny) {

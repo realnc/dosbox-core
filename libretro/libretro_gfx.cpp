@@ -1,12 +1,14 @@
+#include <libco.h>
 #include <string.h>
-#include "libretro.h"
 #include "dosbox.h"
+#include "libretro.h"
+#include "libretro_dosbox.h"
 #include "video.h"
 
 Bit8u RDOSGFXbuffer[1024*768*4];
+Bit8u RDOSGFXhaveFrame[sizeof(RDOSGFXbuffer)];
 Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 unsigned RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_0RGB1555;
-Bit8u RDOSGFXhaveFrame[sizeof(RDOSGFXbuffer)];
 
 Bitu GFX_GetBestMode(Bitu flags)
 {
@@ -42,7 +44,10 @@ bool GFX_StartUpdate(Bit8u * & pixels,Bitu & pitch)
 
 void GFX_EndUpdate( const Bit16u *changedLines )
 {
-    memcpy(RDOSGFXhaveFrame, RDOSGFXbuffer, sizeof(RDOSGFXbuffer));
+    if (core_timing == CORE_TIMING_SYNCED)
+        video_cb(changedLines ? RDOSGFXbuffer : NULL, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+    else
+        memcpy(RDOSGFXhaveFrame, RDOSGFXbuffer, sizeof(RDOSGFXbuffer));
 }
 
 // Stubs

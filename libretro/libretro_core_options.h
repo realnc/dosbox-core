@@ -49,29 +49,29 @@ extern "C" {
  *   frontend language definition */
 
 #define MOUSE_SPEED_FACTORS \
-    { \
-        { "0.25", NULL }, \
-        { "0.50", NULL }, \
-        { "0.75", NULL }, \
-        { "1.00", NULL }, \
-        { "1.25", NULL }, \
-        { "1.50", NULL }, \
-        { "1.75", NULL }, \
-        { "2.00", NULL }, \
-        { "2.25", NULL }, \
-        { "2.50", NULL }, \
-        { "2.75", NULL }, \
-        { "3.00", NULL }, \
-        { "3.25", NULL }, \
-        { "3.50", NULL }, \
-        { "3.75", NULL }, \
-        { "4.00", NULL }, \
-        { "4.25", NULL }, \
-        { "4.50", NULL }, \
-        { "4.75", NULL }, \
-        { "5.00", NULL }, \
-        { NULL, NULL } \
-    }
+   { \
+      { "0.25", NULL }, \
+      { "0.50", NULL }, \
+      { "0.75", NULL }, \
+      { "1.00", NULL }, \
+      { "1.25", NULL }, \
+      { "1.50", NULL }, \
+      { "1.75", NULL }, \
+      { "2.00", NULL }, \
+      { "2.25", NULL }, \
+      { "2.50", NULL }, \
+      { "2.75", NULL }, \
+      { "3.00", NULL }, \
+      { "3.25", NULL }, \
+      { "3.50", NULL }, \
+      { "3.75", NULL }, \
+      { "4.00", NULL }, \
+      { "4.25", NULL }, \
+      { "4.50", NULL }, \
+      { "4.75", NULL }, \
+      { "5.00", NULL }, \
+      { NULL, NULL } \
+   }
 
 struct retro_core_option_definition option_defs_us[] = {
    {
@@ -109,22 +109,14 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_core_timing",
-      "Core: Timing method",
-      "The independent modes allow DOSBox to ignore the frontend's frame timing. DOSBox will "
-      "render frames at its own pace rather than at the request of the frontend. This adds about 1 "
-      "frame of input lag, can introduce stutter/judder, but allows the \"auto\" and \"max\" "
-      "cycles settings to work correctly.\n"
-      "\n"
-      "Syncing to the frontend offers about 1 frame of lower input lag. However, this prevents the "
-      "\"auto\" and \"max\" cycles settings from working correctly and you need to use a fixed "
-      "cycle count instead. In this mode, the framerate is chosen by the frontend; if the emulated "
-      "DOSBox video card refresh rate is near the refresh rate of your display, it will reclock "
-      "the core to match your display in order to eliminate stutter. Otherwise, the core will run "
-      "at the emulated framerate.",
+      "Core: Timing mode",
+      "Internal mode works on an internal scheduler. DOSBox will render frames at it's own pace which may result in additional input lag and judder. Cycles modes \"auto\" and \"max\" should work as intended.\n"
+      "There is a fixed 60 fps mode and a variable framerate mode.\n\n"
+      "External mode works based on the frontend's scheduler. It should offer lower input lag but requires a fixed cycle rate. It should offer smoother scrolling, and no judder.",
       {
-         { "unsynced", "Independent, run frontend at 60FPS" },
-         { "match_fps", "Independent, run frontend at emulated refresh rate" },
-         { "synced", "Synchronize to frontend" },
+         { "internal_fixed", "internal (fixed 60fps)" },
+         { "internal_variable", "internal (variable fps)" },
+         { "external", "external (variable fps)" },
          { NULL, NULL },
       },
       "unsynced"

@@ -116,7 +116,7 @@ bool emulated_mouse;
 /* core option variables */
 static bool use_core_options;
 static bool adv_core_options;
-CoreTimingMethod core_timing = CORE_TIMING_UNSYNCED;
+core_timing_mode core_timing = CORE_TIMING_UNSYNCED;
 
 /* directories */
 std::string retro_save_directory;
@@ -612,9 +612,9 @@ static void update_gfx_mode(bool change_fps)
 
     if (change_fps)
     {
-        const float new_fps = (core_timing == CORE_TIMING_SYNCED || core_timing == CORE_TIMING_MATCH_FPS)
-                              ? render.src.fps
-                              : DEFAULT_FPS;
+        const float new_fps =   (core_timing == CORE_TIMING_SYNCED || core_timing == CORE_TIMING_MATCH_FPS)
+                                ? render.src.fps
+                                : DEFAULT_FPS;
 
         new_av_info.timing.fps = new_fps;
         new_av_info.timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
@@ -631,8 +631,8 @@ static void update_gfx_mode(bool change_fps)
     }
 
     if (!cb_error && log_cb)
-        log_cb(RETRO_LOG_INFO,"[dosbox] resolution changed %dx%d @ %.3fHz => %dx%d @ %.3fHz\n",
-               currentWidth, currentHeight, old_fps, RDOSGFXwidth, RDOSGFXheight, currentFPS);
+        log_cb (RETRO_LOG_INFO,"[dosbox] resolution changed %dx%d @ %.3fHz => %dx%d @ %.3fHz\n",
+                currentWidth, currentHeight, old_fps, RDOSGFXwidth, RDOSGFXheight, currentFPS);
 
     currentWidth = RDOSGFXwidth;
     currentHeight = RDOSGFXheight;
@@ -644,8 +644,11 @@ void check_variables()
     static unsigned cycles, cycles_fine, cycles_limit;
     static unsigned cycles_multiplier, cycles_multiplier_fine;
     static bool update_cycles = false;
-    char   cycles_mode[12];
+    char   cycles_mode[20];
+    char   machine_type[20];
     struct retro_core_option_display option_display;
+
+    bool blaster = false;
 
     var.key = "dosbox_svn_use_options";
     var.value = NULL;
@@ -661,11 +664,11 @@ void check_variables()
     var.value = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
-        CoreTimingMethod old_timing = core_timing;
+        core_timing_mode old_timing = core_timing;
 
-        if (strcmp(var.value, "synced") == 0)
+        if (strcmp(var.value, "external") == 0)
             core_timing = CORE_TIMING_SYNCED;
-        else if (strcmp(var.value, "match_fps") == 0)
+        else if (strcmp(var.value, "internal_variable") == 0)
             core_timing = CORE_TIMING_MATCH_FPS;
         else
             core_timing = CORE_TIMING_UNSYNCED;
@@ -682,6 +685,9 @@ void check_variables()
             if (old_timing != CORE_TIMING_UNSYNCED && core_timing == CORE_TIMING_UNSYNCED)
                 update_gfx_mode(true);
         }
+
+        snprintf(cycles_mode, sizeof(cycles_mode), "%s", "fixed");
+        update_cycles = true;
     }
 
     if (!use_core_options)
@@ -692,33 +698,14 @@ void check_variables()
     var.value = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
     {
-        struct retro_core_option_display option_display;
-        adv_core_options = option_display.visible = strcmp(var.value, "true") == 0 ? true : false;
-
-		option_display.key     = "dosbox_svn_sblaster_base";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_sblaster_irq";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_sblaster_dma";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_sblaster_hdma";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_sblaster_opl_mode";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_sblaster_opl_emu";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_tandy";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-		option_display.key     = "dosbox_svn_disney";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+        adv_core_options = strcmp(var.value, "true") == 0 ? true : false;
     }
+
+    /* save machine type for option hiding purpose */
+    var.key = "dosbox_svn_machine_type";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        snprintf(machine_type, sizeof(machine_type), "%s", var.value);
 
     if (!dosbox_initialiazed)
     {
@@ -799,12 +786,6 @@ void check_variables()
     else
     {
         /* hercules core options */
-        bool hercules = machine == MCH_HERC;
-        option_display.visible = adv_core_options && hercules;
-
-        option_display.key     = "dosbox_svn_machine_hercules_palette";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
         var.key = "dosbox_svn_machine_hercules_palette";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && machine == MCH_HERC)
@@ -815,15 +796,6 @@ void check_variables()
         }
 
         /* cga core options */
-        bool cga = machine == MCH_CGA;
-        option_display.visible = adv_core_options && cga;
-
-        option_display.key     = "dosbox_svn_machine_cga_composite_mode";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-        option_display.key     = "dosbox_svn_machine_cga_model";
-        environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
         var.key = "dosbox_svn_machine_cga_composite_mode";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && machine == MCH_CGA)
@@ -839,28 +811,7 @@ void check_variables()
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
         {
             update_dosbox_variable("sblaster", "sbtype", var.value);
-
-            /* hide blaster options if sbtype is none */
-            bool blaster = strcmp(var.value, "none") != 0 ? true : false;
-            option_display.visible = adv_core_options && blaster;
-
-            option_display.key     = "dosbox_svn_sblaster_base";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_sblaster_irq";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_sblaster_dma";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_sblaster_hdma";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_sblaster_opl_mode";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_sblaster_opl_emu";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+            blaster = strcmp(var.value, "none") != 0 ? true : false;
         }
 
         var.key = "dosbox_svn_sblaster_base";
@@ -933,27 +884,12 @@ void check_variables()
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
         {
-            snprintf(cycles_mode, sizeof(cycles_mode), "%s", var.value);
+            if (core_timing != CORE_TIMING_SYNCED)
+                snprintf(cycles_mode, sizeof(cycles_mode), "%s", var.value);
+            else
+                snprintf(cycles_mode, sizeof(cycles_mode), "%s", "fixed");
+
             update_cycles = true;
-
-            option_display.visible = strcmp(var.value, "fixed") == 0 ? true : false;
-
-            option_display.key     = "dosbox_svn_cpu_cycles";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_cpu_cycles_multiplier";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_cpu_cycles_fine";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.key     = "dosbox_svn_cpu_cycles_multiplier_fine";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
-
-            option_display.visible = strcmp(var.value, "max") == 0 ? true : false;
-
-            option_display.key     = "dosbox_svn_cpu_cycles_limit";
-            environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
         }
 
         var.key = "dosbox_svn_cpu_cycles_limit";
@@ -1069,6 +1005,61 @@ void check_variables()
                 disney_init = false;
         }
     }
+
+    /* show cycles if core timing is different from external */
+    option_display.visible = core_timing != CORE_TIMING_SYNCED;
+    option_display.key     = "dosbox_svn_cpu_cycles_mode";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+    /* show cycles adjustment if core timing is external or cycle mode is fixed */
+    option_display.visible = (strcmp(cycles_mode, "fixed") == 0 ? true : false) || core_timing == CORE_TIMING_SYNCED;
+    option_display.key     = "dosbox_svn_cpu_cycles";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+    option_display.key     = "dosbox_svn_cpu_cycles_multiplier";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+    option_display.key     = "dosbox_svn_cpu_cycles_fine";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+    option_display.key     = "dosbox_svn_cpu_cycles_multiplier_fine";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+    /* show cycles max adjustment if core cycle mode is max */
+    option_display.visible = strcmp(cycles_mode, "max") == 0 ? true : false;
+    option_display.key     = "dosbox_svn_cpu_cycles_limit";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+    /* show cga options only if machine is cga and advanced options is enabled */
+    option_display.visible = adv_core_options && strcmp("cga", machine_type) == 0;
+    option_display.key     = "dosbox_svn_machine_cga_composite_mode";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+    option_display.key     = "dosbox_svn_machine_cga_model";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+    /* show hercules options only if machine is hercules and advanced options is enabled */
+    option_display.visible = adv_core_options && strcmp("hercules", machine_type) == 0;
+    option_display.key     = "dosbox_svn_machine_hercules_palette";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+    /* show blaster options only if soundblaster is enabled and advanced options is enabled */
+    option_display.visible = adv_core_options && blaster;
+	option_display.key     = "dosbox_svn_sblaster_base";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_sblaster_irq";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_sblaster_dma";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_sblaster_hdma";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_sblaster_opl_mode";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_sblaster_opl_emu";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+    /* show tandy and disney options only if advanced options is enabled */
+    option_display.visible = adv_core_options;
+	option_display.key     = "dosbox_svn_tandy";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_disney";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 }
 
 static void start_dosbox(void)

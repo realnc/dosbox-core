@@ -261,6 +261,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "System: Coarse CPU cycles multiplier",
       "Multiplier for coarse CPU cycles tuning.",
       {
+         { "100", NULL },
          { "1000", NULL },
          { "10000", NULL },
          { "100000", NULL },
@@ -295,6 +296,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "10", NULL },
          { "100", NULL },
          { "1000", NULL },
+         { "10000", NULL },
          { NULL, NULL },
       },
       "100"

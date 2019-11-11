@@ -51,6 +51,19 @@ extern "C" {
 #define MOUSE_SPEED_FACTORS \
    { \
       { "0.25", NULL }, \
+      { "0.26", NULL }, \
+      { "0.27", NULL }, \
+      { "0.28", NULL }, \
+      { "0.29", NULL }, \
+      { "0.30", NULL }, \
+      { "0.31", NULL }, \
+      { "0.32", NULL }, \
+      { "0.33", NULL }, \
+      { "0.34", NULL }, \
+      { "0.35", NULL }, \
+      { "0.37", NULL }, \
+      { "0.40", NULL }, \
+      { "0.45", NULL }, \
       { "0.50", NULL }, \
       { "0.75", NULL }, \
       { "1.00", NULL }, \

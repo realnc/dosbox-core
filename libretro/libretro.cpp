@@ -980,7 +980,7 @@ void check_variables()
         var.key = "dosbox_svn_midi";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            midi_enable = true;
+            midi_enable = strcmp(var.value, "true") == 0;
 
     #if defined(C_IPX)
         var.key = "dosbox_svn_ipx";

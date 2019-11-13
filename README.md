@@ -1,6 +1,7 @@
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/U7U117Y74)
 
 # DOSBox-SVN libretro
+[![pipeline status](https://git.polygoncorp.com/dev/dosbox-svn/badges/libretro/pipeline.svg)](https://git.polygoncorp.com/dev/dosbox-svn/-/jobs)
 
 Upstream port of DOSBox-SVN to libretro.
 

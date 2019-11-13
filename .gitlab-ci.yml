@@ -1,0 +1,9 @@
+before_script:
+#  - apt-get update -qq && apt-get install -y -qq git build-essential
+#  - apt-get update -qq && apt-get build-dep -y retroarch
+
+build:
+  script:
+    - git submodule update --init
+    - cd libretro
+    - make -j2 WITH_FAKE_SDL=1

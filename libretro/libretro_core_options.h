@@ -334,6 +334,20 @@ struct retro_core_option_definition option_defs_us[] = {
       "100"
    },
    {
+      "dosbox_svn_aspect_correction",
+      "Video: Aspect ratio correction.",
+      "When enabled, the core's aspect ratio is set to what a CRT monitor would show. This is "
+      "needed for all non 4:3 VGA resolutions to look as intended. When disabled, the core's "
+      "aspect ratio is set to match the current VGA resolution's width to height ratio, providing "
+      "integer scaling but resulting in a stretched or squashed image.",
+      {
+         { "true", NULL },
+         { "false", NULL },
+         { NULL, NULL },
+      },
+      "true"
+   },
+   {
       "dosbox_svn_scaler",
       "Video: Scaler",
       "Scaler used to scale or improve image quality.",

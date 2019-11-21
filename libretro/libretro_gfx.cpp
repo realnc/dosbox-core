@@ -8,6 +8,7 @@
 Bit8u RDOSGFXbuffer[1024*768*4];
 Bit8u RDOSGFXhaveFrame[sizeof(RDOSGFXbuffer)];
 Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
+float dosbox_aspect_ratio = 0;
 unsigned RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_0RGB1555;
 
 Bitu GFX_GetBestMode(Bitu flags)
@@ -27,6 +28,7 @@ Bitu GFX_SetSize(Bitu width,Bitu height,Bitu flags,double scalex,double scaley,G
     RDOSGFXwidth = width;
     RDOSGFXheight = height;
     RDOSGFXpitch = width * 4;
+    dosbox_aspect_ratio = (width * scalex) / (height * scaley);
 
     if(RDOSGFXwidth > 1024 || RDOSGFXheight > 768)
         return 0;

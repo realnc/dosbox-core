@@ -22,6 +22,7 @@ extern retro_environment_t environ_cb;
 extern cothread_t emuThread;
 extern cothread_t mainThread;
 extern core_timing_mode core_timing;
+extern float dosbox_aspect_ratio;
 
 bool update_dosbox_variable(std::string section_string, std::string var_string, std::string val_string);
 

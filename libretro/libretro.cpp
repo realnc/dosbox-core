@@ -149,6 +149,7 @@ extern unsigned RDOSGFXcolorMode;
 unsigned currentWidth, currentHeight;
 #define DEFAULT_FPS 60.0f
 float currentFPS = DEFAULT_FPS;
+static float current_aspect_ratio = 0;
 
 /* audio variables */
 static uint8_t audioData[829 * 4]; // 49716hz max
@@ -609,6 +610,7 @@ static void update_gfx_mode(bool change_fps)
 
     new_av_info.geometry.base_width = RDOSGFXwidth;
     new_av_info.geometry.base_height = RDOSGFXheight;
+    new_av_info.geometry.aspect_ratio = dosbox_aspect_ratio;
 
     if (change_fps)
     {
@@ -631,11 +633,14 @@ static void update_gfx_mode(bool change_fps)
     }
 
     if (!cb_error && log_cb)
-        log_cb (RETRO_LOG_INFO,"[dosbox] resolution changed %dx%d @ %.3fHz => %dx%d @ %.3fHz\n",
-                currentWidth, currentHeight, old_fps, RDOSGFXwidth, RDOSGFXheight, currentFPS);
+        log_cb (RETRO_LOG_INFO,
+                "[dosbox] resolution changed %dx%d @ %.3fHz AR: %.5f => %dx%d @ %.3fHz AR: %.5f\n",
+                currentWidth, currentHeight, old_fps, current_aspect_ratio,
+                RDOSGFXwidth, RDOSGFXheight, currentFPS, dosbox_aspect_ratio);
 
     currentWidth = RDOSGFXwidth;
     currentHeight = RDOSGFXheight;
+    current_aspect_ratio = dosbox_aspect_ratio;
 }
 
 void check_variables()
@@ -941,6 +946,11 @@ void check_variables()
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
             update_dosbox_variable("cpu", "core", var.value);
+
+        var.key = "dosbox_svn_aspect_correction";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+            update_dosbox_variable("render", "aspect", var.value);
 
         var.key = "dosbox_svn_scaler";
         var.value = NULL;
@@ -1281,7 +1291,7 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
     info->geometry.base_height = 200;
     info->geometry.max_width = 1024;
     info->geometry.max_height = 768;
-    info->geometry.aspect_ratio = (float)4/3;
+    info->geometry.aspect_ratio = 4.0 / 3;
     info->timing.fps = currentFPS;
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
 }
@@ -1435,6 +1445,10 @@ void retro_run (void)
         (core_timing != CORE_TIMING_UNSYNCED && fabs(currentFPS - render.src.fps) > 0.05f && render.src.fps != 0))
     {
         update_gfx_mode(core_timing != CORE_TIMING_UNSYNCED);
+    }
+    else if (dosbox_aspect_ratio != current_aspect_ratio)
+    {
+        update_gfx_mode(false);
     }
 
     bool updated = false;

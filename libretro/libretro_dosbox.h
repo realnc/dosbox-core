@@ -4,6 +4,7 @@
 #include <libco.h>
 #include <string>
 #include <stdint.h>
+#include "config.h"
 #include "libretro.h"
 
 # define RETROLOG(msg) printf("%s\n", msg)
@@ -23,6 +24,9 @@ extern cothread_t emuThread;
 extern cothread_t mainThread;
 extern core_timing_mode core_timing;
 extern float dosbox_aspect_ratio;
+extern Bit8u dosbox_framebuffers[2][1024 * 768 * 4];
+extern Bit8u *dosbox_frontbuffer;
+extern bool dosbox_frontbuffer_uploaded;
 
 bool update_dosbox_variable(std::string section_string, std::string var_string, std::string val_string);
 

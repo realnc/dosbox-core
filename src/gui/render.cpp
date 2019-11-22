@@ -169,7 +169,11 @@ bool RENDER_StartUpdate(void) {
 	Scaler_ChangedLines[0] = 0;
 	Scaler_ChangedLineIndex = 0;
 	/* Clearing the cache will first process the line to make sure it's never the same */
+#ifdef __LIBRETRO__
+	if (render.scale.clearCache) {
+#else
 	if (GCC_UNLIKELY( render.scale.clearCache) ) {
+#endif
 //		LOG_MSG("Clearing cache");
 		//Will always have to update the screen with this one anyway, so let's update already
 		if (GCC_UNLIKELY(!GFX_StartUpdate( render.scale.outWrite, render.scale.outPitch )))

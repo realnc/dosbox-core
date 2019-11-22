@@ -142,8 +142,6 @@ static bool frontend_exit;
 static bool is_restarting = false;
 
 /* video variables */
-extern Bit8u RDOSGFXbuffer[1024*768*4];
-extern Bit8u RDOSGFXhaveFrame[sizeof(RDOSGFXbuffer)];
 extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 extern unsigned RDOSGFXcolorMode;
 unsigned currentWidth, currentHeight;
@@ -1477,10 +1475,15 @@ void retro_run (void)
         co_switch(emuThread);
 
         if (core_timing == CORE_TIMING_SYNCED)
+        {
             MIXER_CallBack(0, audioData, samplesPerFrame * 4);
+        }
         else
-            /* Upload video */
-            video_cb(RDOSGFXhaveFrame, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+        {
+            video_cb(dosbox_frontbuffer_uploaded ? NULL : dosbox_frontbuffer,
+                     RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+            dosbox_frontbuffer_uploaded = true;
+        }
         /* Upload audio */
         audio_batch_cb((int16_t*)audioData, samplesPerFrame);
     }

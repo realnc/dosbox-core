@@ -141,6 +141,7 @@
 #endif
 
 #include <stdint.h>
+#include <inttypes.h>
 typedef double Real64;
 typedef uint8_t Bit8u;
 typedef int8_t Bit8s;
@@ -150,5 +151,18 @@ typedef uint32_t Bit32u;
 typedef int32_t Bit32s;
 typedef uint64_t Bit64u;
 typedef int64_t Bit64s;
+
+#define sBit32t PRId32
+#define sBit64t PRId64
+#define sBit32fs(a) sBit32t #a
+#define sBit64fs(a) sBit64t #a
 typedef uintptr_t Bitu;
 typedef intptr_t Bits;
+#if UINTPTR_MAX == 0xFFFFFFFF
+#define sBitfs sBit32fs
+#elif UINTPTR_MAX == 0xFFFFFFFFFFFFFFFFu
+#define sBitfs sBit64fs
+#else
+#error "Can't determine pointer size"
+#endif
+

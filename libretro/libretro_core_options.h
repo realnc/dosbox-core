@@ -535,6 +535,84 @@ struct retro_core_option_definition option_defs_us[] = {
       "default"
    },
    {
+      "dosbox_svn_gus",
+      "Sound: Gravis Ultrasound support",
+      "Enables the Gravis Ultrasound emulation (restart).\n"
+      "NOTE: The ULTRADIR directory is not configurable in the core's options. It is always set to "
+      "C:\\ULTRASND, unless you use a custom .conf file and change it there.",
+      {
+         { "false", NULL },
+         { "true", NULL },
+         { NULL, NULL },
+      },
+      "false"
+   },
+   {
+      "dosbox_svn_gusrate",
+      "Sound: Ultrasound sample rate",
+      "Sample rate of Ultrasound emulation (restart).",
+      {
+         { "8000", NULL },
+         { "11025", NULL },
+         { "16000", NULL },
+         { "22050", NULL },
+         { "32000", NULL },
+         { "44100", NULL },
+         { "48000", NULL },
+         { "49716", NULL },
+         { NULL, NULL },
+      },
+      "44100"
+   },
+   {
+      "dosbox_svn_gusbase",
+      "Sound: Ultrasound IO address",
+      "The IO base address of the Gravis Ultrasound (restart).",
+      {
+         { "220", NULL },
+         { "240", NULL },
+         { "260", NULL },
+         { "280", NULL },
+         { "2a0", NULL },
+         { "2c0", NULL },
+         { "2e0", NULL },
+         { "300", NULL },
+         { NULL, NULL },
+      },
+      "240"
+   },
+   {
+      "dosbox_svn_gusirq",
+      "Sound: Ultrasound IRQ",
+      "The IRQ number of the Gravis Ultrasound (restart).",
+      {
+         { "3", NULL },
+         { "5", NULL },
+         { "7", NULL },
+         { "9", NULL },
+         { "10", NULL },
+         { "11", NULL },
+         { "12", NULL },
+         { NULL, NULL },
+      },
+      "5"
+   },
+   {
+      "dosbox_svn_gusdma",
+      "Sound: Ultrasound DMA",
+      "The DMA channel of the Gravis Ultrasound (restart).",
+      {
+         { "0", NULL },
+         { "1", NULL },
+         { "3", NULL },
+         { "5", NULL },
+         { "6", NULL },
+         { "7", NULL },
+         { NULL, NULL },
+      },
+      "3"
+   },
+   {
       "dosbox_svn_midi",
       "Sound: Enable libretro MIDI passthrough",
       "Enable libretro MIDI passthrough.",

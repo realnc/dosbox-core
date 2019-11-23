@@ -652,6 +652,7 @@ void check_variables()
     struct retro_core_option_display option_display;
 
     bool blaster = false;
+    bool gus = false;
 
     var.key = "dosbox_svn_use_options";
     var.value = NULL;
@@ -847,6 +848,33 @@ void check_variables()
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
             update_dosbox_variable("sblaster", "oplemu", var.value);
 
+        var.key = "dosbox_svn_gus";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        {
+            update_dosbox_variable("gus", "gus", var.value);
+            gus = strcmp(var.value, "true") == 0;
+        }
+
+        var.key = "dosbox_svn_gusrate";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+            update_dosbox_variable("gus", "gusrate", var.value);
+
+        var.key = "dosbox_svn_gusbase";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+            update_dosbox_variable("gus", "gusbase", var.value);
+
+        var.key = "dosbox_svn_gusirq";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+            update_dosbox_variable("gus", "gusirq", var.value);
+
+        var.key = "dosbox_svn_gusdma";
+        var.value = NULL;
+        if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+            update_dosbox_variable("gus", "gusdma", var.value);
 
         var.key = "dosbox_svn_emulated_mouse";
         var.value = NULL;
@@ -1060,6 +1088,17 @@ void check_variables()
 	option_display.key     = "dosbox_svn_sblaster_opl_mode";
     environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 	option_display.key     = "dosbox_svn_sblaster_opl_emu";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+
+    /* show ultrasound options only if it's it enabled and advanced options is enabled */
+    option_display.visible = adv_core_options && gus;
+	option_display.key     = "dosbox_svn_gusrate";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_gusbase";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_gusirq";
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+	option_display.key     = "dosbox_svn_gusdma";
     environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
 
     /* show tandy and disney options only if advanced options is enabled */

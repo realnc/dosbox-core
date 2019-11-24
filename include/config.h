@@ -140,8 +140,8 @@
 #define GCC_LIKELY(x) (x)
 #endif
 
+#include "retro_common_api.h"
 #include <stdint.h>
-#include <inttypes.h>
 typedef double Real64;
 typedef uint8_t Bit8u;
 typedef int8_t Bit8s;

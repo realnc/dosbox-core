@@ -91,8 +91,9 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_save_overlay",
-      "Core: Enable overlay file system",
-      "Enable overlay file system to redirect filesystem changes to the save directory. Disable if you have problems starting some games (restart).",
+      "Core: Enable overlay file system (restart)",
+      "Enable overlay file system to redirect filesystem changes to the save directory. "
+      "Disable if you have problems starting some games.",
       {
          { "true", NULL },
          { "false", NULL },
@@ -103,9 +104,11 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_core_timing",
       "Core: Timing mode",
-      "Internal mode works on an internal scheduler. DOSBox will render frames at it's own pace which may result in additional input lag and judder. Cycles modes \"auto\" and \"max\" should work as intended.\n"
+      "Internal mode works on an internal scheduler. DOSBox will render frames at it's own pace which "
+      "may result in additional input lag and judder. Cycles modes \"auto\" and \"max\" should work as intended.\n"
       "There is a fixed 60 fps mode and a variable framerate mode.\n\n"
-      "External mode works based on the frontend's scheduler. It should offer lower input lag but requires a fixed cycle rate. It should offer smoother scrolling, and no judder.",
+      "External mode works based on the frontend's scheduler. It should offer lower input lag but requires a fixed "
+      "cycle rate. It should offer smoother scrolling, and no judder.",
       {
          { "internal_fixed", "internal (fixed 60fps)" },
          { "internal_variable", "internal (variable fps)" },
@@ -116,8 +119,8 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_machine_type",
-      "System: Emulated machine",
-      "The type of machine that DOSBox will try to emulate (restart).",
+      "System: Emulated machine (restart)",
+      "The type of machine that DOSBox will try to emulate.",
       {
          { "hercules", "Hercules (Hercules Graphics Card)" },
          { "cga", "CGA (Color Graphics Adapter)" },
@@ -172,8 +175,8 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_memory_size",
-      "System: Memory size",
-      "The amount of memory that the emulated machine has (restart).",
+      "System: Memory size (restart)",
+      "The amount of memory that the emulated machine has.",
       {
          { "4", NULL },
          { "8", NULL },
@@ -240,7 +243,8 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_cpu_cycles_mode",
       "System: CPU cycles mode",
-      "Method to determine the amount of CPU cycles that DOSBox tries to emulate per milisecond. Use auto unless you have performance problems. A value that is too high for your system may cause slowdown.",
+      "Method to determine the amount of CPU cycles that DOSBox tries to emulate per milisecond. Use auto unless you "
+      "have performance problems. A value that is too high for your system may cause slowdown.",
       {
          { "auto", "auto (real-mode games use fixed cycles 3000, protected-mode games use max)" },
          { "fixed", "fixed (set emulated CPU speed to a amount of cycles" },
@@ -267,6 +271,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "System: Coarse CPU cycles value",
       "Value for coarse CPU cycles tuning.",
       {
+         { "0", NULL },
          { "1", NULL },
          { "2", NULL },
          { "3", NULL },
@@ -311,7 +316,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "9", NULL },
          { NULL, NULL },
       },
-      "1"
+      "0"
    },
    {
       "dosbox_svn_cpu_cycles_limit",
@@ -336,8 +341,8 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_aspect_correction",
       "Video: Aspect ratio correction.",
-      "When enabled, the core's aspect ratio is set to what a CRT monitor would show. This is "
-      "needed for all non 4:3 VGA resolutions to look as intended. When disabled, the core's "
+      "When enabled, the core's aspect ratio is set to what a CRT monitor would display. This is "
+      "required for all non 4:3 VGA resolutions to look as intended. When disabled, the core's "
       "aspect ratio is set to match the current VGA resolution's width to height ratio, providing "
       "integer scaling but resulting in a stretched or squashed image.",
       {
@@ -377,7 +382,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_joystick_timed",
       "Input: Enable joystick timed intervals",
-      "Enable timed intervals for joystick axes. Experiment with this option if your joystick drifts (restart).",
+      "Enable timed intervals for joystick axes. Experiment with this option if your joystick drifts.",
       {
          { "false", NULL },
          { "true", NULL },
@@ -428,8 +433,8 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_sblaster_type",
-      "Sound: SoundBlaster type",
-      "Type of emulated SoundBlaster card (restart).",
+      "Sound: SoundBlaster type (restart)",
+      "Type of emulated SoundBlaster card.",
       {
          { "sb1", "SoundBlaster 1.0" },
          { "sb2", "SoundBlaster 2.0" },
@@ -445,7 +450,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_base",
       "Sound: SoundBlaster Base Address",
-      "The I/O address for the emulated SoundBlaster card (restart).",
+      "The I/O address for the emulated SoundBlaster card.",
       {
          { "220", NULL },
          { "240", NULL },
@@ -462,7 +467,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_irq",
       "Sound: SoundBlaster IRQ Number",
-      "The IRQ number for the emulated SoundBlaster card (restart).",
+      "The IRQ number for the emulated SoundBlaster card.",
       {
          { "3", NULL },
          { "5", NULL },
@@ -478,7 +483,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_dma",
       "Sound: SoundBlaster DMA Number",
-      "The DMA number for the emulated SoundBlaster card (restart).",
+      "The DMA number for the emulated SoundBlaster card.",
       {
          { "1", NULL },
          { "3", NULL },
@@ -493,7 +498,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_hdma",
       "Sound: SoundBlaster High DMA Number",
-      "The High DMA number for the emulated SoundBlaster card (restart).",
+      "The High DMA number for the emulated SoundBlaster card.",
       {
          { "1", NULL },
          { "3", NULL },
@@ -508,7 +513,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_opl_mode",
       "Sound: SoundBlaster OPL mode",
-      "The SoundBlaster emulated OPL mode. All modes are Adlib compatible except cms (restart).",
+      "The SoundBlaster emulated OPL mode. All modes are Adlib compatible except cms.",
       {
          { "auto", "auto (select based on the SoundBlaster type)" },
          { "cms", "CMS (Creative Music System / GameBlaster)" },
@@ -524,7 +529,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_sblaster_opl_emu",
       "Sound: SoundBlaster OPL provider",
-      "Provider for the OPL emulation. Compat might provide the best quality (restart).",
+      "Provider for the OPL emulation. Compat might provide the best quality.",
       {
          { "default", NULL },
          { "compat", NULL },
@@ -537,9 +542,8 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_gus",
       "Sound: Gravis Ultrasound support",
-      "Enables the Gravis Ultrasound emulation (restart).\n"
-      "NOTE: The ULTRADIR directory is not configurable in the core's options. It is always set to "
-      "C:\\ULTRASND, unless you use a custom .conf file and change it there.",
+      "Enables Gravis Ultrasound emulation. Thee ULTRADIR directory is not configurable. It is "
+      "always set to C:\\ULTRASND and is not configurable via options.",
       {
          { "false", NULL },
          { "true", NULL },
@@ -550,7 +554,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_gusrate",
       "Sound: Ultrasound sample rate",
-      "Sample rate of Ultrasound emulation (restart).",
+      "Gravis Ultrasound emulation sample rate.",
       {
          { "8000", NULL },
          { "11025", NULL },
@@ -567,7 +571,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_gusbase",
       "Sound: Ultrasound IO address",
-      "The IO base address of the Gravis Ultrasound (restart).",
+      "The IO base address for the emulated Gravis Ultrasound card.",
       {
          { "220", NULL },
          { "240", NULL },
@@ -584,7 +588,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_gusirq",
       "Sound: Ultrasound IRQ",
-      "The IRQ number of the Gravis Ultrasound (restart).",
+      "The IRQ number for the emulated Gravis Ultrasound card.",
       {
          { "3", NULL },
          { "5", NULL },
@@ -600,7 +604,7 @@ struct retro_core_option_definition option_defs_us[] = {
    {
       "dosbox_svn_gusdma",
       "Sound: Ultrasound DMA",
-      "The DMA channel of the Gravis Ultrasound (restart).",
+      "The DMA channel for the emulated Gravis Ultrasound card.",
       {
          { "0", NULL },
          { "1", NULL },

@@ -483,7 +483,7 @@ bool compare_dosbox_variable(std::string section_string, std::string var_string,
     return ret;
 }
 
-bool update_dosbox_variable(std::string section_string, std::string var_string, std::string val_string)
+bool update_dosbox_variable(bool autoexec, std::string section_string, std::string var_string, std::string val_string)
 {
     bool ret = false;
     if (dosbox_initialiazed)
@@ -496,9 +496,11 @@ bool update_dosbox_variable(std::string section_string, std::string var_string, 
     Section_prop *secprop = static_cast <Section_prop*>(section);
     if (secprop)
     {
-        section->ExecuteDestroy(false);
+        if (!autoexec)
+            section->ExecuteDestroy(false);
         std::string inputline = var_string + "=" + val_string;
         ret = section->HandleInputline(inputline.c_str());
+        if (!autoexec)
         section->ExecuteInit(false);
     }
     log_cb(RETRO_LOG_INFO, "[dosbox] variable %s::%s updated\n", section_string.c_str(), var_string.c_str(), val_string.c_str());
@@ -641,6 +643,72 @@ static void update_gfx_mode(bool change_fps)
     current_aspect_ratio = dosbox_aspect_ratio;
 }
 
+void check_variables_autoexec()
+{
+    struct retro_variable var = {0};
+
+    var.key = "dosbox_svn_sblaster_type";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "sblaster", "sbtype", var.value);
+
+    var.key = "dosbox_svn_sblaster_base";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "sblaster", "sbbase", var.value);
+
+    var.key = "dosbox_svn_sblaster_irq";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "sblaster", "irq", var.value);
+
+    var.key = "dosbox_svn_sblaster_dma";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "sblaster", "dma", var.value);
+
+    var.key = "dosbox_svn_sblaster_hdma";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "sblaster", "hdma", var.value);
+
+    var.key = "dosbox_svn_sblaster_opl_mode";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "sblaster", "oplmode", var.value);
+
+    var.key = "dosbox_svn_sblaster_opl_emu";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "sblaster", "oplemu", var.value);
+
+    var.key = "dosbox_svn_gus";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "gus", "gus", var.value);
+
+    var.key = "dosbox_svn_gusrate";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "gus", "gusrate", var.value);
+
+    var.key = "dosbox_svn_gusbase";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "gus", "gusbase", var.value);
+
+    var.key = "dosbox_svn_gusirq";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "gus", "gusirq", var.value);
+
+    var.key = "dosbox_svn_gusdma";
+    var.value = NULL;
+    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+        update_dosbox_variable(true, "gus", "gusdma", var.value);
+
+}
+
 void check_variables()
 {
     struct retro_variable var = {0};
@@ -716,7 +784,7 @@ void check_variables()
         var.key = "dosbox_svn_memory_size";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("dosbox", "memsize", var.value);
+            update_dosbox_variable(false, "dosbox", "memsize", var.value);
 
         var.key = "dosbox_svn_machine_type";
         var.value = NULL;
@@ -773,7 +841,7 @@ void check_variables()
                 machine = MCH_VGA;
                 svgaCard = SVGA_None;
             }
-            update_dosbox_variable("dosbox", "machine", var.value);
+            update_dosbox_variable(false, "dosbox", "machine", var.value);
         }
 
         var.key = "dosbox_svn_save_overlay";
@@ -814,67 +882,67 @@ void check_variables()
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
         {
-            update_dosbox_variable("sblaster", "sbtype", var.value);
+            update_dosbox_variable(false, "sblaster", "sbtype", var.value);
             blaster = strcmp(var.value, "none") != 0 ? true : false;
         }
 
         var.key = "dosbox_svn_sblaster_base";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "sbbase", var.value);
+            update_dosbox_variable(false, "sblaster", "sbbase", var.value);
 
         var.key = "dosbox_svn_sblaster_irq";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "irq", var.value);
+            update_dosbox_variable(false, "sblaster", "irq", var.value);
 
         var.key = "dosbox_svn_sblaster_dma";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "dma", var.value);
+            update_dosbox_variable(false, "sblaster", "dma", var.value);
 
         var.key = "dosbox_svn_sblaster_hdma";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "hdma", var.value);
+            update_dosbox_variable(false, "sblaster", "hdma", var.value);
 
         var.key = "dosbox_svn_sblaster_opl_mode";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "oplmode", var.value);
+            update_dosbox_variable(false, "sblaster", "oplmode", var.value);
 
         var.key = "dosbox_svn_sblaster_opl_emu";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("sblaster", "oplemu", var.value);
+            update_dosbox_variable(false, "sblaster", "oplemu", var.value);
 
         var.key = "dosbox_svn_gus";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
         {
-            update_dosbox_variable("gus", "gus", var.value);
+            update_dosbox_variable(false, "gus", "gus", var.value);
             gus = strcmp(var.value, "true") == 0;
         }
 
         var.key = "dosbox_svn_gusrate";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("gus", "gusrate", var.value);
+            update_dosbox_variable(false, "gus", "gusrate", var.value);
 
         var.key = "dosbox_svn_gusbase";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("gus", "gusbase", var.value);
+            update_dosbox_variable(false, "gus", "gusbase", var.value);
 
         var.key = "dosbox_svn_gusirq";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("gus", "gusirq", var.value);
+            update_dosbox_variable(false, "gus", "gusirq", var.value);
 
         var.key = "dosbox_svn_gusdma";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("gus", "gusdma", var.value);
+            update_dosbox_variable(false, "gus", "gusdma", var.value);
 
         var.key = "dosbox_svn_emulated_mouse";
         var.value = NULL;
@@ -966,27 +1034,27 @@ void check_variables()
         var.key = "dosbox_svn_cpu_type";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("cpu", "cputype", var.value);
+            update_dosbox_variable(false, "cpu", "cputype", var.value);
 
         var.key = "dosbox_svn_cpu_core";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("cpu", "core", var.value);
+            update_dosbox_variable(false, "cpu", "core", var.value);
 
         var.key = "dosbox_svn_aspect_correction";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("render", "aspect", var.value);
+            update_dosbox_variable(false, "render", "aspect", var.value);
 
         var.key = "dosbox_svn_scaler";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("render", "scaler", var.value);
+            update_dosbox_variable(false, "render", "scaler", var.value);
 
         var.key = "dosbox_svn_joystick_timed";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("joystick", "timed", var.value);
+            update_dosbox_variable(false, "joystick", "timed", var.value);
 
         if (update_cycles)
         {
@@ -994,16 +1062,16 @@ void check_variables()
             {
                 char s[32];
                 snprintf(s, sizeof(s), "%d", cycles * cycles_multiplier + cycles_fine * cycles_multiplier_fine);
-                update_dosbox_variable("cpu", "cycles", s);
+                update_dosbox_variable(false, "cpu", "cycles", s);
             }
             else if (!strcmp(cycles_mode, "max"))
             {
                 char s[32];
                 snprintf(s, sizeof(s), "%s %d%%", cycles_mode, cycles_limit);
-                update_dosbox_variable("cpu", "cycles", s);
+                update_dosbox_variable(false, "cpu", "cycles", s);
             }
             else
-                update_dosbox_variable("cpu", "cycles", cycles_mode);
+                update_dosbox_variable(false, "cpu", "cycles", cycles_mode);
 
             update_cycles = false;
         }
@@ -1011,7 +1079,7 @@ void check_variables()
         var.key = "dosbox_svn_pcspeaker";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("speaker", "pcspeaker", var.value);
+            update_dosbox_variable(false, "speaker", "pcspeaker", var.value);
 
         var.key = "dosbox_svn_midi";
         var.value = NULL;
@@ -1022,19 +1090,19 @@ void check_variables()
         var.key = "dosbox_svn_ipx";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-            update_dosbox_variable("ipx", "ipx", var.value);
+            update_dosbox_variable(false, "ipx", "ipx", var.value);
     #endif
 
         var.key = "dosbox_svn_tandy";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
-            update_dosbox_variable("speaker", "tandy", var.value);
+            update_dosbox_variable(false, "speaker", "tandy", var.value);
 
         var.key = "dosbox_svn_disney";
         var.value = NULL;
         if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value && !dosbox_initialiazed)
         {
-            update_dosbox_variable("speaker", "disney", var.value);
+            update_dosbox_variable(false, "speaker", "disney", var.value);
             if (!strcmp(var.value,"on"))
                 disney_init = true;
             else

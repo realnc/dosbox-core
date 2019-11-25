@@ -31,6 +31,10 @@
 #include <limits>
 #include <limits.h>
 
+#ifdef __LIBRETRO__
+extern void check_variables_autoexec(void);
+#endif
+
 using namespace std;
 static std::string current_config_dir; // Set by parseconfigfile so Prop_path can use it to construct the realpath
 void Value::destroy() throw(){
@@ -790,6 +794,9 @@ Section_line* Config::AddSection_line(char const * const _name,void (*_initfunct
 
 
 void Config::Init() {
+#ifdef __LIBRETRO__
+	check_variables_autoexec();
+#endif
 	for (const_it tel=sectionlist.begin(); tel!=sectionlist.end(); tel++) {
 		(*tel)->ExecuteInit();
 	}

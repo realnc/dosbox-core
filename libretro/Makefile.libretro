@@ -66,7 +66,7 @@ endif
 
 # flags
 ifeq ($(platform), osx)
-	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
+	COMMONFLAGS += -DC_HAVE_MPROTECT="1" -DLIBCO_MPROTECT=1
 	TARGET := $(TARGET_NAME)_libretro.dylib
 	LDFLAGS += -dynamiclib -lSDL -lSDL_net
 	fpic = -fPIC
@@ -226,7 +226,7 @@ else ifeq ($(platform), win)
 	endif
 	COMMONFLAGS += -D__USE_W32_SOCKETS -Werror=return-type
 else
-	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
+	COMMONFLAGS += -DC_HAVE_MPROTECT="1" -DLIBCO_MPROTECT=1
 	TARGET := $(TARGET_NAME)_libretro.so
 	LDFLAGS += -shared -Wl,--version-script=link.T
 	ifeq ($(WITH_FAKE_SDL), 1)

@@ -32,7 +32,7 @@
 #include <limits.h>
 
 #ifdef __LIBRETRO__
-extern void check_variables_autoexec(void);
+extern void core_autoexec(void);
 #endif
 
 using namespace std;
@@ -795,7 +795,7 @@ Section_line* Config::AddSection_line(char const * const _name,void (*_initfunct
 
 void Config::Init() {
 #ifdef __LIBRETRO__
-	check_variables_autoexec();
+	core_autoexec();
 #endif
 	for (const_it tel=sectionlist.begin(); tel!=sectionlist.end(); tel++) {
 		(*tel)->ExecuteInit();

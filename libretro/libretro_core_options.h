@@ -433,7 +433,7 @@ struct retro_core_option_definition option_defs_us[] = {
    },
    {
       "dosbox_svn_sblaster_type",
-      "Sound: SoundBlaster type (restart)",
+      "Sound: SoundBlaster type",
       "Type of emulated SoundBlaster card.",
       {
          { "sb1", "SoundBlaster 1.0" },

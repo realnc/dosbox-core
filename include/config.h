@@ -140,14 +140,11 @@
 #define GCC_LIKELY(x) (x)
 #endif
 
-#ifndef __MINGW__
-#include "retro_common_api.h"
 #include <stdint.h>
-#else
-#define __STDC_FORMAT_MACROS
-#include <stdint.h>
-#include <inttypes.h>
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS 1
 #endif
+#include <inttypes.h>
 typedef double Real64;
 typedef uint8_t Bit8u;
 typedef int8_t Bit8s;

@@ -5,6 +5,21 @@ SVN_VERSION := " $(shell cat svn)"
 UNAME=$(shell uname -s)
 UNAMEM=$(shell uname -m)
 
+# Target triplet for cross compilation. When cross compiling from Linux to
+# Windows 32-bit using MXE for example, you'd set this to something like:
+#
+#     $ make TARGET_TRIPLET=i686-w64-mingw32.static [...]
+#
+# Or whatever your wanted target is.
+ifdef TARGET_TRIPLET
+	cross_prefix = $(TARGET_TRIPLET)-
+endif
+AR:=$(cross_prefix)$(AR)
+AS:=$(cross_prefix)$(AS)
+CC:=$(cross_prefix)$(CC)
+CXX:=$(cross_prefix)$(CXX)
+LD:=$(cross_prefix)$(LD)
+
 platform ?= unix
 ifneq ($(findstring MINGW,$(UNAME)),)
 	platform = win
@@ -221,7 +236,7 @@ else ifeq ($(platform), win)
 		COMMONFLAGS += -DWITH_FAKE_SDL
 		LDFLAGS += -Wl,-Bstatic
 	else
-		LDFLAGS += -Wl,-Bstatic `sdl-config --static-libs` -lsdl_net
+		LDFLAGS += -Wl,-Bstatic `$(cross_prefix)sdl-config --static-libs` -lSDL_net
 		LDFLAGS += -Wl,-Bdynamic -liphlpapi -lws2_32
 	endif
 	COMMONFLAGS += -D__USE_W32_SOCKETS -Werror=return-type
@@ -233,7 +248,7 @@ else
 		COMMONFLAGS += -DWITH_FAKE_SDL
 		LDFLAGS += -Wl,-Bstatic
 	else
-		LDFLAGS += `sdl-config --libs` -lSDL_net
+		LDFLAGS += `$(cross_prefix)sdl-config --libs` -lSDL_net
 	endif
 	COMMONFLAGS += -DUNIX_PORTABLE
 	LDFLAGS += -Wl,-Bdynamic

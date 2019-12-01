@@ -508,7 +508,7 @@ struct retro_core_option_definition option_defs_us[] = {
          { "0", NULL },
          { NULL, NULL },
       },
-      "7"
+      "5"
    },
    {
       "dosbox_svn_sblaster_opl_mode",

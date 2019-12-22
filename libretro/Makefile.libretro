@@ -5,6 +5,8 @@ SVN_VERSION := " $(shell cat svn)"
 UNAME=$(shell uname -s)
 UNAMEM=$(shell uname -m)
 
+CXXFLAGS += -std=c++17 -Dregister=
+
 # Target triplet for cross compilation. When cross compiling from Linux to
 # Windows 32-bit using MXE for example, you'd set this to something like:
 #

@@ -28,6 +28,11 @@ extern Bit8u dosbox_framebuffers[2][1024 * 768 * 4];
 extern Bit8u *dosbox_frontbuffer;
 extern bool dosbox_frontbuffer_uploaded;
 
+namespace retro {
+class CoreOptions;
+extern CoreOptions core_options;
+}
+
 bool update_dosbox_variable(bool autoexec, std::string section_string, std::string var_string, std::string val_string);
 
 #endif

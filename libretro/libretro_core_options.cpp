@@ -17,7 +17,7 @@
     }
 
 retro::CoreOptions retro::core_options {
-    "dosbox_svn_",
+    "dosbox_core_",
     {
         {
             "use_options",

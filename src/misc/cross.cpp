@@ -91,7 +91,7 @@ void Cross::GetPlatformConfigName(std::string& in) {
 #define DEFAULT_CONFIG_FILE "dosbox-" VERSION ".conf"
 #endif
 #else
-#define DEFAULT_CONFIG_FILE "DOSBox-SVN.conf"
+#define DEFAULT_CONFIG_FILE "DOSBox-core.conf"
 #endif
 	in = DEFAULT_CONFIG_FILE;
 }

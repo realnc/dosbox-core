@@ -121,7 +121,7 @@ core_timing_mode core_timing = CORE_TIMING_UNSYNCED;
 std::string retro_save_directory;
 std::string retro_system_directory;
 std::string retro_content_directory;
-std::string retro_library_name = "DOSBox-SVN";
+std::string retro_library_name = "DOSBox-core";
 
 /* libretro variables */
 retro_video_refresh_t video_cb;

@@ -32,7 +32,7 @@ else ifneq ($(findstring win,$(UNAME)),)
 endif
 
 LIBRETRO_DIR := libretro
-TARGET_NAME  := dosbox_svn
+TARGET_NAME  := dosbox_core
 WITH_DYNAREC :=
 
 # try to guess the dynarec based on the host system, unreliable

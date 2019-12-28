@@ -1,16 +1,14 @@
-#include <vector>
-#include <stdio.h>
-
+#include "dosbox.h"
+#include "joystick.h"
+#include "keyboard.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
-
-#include "dosbox.h"
 #include "mapper.h"
-#include "keyboard.h"
 #include "mouse.h"
-#include "joystick.h"
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <vector>
 
 #define RDEV(x) RETRO_DEVICE_##x
 #define RDIX(x) RETRO_DEVICE_INDEX_##x

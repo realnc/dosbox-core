@@ -1,11 +1,11 @@
-#include <algorithm>
-#include <libco.h>
-#include <string.h>
 #include "dosbox.h"
+#include "libco.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
 #include "render.h"
 #include "video.h"
+#include <algorithm>
+#include <cstring>
 
 Bit8u dosbox_framebuffers[2][1024 * 768 * 4] = { 0 };
 Bit8u *dosbox_frontbuffer = dosbox_framebuffers[0];

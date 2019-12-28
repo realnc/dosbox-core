@@ -17,42 +17,38 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-
+#include "CoreOptions.h"
+#include "control.h"
+#include "dos/drives.h"
+#include "dosbox.h"
+#include "file/file_path.h"
+#include "ints/int10.h"
+#include "joystick.h"
+#include "libco.h"
+#include "libretro.h"
+#include "libretro_dosbox.h"
+#include "mapper.h"
+#include "mixer.h"
+#include "pic.h"
+#include "programs.h"
+#include "render.h"
+#include "setup.h"
+#ifdef ANDROID
+#include "nonlibc.h"
+#endif
 #include <algorithm>
+#include <cmath>
+#include <cstdarg>
+#include <cstdlib>
 #include <string>
-#include <libgen.h>
-
-#include <stdlib.h>
-#include <stdarg.h>
-
 #ifdef _WIN32
 #include <direct.h>
 #else
 #include <unistd.h>
 #endif
-
-#include <cmath>
-
-#include <libco.h>
-#include "CoreOptions.h"
-#include "libretro.h"
-#include "libretro_dosbox.h"
-#include "file/file_path.h"
-
-#include "setup.h"
-#include "dosbox.h"
-#include "mapper.h"
-#include "render.h"
-#include "mixer.h"
-#include "control.h"
-#include "pic.h"
-#include "joystick.h"
-#include "ints/int10.h"
-#include "dos/drives.h"
-#include "programs.h"
-
-#ifdef ANDROID
-#include "nonlibc.h"
+#ifdef HAVE_LIBNX
+#include <switch.h>
+extern "C" Jit dynarec_jit;
 #endif
 
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
@@ -74,11 +70,6 @@
 #ifdef WITH_FAKE_SDL
 bool startup_state_capslock;
 bool startup_state_numlock;
-#endif
-
-#ifdef HAVE_LIBNX
-#include <switch.h>
-extern "C" Jit dynarec_jit;
 #endif
 
 #ifdef _WIN32

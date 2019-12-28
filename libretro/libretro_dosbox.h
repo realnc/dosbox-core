@@ -1,11 +1,9 @@
-#ifndef _LIBRETRO_DOSBOX_H
-#define _LIBRETRO_DOSBOX_H
-
-#include <libco.h>
-#include <string>
-#include <stdint.h>
+#pragma once
 #include "config.h"
+#include "libco.h"
 #include "libretro.h"
+#include <cstdint>
+#include <string>
 
 # define RETROLOG(msg) printf("%s\n", msg)
 
@@ -34,5 +32,3 @@ extern CoreOptions core_options;
 }
 
 bool update_dosbox_variable(bool autoexec, std::string section_string, std::string var_string, std::string val_string);
-
-#endif

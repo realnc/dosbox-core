@@ -241,7 +241,7 @@ else ifeq ($(platform), win)
 		LDFLAGS += -Wl,-Bstatic `$(cross_prefix)sdl-config --static-libs` -lSDL_net
 		LDFLAGS += -Wl,-Bdynamic -liphlpapi -lws2_32
 	endif
-	COMMONFLAGS += -D__USE_W32_SOCKETS -Werror=return-type
+	COMMONFLAGS += -DWIN32=1 -D__USE_W32_SOCKETS -Werror=return-type
 else
 	COMMONFLAGS += -DC_HAVE_MPROTECT="1" -DLIBCO_MPROTECT=1
 	TARGET := $(TARGET_NAME)_libretro.so

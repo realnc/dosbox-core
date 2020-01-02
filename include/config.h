@@ -29,7 +29,7 @@
 /* #undef OS2 */
 
 #ifdef __WIN32__
-# define WIN32 1
+//# define WIN32 1
 #else
 //# define MACOSX 1
 #endif

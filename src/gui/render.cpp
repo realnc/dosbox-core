@@ -21,7 +21,7 @@
 #include <assert.h>
 #include <math.h>
 #ifdef __LIBRETRO__
-#include <libco.h>
+#include "emu_thread.h"
 #include "libretro_dosbox.h"
 #endif
 
@@ -214,7 +214,7 @@ void RENDER_EndUpdate( bool abort ) {
 	{
 		if (core_timing == CORE_TIMING_SYNCED) {
 			GFX_EndUpdate( NULL );
-			co_switch(mainThread);
+			switchToMainThread();
 		}
 		return;
 	}
@@ -256,7 +256,7 @@ void RENDER_EndUpdate( bool abort ) {
 	render.updating=false;
 #ifdef __LIBRETRO__
 	if (core_timing == CORE_TIMING_SYNCED)
-		co_switch(mainThread);
+		switchToMainThread();
 #endif
 }
 

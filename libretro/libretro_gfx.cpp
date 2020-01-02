@@ -1,5 +1,5 @@
 #include "dosbox.h"
-#include "libco.h"
+#include "emu_thread.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
 #include "render.h"
@@ -52,7 +52,8 @@ void GFX_EndUpdate( const Bit16u *changedLines )
 {
     if (core_timing == CORE_TIMING_SYNCED)
     {
-        video_cb(changedLines ? dosbox_framebuffers[0] : NULL, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+        dosbox_frontbuffer = dosbox_framebuffers[0];
+        dosbox_frontbuffer_uploaded = !changedLines;
     }
     else if (dosbox_frontbuffer_uploaded && changedLines)
     {

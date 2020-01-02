@@ -21,10 +21,10 @@
 #include "control.h"
 #include "dos/drives.h"
 #include "dosbox.h"
+#include "emu_thread.h"
 #include "file/file_path.h"
 #include "ints/int10.h"
 #include "joystick.h"
-#include "libco.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
 #include "mapper.h"
@@ -41,6 +41,7 @@
 #include <cstdarg>
 #include <cstdlib>
 #include <string>
+#include <thread>
 #ifdef _WIN32
 #include <direct.h>
 #else
@@ -77,9 +78,6 @@ char slash = '\\';
 #else
 char slash = '/';
 #endif
-
-cothread_t mainThread;
-cothread_t emuThread;
 
 bool autofire;
 bool dosbox_initialiazed = false;
@@ -128,7 +126,7 @@ static std::string loadPath;
 static std::string gamePath;
 static std::string configPath;
 bool dosbox_exit;
-static bool frontend_exit;
+bool frontend_exit;
 static bool is_restarting = false;
 
 /* video variables */
@@ -159,6 +157,9 @@ unsigned disk_count = 0;
 bool disk_tray_ejected;
 char disk_load_image[PATH_MAX_LENGTH];
 bool mount_overlay = true;
+
+// Thread we run dosbox in.
+static std::thread emu_thread;
 
 /* helper functions */
 static char last_written_character = 0;
@@ -584,7 +585,7 @@ static struct retro_disk_control_callback disk_interface = {
 static void leave_thread(Bitu)
 {
     MIXER_CallBack(0, audioData, samplesPerFrame * 4);
-    co_switch(mainThread);
+    switchToMainThread();
 
     if (core_timing != CORE_TIMING_SYNCED)
         /* Schedule the next frontend interrupt */
@@ -928,7 +929,7 @@ static void start_dosbox(void)
     control->Init();
 
     /* Init done, go back to the main thread */
-    co_switch(mainThread);
+    switchToMainThread();
 
     dosbox_initialiazed = true;
     check_variables();
@@ -969,43 +970,6 @@ static void start_dosbox(void)
     dosbox_exit = true;
 }
 
-static void wrap_dosbox()
-{
-    start_dosbox();
-
-    if (emuThread && mainThread)
-        co_switch(mainThread);
-
-    /* Dead emulator */
-    while(true)
-    {
-        if (log_cb)
-            log_cb(RETRO_LOG_ERROR, "[dosbox] running a dead DOSBox instance\n");
-        co_switch(mainThread);
-    }
-}
-
-void init_threads(void)
-{
-    if(!mainThread)
-    {
-        mainThread = co_active();
-    }
-    if(!emuThread)
-    {
-#ifdef __GENODE__
-        emuThread = co_create((1<<18)*sizeof(void*), wrap_dosbox);
-#else
-        emuThread = co_create(65536*sizeof(void*)*16, wrap_dosbox);
-#endif
-    }
-    else
-    {
-        if (log_cb)
-            log_cb(RETRO_LOG_WARN, "[dosbox] init called more than once \n");
-    }
-}
-
 void restart_program(std::vector<std::string> & parameters)
 {
 
@@ -1013,6 +977,7 @@ void restart_program(std::vector<std::string> & parameters)
         log_cb(RETRO_LOG_WARN, "[dosbox] program restart not supported\n");
     return;
 
+#if 0
     /* TO-DO: this kinda works but it's still not working 100% hence the early return*/
     if(emuThread)
     {
@@ -1027,6 +992,7 @@ void restart_program(std::vector<std::string> & parameters)
 
     dosbox_initialiazed = false;
     init_threads();
+#endif
 }
 
 std::string normalize_path(const std::string& aPath)
@@ -1148,8 +1114,6 @@ void retro_init (void)
     RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_XRGB8888;
     environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &RDOSGFXcolorMode);
 
-    init_threads();
-
     const char *system_dir = NULL;
     if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
         retro_system_directory = system_dir;
@@ -1173,15 +1137,8 @@ void retro_deinit(void)
 {
     frontend_exit = !dosbox_exit;
 
-    if(emuThread)
-    {
-        /* If the frontend wants to exit we need to let the emulator
-           run to finish its job. */
-        if(frontend_exit)
-            co_switch(emuThread);
-
-        co_delete(emuThread);
-        emuThread = 0;
+    if (emu_thread.joinable()) {
+        emu_thread.join();
     }
 
 #ifdef HAVE_LIBNX
@@ -1191,62 +1148,49 @@ void retro_deinit(void)
 
 bool retro_load_game(const struct retro_game_info *game)
 {
-    if(emuThread)
-    {
-        if(game)
-        {
-            /* Copy the game path */
-            loadPath = normalize_path(game->path);
-            const size_t lastDot = loadPath.find_last_of('.');
-            char tmp[PATH_MAX_LENGTH];
-            snprintf(tmp, sizeof(tmp), "%s", game->path);
-            gamePath = std::string(tmp);
+    if (game) {
+        // Copy the game path.
+        loadPath = normalize_path(game->path);
+        const size_t lastDot = loadPath.find_last_of('.');
+        char tmp[PATH_MAX_LENGTH];
+        snprintf(tmp, sizeof(tmp), "%s", game->path);
+        gamePath = std::string(tmp);
 
-            /* Find any config file to load */
-            if(std::string::npos != lastDot)
-            {
-                std::string extension = loadPath.substr(lastDot + 1);
-                std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+        // Find any config file to load.
+        if (std::string::npos != lastDot) {
+            std::string extension = loadPath.substr(lastDot + 1);
+            std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-                if(extension == "conf")
-                {
-                    configPath = loadPath;
-                    loadPath.clear();
+            if(extension == "conf") {
+                configPath = loadPath;
+                loadPath.clear();
+            } else if(extension == "iso" || extension == "cue") {
+                configPath = normalize_path(retro_save_directory + slash + retro_library_name + ".conf");
+                if (log_cb) {
+                    log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
                 }
-                else if(extension == "iso" || extension == "cue")
-                {
-                    configPath = normalize_path(retro_save_directory + slash +  retro_library_name + ".conf");
-                    if(log_cb)
-                        log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
-                    disk_add_image_index();
-                    snprintf(disk_load_image, sizeof(disk_load_image), "%s", loadPath.c_str());
-                    loadPath.clear();
-                }
-                else if(configPath.empty())
-                {
-                    configPath = normalize_path(retro_save_directory + slash +  retro_library_name + ".conf");
-                    if(log_cb)
-                        log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
+                disk_add_image_index();
+                snprintf(disk_load_image, sizeof(disk_load_image), "%s", loadPath.c_str());
+                loadPath.clear();
+            } else if(configPath.empty()) {
+                configPath = normalize_path(retro_save_directory + slash + retro_library_name + ".conf");
+                if (log_cb) {
+                    log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
                 }
             }
         }
-        else
-        {
-            configPath = normalize_path(retro_save_directory + slash +  retro_library_name + ".conf");
-            if(log_cb)
-                log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
+    } else {
+        configPath = normalize_path(retro_save_directory + slash +  retro_library_name + ".conf");
+        if (log_cb) {
+            log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
         }
+    }
 
-        co_switch(emuThread);
-        samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
-        return true;
-    }
-    else
-    {
-        if(log_cb)
-            log_cb(RETRO_LOG_WARN, "[dosbox] load game called without emulator thread\n");
-        return false;
-    }
+    emu_thread = std::thread(start_dosbox);
+    switchToEmuThread();
+
+    samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
+    return true;
 }
 
 bool retro_load_game_special(unsigned game_type, const struct retro_game_info *info, size_t num_info)
@@ -1257,9 +1201,8 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info *i
 void retro_run (void)
 {
     /* TO-DO: Add a core option for this */
-    if (dosbox_exit && emuThread) {
-        co_delete(emuThread);
-        emuThread = NULL;
+    if (dosbox_exit && emu_thread.joinable()) {
+        emu_thread.join();
         environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0);
         return;
     }
@@ -1292,8 +1235,7 @@ void retro_run (void)
         check_variables();
     }
 
-    if(emuThread)
-    {
+    if (emu_thread.joinable()) {
         /* Once C is mounted, mount the overlay */
         if (Drives['C' - 'A'] && mount_overlay)
         {
@@ -1311,17 +1253,15 @@ void retro_run (void)
         MAPPER_Run(false);
 
         /* Run emulator */
-        co_switch(emuThread);
+        switchToEmuThread();
 
-        if (core_timing == CORE_TIMING_SYNCED)
-        {
+        // If we have a new frame, submit it.
+        video_cb(dosbox_frontbuffer_uploaded ? nullptr : dosbox_frontbuffer, RDOSGFXwidth,
+                 RDOSGFXheight, RDOSGFXpitch);
+        dosbox_frontbuffer_uploaded = true;
+
+        if (core_timing == CORE_TIMING_SYNCED) {
             MIXER_CallBack(0, audioData, samplesPerFrame * 4);
-        }
-        else
-        {
-            video_cb(dosbox_frontbuffer_uploaded ? NULL : dosbox_frontbuffer,
-                     RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
-            dosbox_frontbuffer_uploaded = true;
         }
         /* Upload audio */
         audio_batch_cb((int16_t*)audioData, samplesPerFrame);

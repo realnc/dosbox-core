@@ -1,6 +1,5 @@
 #pragma once
 #include "config.h"
-#include "libco.h"
 #include "libretro.h"
 #include <cstdint>
 #include <string>
@@ -18,13 +17,13 @@ extern retro_audio_sample_batch_t audio_batch_cb;
 extern retro_input_poll_t poll_cb;
 extern retro_input_state_t input_cb;
 extern retro_environment_t environ_cb;
-extern cothread_t emuThread;
-extern cothread_t mainThread;
 extern core_timing_mode core_timing;
 extern float dosbox_aspect_ratio;
 extern Bit8u dosbox_framebuffers[2][1024 * 768 * 4];
 extern Bit8u *dosbox_frontbuffer;
 extern bool dosbox_frontbuffer_uploaded;
+extern bool dosbox_exit;
+extern bool frontend_exit;
 
 namespace retro {
 class CoreOptions;

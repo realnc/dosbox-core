@@ -24,6 +24,9 @@ extern Bit8u *dosbox_frontbuffer;
 extern bool dosbox_frontbuffer_uploaded;
 extern bool dosbox_exit;
 extern bool frontend_exit;
+extern retro_midi_interface retro_midi_interface;
+extern bool use_retro_midi;
+extern bool have_retro_midi;
 
 namespace retro {
 class CoreOptions;

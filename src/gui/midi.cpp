@@ -30,6 +30,7 @@
 
 #ifdef __LIBRETRO__
 #include "libretro.h"
+#include "libretro_dosbox.h"
 #endif
 
 #include "dosbox.h"
@@ -108,14 +109,13 @@ MidiHandler Midi_none;
 DB_Midi midi;
 
 #ifdef __LIBRETRO__
-struct retro_midi_interface *retro_midi_interface;
-Bit64u Midi_write_time;
+static Bit64u Midi_write_time;
 #endif
 
 void MIDI_RawOutByte(Bit8u data) {
 
 #ifdef __LIBRETRO__
-	if (retro_midi_interface && retro_midi_interface->output_enabled()) {
+	if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
 		Bit64u current_time = GetTicks() * 1000;
 		Bit64u delta_time;
 		if (Midi_write_time == 0)
@@ -124,7 +124,7 @@ void MIDI_RawOutByte(Bit8u data) {
 		Midi_write_time = current_time;
 		if (delta_time > 0xFFFFFFFF)
 			delta_time = 0;
-		retro_midi_interface->write(data, (uint32_t)delta_time);
+		retro_midi_interface.write(data, (uint32_t)delta_time);
 	}
 #endif
 

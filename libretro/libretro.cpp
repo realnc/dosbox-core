@@ -28,6 +28,8 @@
 #include "libretro.h"
 #include "libretro_dosbox.h"
 #include "mapper.h"
+#include "midi_alsa.h"
+#include "midi_win32.h"
 #include "mixer.h"
 #include "pic.h"
 #include "programs.h"
@@ -81,7 +83,6 @@ char slash = '/';
 
 bool autofire;
 bool dosbox_initialiazed = false;
-bool midi_enable = false;
 
 unsigned deadzone;
 float mouse_speed_factor_x = 1.0;
@@ -119,7 +120,6 @@ retro_input_poll_t poll_cb;
 retro_input_state_t input_cb;
 retro_environment_t environ_cb;
 retro_log_printf_t log_cb;
-extern struct retro_midi_interface *retro_midi_interface;
 
 /* DOSBox state */
 static std::string loadPath;
@@ -140,7 +140,12 @@ static float current_aspect_ratio = 0;
 /* audio variables */
 static uint8_t audioData[829 * 4]; // 49716hz max
 static uint32_t samplesPerFrame = 735;
-static struct retro_midi_interface midi_interface;
+struct retro_midi_interface retro_midi_interface;
+bool use_retro_midi = false;
+bool have_retro_midi = false;
+#ifdef HAVE_ALSA
+static auto alsa_midi_ports = getAlsaMidiPorts();
+#endif
 bool disney_init;
 
 /* callbacks */
@@ -861,7 +866,32 @@ void check_variables()
         update_dosbox_variable(
             false, "speaker", "pcspeaker", core_options["pcspeaker"]->toString());
 
-        midi_enable = core_options["midi"]->toBool();
+        {
+            const auto& midi_driver = core_options["midi_driver"]->toString();
+            use_retro_midi = midi_driver == "libretro";
+            update_dosbox_variable(false, "midi", "mididevice", use_retro_midi ? "none" : midi_driver);
+            if (use_retro_midi && !have_retro_midi) {
+                have_retro_midi = environ_cb(RETRO_ENVIRONMENT_GET_MIDI_INTERFACE, &retro_midi_interface);
+                if (log_cb)
+                    log_cb(RETRO_LOG_INFO, "[dosbox] libretro MIDI interface %s.\n",
+                           have_retro_midi ? "initialized" : "unavailable");
+            }
+        #if defined(HAVE_ALSA)
+            // Dosbox only accepts the numerical MIDI port, not client/port names.
+            const auto& current_value = core_options["midi_port"]->toString();
+            for (const auto& [port, client, port_name] : alsa_midi_ports) {
+                if (client + ':' + port_name == current_value) {
+                    update_dosbox_variable(false, "midi", "midiconfig", port);
+                    break;
+                }
+            }
+            core_options.setVisible("midi_port", midi_driver == "alsa");
+        #endif
+        #ifdef __WIN32__
+            update_dosbox_variable(false, "midi", "midiconfig", core_options["midi_port"]->toString());
+            core_options.setVisible("midi_port", midi_driver == "win32");
+        #endif
+        }
 
     #if defined(C_IPX)
         update_dosbox_variable(false, "ipx", "ipx", core_options["ipx"]->toString());
@@ -933,18 +963,6 @@ static void start_dosbox(void)
 
     dosbox_initialiazed = true;
     check_variables();
-
-    if (midi_enable)
-    {
-        if(environ_cb(RETRO_ENVIRONMENT_GET_MIDI_INTERFACE, &midi_interface))
-            retro_midi_interface = &midi_interface;
-        else
-            retro_midi_interface = NULL;
-
-        if (log_cb)
-            log_cb(RETRO_LOG_INFO, "[dosbox] MIDI interface %s.\n",
-                retro_midi_interface ? "initialized" : "unavailable\n");
-    }
 
     if (core_timing == CORE_TIMING_SYNCED)
         /* In synced mode, frontend takes care of timing, not dosbox */
@@ -1019,9 +1037,6 @@ void retro_set_environment(retro_environment_t cb)
 
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allow_no_game);
     cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
-
-    retro::core_options.setEnvironmentCallback(cb);
-    retro::core_options.updateFrontend();
 
     static const struct retro_controller_description ports_default[] =
     {
@@ -1131,6 +1146,36 @@ void retro_init (void)
         retro_content_directory = content_dir;
     if (log_cb)
         log_cb(RETRO_LOG_INFO, "[dosbox] CONTENT_DIRECTORY: %s\n", retro_content_directory.c_str());
+
+#ifdef HAVE_ALSA
+    // Add values to the midi port option. We don't use numerical ports since these can change. We
+    // instead use the MIDI client and port name and resolve them back to numerical ports later on.
+    {
+        std::vector<retro::CoreOptionValue> values;
+        for (const auto& [port, client, port_name] : alsa_midi_ports) {
+            values.emplace_back(client + ':' + port_name, "[" + client + "] " + port_name + " - " + port);
+        }
+        if (values.empty()) {
+            values.emplace_back("none", "(no MIDI ports found)");
+        }
+        retro::core_options.option("midi_port")->setValues(values, values.front());
+    }
+#endif
+#ifdef __WIN32__
+    {
+        std::vector<retro::CoreOptionValue> values;
+        for (const auto& port : getWin32MidiPorts()) {
+            values.emplace_back(port);
+        }
+        if (values.empty()) {
+            values.emplace_back("none", "(no MIDI ports found)");
+        }
+        retro::core_options.option("midi_port")->setValues(values, values.front());
+    }
+#endif
+
+    retro::core_options.setEnvironmentCallback(environ_cb);
+    retro::core_options.updateFrontend();
 }
 
 void retro_deinit(void)
@@ -1271,8 +1316,9 @@ void retro_run (void)
         if (log_cb)
             log_cb(RETRO_LOG_WARN, "[dosbox] run called without emulator thread\n");
     }
-    if (midi_enable && retro_midi_interface && retro_midi_interface->output_enabled())
-        retro_midi_interface->flush();
+    if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
+        retro_midi_interface.flush();
+    }
     samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
 }
 

@@ -23,7 +23,9 @@ CXX:=$(cross_prefix)$(CXX)
 LD:=$(cross_prefix)$(LD)
 
 platform ?= unix
-ifneq ($(findstring MINGW,$(UNAME)),)
+ifeq ($(UNAME),Linux)
+	platform = linux
+else ifneq ($(findstring MINGW,$(UNAME)),)
 	platform = win
 else ifneq ($(findstring Darwin,$(UNAME)),)
 	platform = osx
@@ -243,6 +245,9 @@ else ifeq ($(platform), win)
 	endif
 	COMMONFLAGS += -DWIN32=1 -D__USE_W32_SOCKETS -Werror=return-type
 else
+	ifeq ($(platform), linux)
+		COMMONFLAGS += -DHAVE_ALSA
+	endif
 	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
 	TARGET := $(TARGET_NAME)_libretro.so
 	LDFLAGS += -shared -Wl,--version-script=link.T

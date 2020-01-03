@@ -542,15 +542,38 @@ retro::CoreOptions retro::core_options {
             3
         },
         {
-            "midi",
-            "Sound: Enable libretro MIDI passthrough",
-            "Enable libretro MIDI passthrough.",
+            "midi_driver",
+            "Sound: MIDI driver",
+            "Driver to use for MIDI playback. The libretro driver forwards MIDI to the frontend, "
+                "in which case you need to configure MIDI output there. ",
             {
-                { false },
-                { true },
+                { "none" },
+            #ifdef HAVE_ALSA
+                { "alsa", "ALSA" },
+            #endif
+            #ifdef __WIN32__
+                { "win32", "Windows MIDI" },
+            #endif
+                { "libretro" },
             },
-            false
+            "none"
         },
+        #ifdef HAVE_ALSA
+        {
+            "midi_port",
+            "Sound: ALSA MIDI port",
+            "ALSA port to send MIDI to."
+            // No values. We detect and set MIDI ports at runtime.
+        },
+        #endif
+        #ifdef __WIN32__
+        {
+            "midi_port",
+            "Sound: Windows MIDI port",
+            "Windows port to send MIDI to."
+            // No values. We detect and set MIDI ports at runtime.
+        },
+        #endif
         {
             "pcspeaker",
             "Sound: Enable PC speaker",

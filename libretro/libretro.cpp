@@ -106,6 +106,7 @@ bool emulated_mouse;
 /* core option variables */
 static bool adv_core_options;
 core_timing_mode core_timing = CORE_TIMING_UNSYNCED;
+static bool use_spinlock = false;
 
 /* directories */
 std::string retro_save_directory;
@@ -590,7 +591,7 @@ static struct retro_disk_control_callback disk_interface = {
 static void leave_thread(Bitu)
 {
     MIXER_CallBack(0, audioData, samplesPerFrame * 4);
-    switchToMainThread();
+    switchThread();
 
     if (core_timing != CORE_TIMING_SYNCED)
         /* Schedule the next frontend interrupt */
@@ -720,6 +721,9 @@ void check_variables()
         cycles_mode = "fixed";
         update_cycles = true;
     }
+
+    use_spinlock = core_options["thread_sync"]->toString() == "spin";
+    useSpinlockThreadSync(use_spinlock);
 
     if (!core_options["use_options"]->toBool())
         return;
@@ -959,7 +963,7 @@ static void start_dosbox(void)
     control->Init();
 
     /* Init done, go back to the main thread */
-    switchToMainThread();
+    switchThread();
 
     dosbox_initialiazed = true;
     check_variables();
@@ -986,6 +990,7 @@ static void start_dosbox(void)
         log_cb(RETRO_LOG_WARN, "[dosbox] core asked to exit\n");
 
     dosbox_exit = true;
+    switchThread();
 }
 
 void restart_program(std::vector<std::string> & parameters)
@@ -1180,9 +1185,11 @@ void retro_init (void)
 
 void retro_deinit(void)
 {
-    frontend_exit = !dosbox_exit;
-
+    frontend_exit = true;
     if (emu_thread.joinable()) {
+        if (!dosbox_exit) {
+            switchThread();
+        }
         emu_thread.join();
     }
 
@@ -1232,7 +1239,7 @@ bool retro_load_game(const struct retro_game_info *game)
     }
 
     emu_thread = std::thread(start_dosbox);
-    switchToEmuThread();
+    switchThread();
 
     samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
     return true;
@@ -1246,8 +1253,11 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info *i
 void retro_run (void)
 {
     /* TO-DO: Add a core option for this */
-    if (dosbox_exit && emu_thread.joinable()) {
-        emu_thread.join();
+    if (dosbox_exit) {
+        if (emu_thread.joinable()) {
+            switchThread();
+            emu_thread.join();
+        }
         environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0);
         return;
     }
@@ -1298,7 +1308,7 @@ void retro_run (void)
         MAPPER_Run(false);
 
         /* Run emulator */
-        switchToEmuThread();
+        switchThread();
 
         // If we have a new frame, submit it.
         video_cb(dosbox_frontbuffer_uploaded ? nullptr : dosbox_frontbuffer, RDOSGFXwidth,

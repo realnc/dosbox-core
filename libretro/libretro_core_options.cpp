@@ -66,6 +66,22 @@ retro::CoreOptions retro::core_options {
             "internal_fixed"
         },
         {
+            "thread_sync",
+            "Core: Thread synchronization method",
+            "\"Wait\" is the most common method for synchronizing threads and should generally "
+                "work well on most systems. If for some reason it doesn't work well on your system "
+                "and you're seeing too much stutter, setting this to \"spin\" might offer better "
+                "frame times with less stutter. However, \"spin\" will also result in constant "
+                "100% usage on one of your CPU cores. Even though this is \"idle load\" and "
+                "doesn't increase CPU temperatures by much, it will prevent the CPU from clocking "
+                "down which on laptops will affect battery life. ",
+            {
+                { "wait" },
+                { "spin" },
+            },
+            "wait"
+        },
+        {
             "machine_type",
             "System: Emulated machine (restart)",
             "The type of video hardware DOSBox will emulate.",

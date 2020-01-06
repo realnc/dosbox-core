@@ -200,7 +200,7 @@ void E_Exit(const char * format,...) {
 	if(log_cb)
 		log_cb(RETRO_LOG_ERROR, buf);
 	dosbox_exit = true;
-	switchToMainThread();
+	switchThread();
 #endif
 	throw(buf);
 }

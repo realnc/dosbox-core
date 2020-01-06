@@ -214,7 +214,7 @@ void RENDER_EndUpdate( bool abort ) {
 	{
 		if (core_timing == CORE_TIMING_SYNCED) {
 			GFX_EndUpdate( NULL );
-			switchToMainThread();
+			switchThread();
 		}
 		return;
 	}
@@ -256,7 +256,7 @@ void RENDER_EndUpdate( bool abort ) {
 	render.updating=false;
 #ifdef __LIBRETRO__
 	if (core_timing == CORE_TIMING_SYNCED)
-		switchToMainThread();
+		switchThread();
 #endif
 }
 

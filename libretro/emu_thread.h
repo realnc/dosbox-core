@@ -1,18 +1,16 @@
 // This is copyrighted software. More information is at the end of this file.
 #pragma once
-#include <atomic>
 
 /* Dosbox doesn't have a top-level main loop that we can use, so instead we run it in its own thread
- * and switch between it and the main thread by using the two following blocking functions.
- *
- * switchToEmuThread() must only be called from the main thread. Blocks until the dosbox thread
- * calls switchToMainThread().
- *
- * switchToMainThread() is the reverse. It must only be called from the dosbox thread and blocks
- * until the main thread calls switchToEmuThread().
+ * and switch between it and the main thread. Calling this function will block the current thread
+ * and unblock the other.
  */
-void switchToEmuThread();
-void switchToMainThread();
+void switchThread();
+
+/* Change current thread synchronization mode. If true, use a spinlock. If false, use condition
+ * variables. Can be called from either the main thread or the emulation thread.
+ */
+void useSpinlockThreadSync(bool use_spinlock);
 
 /*
 

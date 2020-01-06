@@ -871,6 +871,10 @@ void check_variables()
             false, "speaker", "pcspeaker", core_options["pcspeaker"]->toString());
 
         {
+            const auto& mpu_type = core_options["mpu_type"]->toString();
+            update_dosbox_variable(false, "midi", "mpu401", core_options["mpu_type"]->toString());
+            core_options.setVisible("midi_driver", mpu_type != "none");
+
             const auto& midi_driver = core_options["midi_driver"]->toString();
             use_retro_midi = midi_driver == "libretro";
             update_dosbox_variable(false, "midi", "mididevice", use_retro_midi ? "none" : midi_driver);
@@ -889,11 +893,11 @@ void check_variables()
                     break;
                 }
             }
-            core_options.setVisible("midi_port", midi_driver == "alsa");
+            core_options.setVisible("midi_port", midi_driver == "alsa" && mpu_type != "none");
         #endif
         #ifdef __WIN32__
             update_dosbox_variable(false, "midi", "midiconfig", core_options["midi_port"]->toString());
-            core_options.setVisible("midi_port", midi_driver == "win32");
+            core_options.setVisible("midi_port", midi_driver == "win32" && mpu_type != "none");
         #endif
         }
 

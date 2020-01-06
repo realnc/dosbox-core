@@ -558,6 +558,17 @@ retro::CoreOptions retro::core_options {
             3
         },
         {
+            "mpu_type",
+            "Sound: MPU-401 type",
+            "Type of MPU-401 MIDI interface to emulate. \"Intelligent\" mode is the best choice.",
+            {
+                { "intelligent" },
+                { "uart", "UART" },
+                { "none" },
+            },
+            "intelligent"
+        },
+        {
             "midi_driver",
             "Sound: MIDI driver",
             "Driver to use for MIDI playback. The libretro driver forwards MIDI to the frontend, "

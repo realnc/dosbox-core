@@ -76,22 +76,21 @@ bool startup_state_numlock;
 #endif
 
 #ifdef _WIN32
-char slash = '\\';
+static constexpr char slash = '\\';
 #else
-char slash = '/';
+static constexpr char slash = '/';
 #endif
 
 bool autofire;
-bool dosbox_initialiazed = false;
+static bool dosbox_initialiazed = false;
 
-unsigned deadzone;
+unsigned mouse_emu_deadzone;
 float mouse_speed_factor_x = 1.0;
 float mouse_speed_factor_y = 1.0;
 
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void * userdata, uint8_t *stream, int len);
 
-extern Config* control;
 extern Bit8u herc_pal;
 MachineType machine = MCH_VGA;
 SVGACards svgaCard = SVGA_None;
@@ -110,13 +109,13 @@ static bool use_spinlock = false;
 
 /* directories */
 std::string retro_save_directory;
-std::string retro_system_directory;
-std::string retro_content_directory;
-std::string retro_library_name = "DOSBox-core";
+static std::string retro_system_directory;
+static std::string retro_content_directory;
+static const std::string retro_library_name = "DOSBox-core";
 
 /* libretro variables */
-retro_video_refresh_t video_cb;
-retro_audio_sample_batch_t audio_batch_cb;
+static retro_video_refresh_t video_cb;
+static retro_audio_sample_batch_t audio_batch_cb;
 retro_input_poll_t poll_cb;
 retro_input_state_t input_cb;
 retro_environment_t environ_cb;
@@ -128,14 +127,11 @@ static std::string gamePath;
 static std::string configPath;
 bool dosbox_exit;
 bool frontend_exit;
-static bool is_restarting = false;
 
 /* video variables */
-extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
-extern unsigned RDOSGFXcolorMode;
-unsigned currentWidth, currentHeight;
-#define DEFAULT_FPS 60.0f
-float currentFPS = DEFAULT_FPS;
+static unsigned currentWidth, currentHeight;
+static constexpr float default_fps = 60.0f;
+static float currentFPS = default_fps;
 static float current_aspect_ratio = 0;
 
 /* audio variables */
@@ -151,18 +147,18 @@ bool disney_init;
 
 /* callbacks */
 void retro_set_video_refresh(retro_video_refresh_t cb) { video_cb = cb; }
-void retro_set_audio_sample(retro_audio_sample_t cb) { }
+void retro_set_audio_sample(retro_audio_sample_t) { }
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb) { audio_batch_cb = cb; }
 void retro_set_input_poll(retro_input_poll_t cb) { poll_cb = cb; }
 void retro_set_input_state(retro_input_state_t cb) { input_cb = cb; }
 
 /* disk-control variables */
-char disk_array[16][PATH_MAX_LENGTH];
-unsigned disk_index = 0;
-unsigned disk_count = 0;
-bool disk_tray_ejected;
-char disk_load_image[PATH_MAX_LENGTH];
-bool mount_overlay = true;
+static char disk_array[16][PATH_MAX_LENGTH];
+static unsigned disk_index = 0;
+static unsigned disk_count = 0;
+static bool disk_tray_ejected;
+static char disk_load_image[PATH_MAX_LENGTH];
+static bool mount_overlay = true;
 
 // Thread we run dosbox in.
 static std::thread emu_thread;
@@ -282,7 +278,7 @@ bool mount_overlay_filesystem(char drive, const char* path)
             return false;
         }
         delete Drives[drive-'A'];
-        Drives[drive-'A'] = 0;
+        Drives[drive-'A'] = nullptr;
     }
     else
     {
@@ -329,8 +325,6 @@ bool mount_disk_image(const char *path, bool silent)
 
     if (extension == ".img")
     {
-
-        int error = -1;
         char drive = 'A';
 
         Bit8u mediaid=0xF0;
@@ -351,7 +345,6 @@ bool mount_disk_image(const char *path, bool silent)
         mem_writeb(Real2Phys(dos.tables.mediaid) + (drive - 'A') * 9, mediaid);
 
         /* command uses dta so set it to our internal dta */
-        RealPt save_dta = dos.dta();
         dos.dta(dos.tables.tempdta);
 
         for(Bitu i = 0; i < DOS_DRIVES; i++)
@@ -429,8 +422,6 @@ bool mount_disk_image(const char *path, bool silent)
         if (!silent) write_out(msg);
             return true;
     }
-    else
-        return false;
     return false;
 }
 
@@ -463,7 +454,7 @@ bool unmount_disk_image(char *path)
     }
     if (Drives[drive - 'A'])
         DriveManager::UnmountDrive(drive - 'A');
-    Drives[drive - 'A'] = 0;
+    Drives[drive - 'A'] = nullptr;
     DriveManager::CycleDisks(drive - 'A', true);
 
     return true;
@@ -504,7 +495,6 @@ bool update_dosbox_variable(bool autoexec, std::string section_string, std::stri
     return ret;
 }
 
-/* libretro core implementation */
 static unsigned disk_get_num_images()
 {
     return disk_count;
@@ -538,14 +528,9 @@ static bool disk_set_eject_state(bool ejected)
         else
             return false;
     }
-    else
-    {
-        if(mount_disk_image(disk_array[disk_get_image_index()], true))
-            return true;
-        else
-            return false;
+    if (mount_disk_image(disk_array[disk_get_image_index()], true)) {
+        return true;
     }
-
     return false;
 }
 
@@ -590,7 +575,7 @@ static struct retro_disk_control_callback disk_interface = {
 
 static void leave_thread(Bitu)
 {
-    MIXER_CallBack(0, audioData, samplesPerFrame * 4);
+    MIXER_CallBack(nullptr, audioData, samplesPerFrame * 4);
     switchThread();
 
     if (core_timing != CORE_TIMING_SYNCED)
@@ -613,7 +598,7 @@ static void update_gfx_mode(bool change_fps)
     {
         const float new_fps =   (core_timing == CORE_TIMING_SYNCED || core_timing == CORE_TIMING_MATCH_FPS)
                                 ? render.src.fps
-                                : DEFAULT_FPS;
+                                : default_fps;
 
         new_av_info.timing.fps = new_fps;
         new_av_info.timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
@@ -689,7 +674,6 @@ void check_variables()
     static bool update_cycles = false;
     std::string cycles_mode;
     std::string machine_type;
-    struct retro_core_option_display option_display;
 
     bool blaster = false;
     bool gus = false;
@@ -814,9 +798,9 @@ void check_variables()
         }
 
         {
-            const unsigned prev = deadzone;
-            deadzone = core_options["emulated_mouse_deadzone"]->toInt();
-            if (prev != deadzone)
+            const unsigned prev = mouse_emu_deadzone;
+            mouse_emu_deadzone = core_options["emulated_mouse_deadzone"]->toInt();
+            if (prev != mouse_emu_deadzone)
                 MAPPER_Init();
         }
 
@@ -872,7 +856,7 @@ void check_variables()
 
         {
             const auto& mpu_type = core_options["mpu_type"]->toString();
-            update_dosbox_variable(false, "midi", "mpu401", core_options["mpu_type"]->toString());
+            update_dosbox_variable(false, "midi", "mpu401", mpu_type);
             core_options.setVisible("midi_driver", mpu_type != "none");
 
             const auto& midi_driver = core_options["midi_driver"]->toString();
@@ -997,7 +981,7 @@ static void start_dosbox(void)
     switchThread();
 }
 
-void restart_program(std::vector<std::string> & parameters)
+void restart_program(std::vector<std::string>& /*parameters*/)
 {
 
     if (log_cb)
@@ -1053,13 +1037,13 @@ void retro_set_environment(retro_environment_t cb)
         { "Gamepad",             RETRO_DEVICE_JOYPAD },
         { "Joystick",            RETRO_DEVICE_JOYSTICK },
         { "Disconnected",        RETRO_DEVICE_NONE },
-        { 0 },
+        {},
     };
     static const struct retro_controller_description ports_keyboard[] =
     {
         { "Keyboard + Mouse", RETRO_DEVICE_KEYBOARD },
         { "Disconnected",     RETRO_DEVICE_NONE },
-        { 0 },
+        {},
     };
 
     static const struct retro_controller_info ports[] = {
@@ -1069,7 +1053,7 @@ void retro_set_environment(retro_environment_t cb)
         { ports_keyboard, 2 },
         { ports_keyboard, 2 },
         { ports_keyboard, 2 },
-        { 0 },
+        {},
     };
     environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 }
@@ -1130,7 +1114,7 @@ void retro_init (void)
     if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
         log_cb = log.log;
     else
-        log_cb = NULL;
+        log_cb = nullptr;
 
     if (log_cb)
         log_cb(RETRO_LOG_INFO, "[dosbox] logger interface initialized\n");
@@ -1138,19 +1122,19 @@ void retro_init (void)
     RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_XRGB8888;
     environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &RDOSGFXcolorMode);
 
-    const char *system_dir = NULL;
+    const char* system_dir = nullptr;
     if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
         retro_system_directory = system_dir;
     if (log_cb)
         log_cb(RETRO_LOG_INFO, "[dosbox] SYSTEM_DIRECTORY: %s\n", retro_system_directory.c_str());
 
-    const char *save_dir = NULL;
+    const char* save_dir = nullptr;
     if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
         retro_save_directory = save_dir;
     if (log_cb)
         log_cb(RETRO_LOG_INFO, "[dosbox] SAVE_DIRECTORY: %s\n", retro_save_directory.c_str());
 
-    const char *content_dir = NULL;
+    const char* content_dir = nullptr;
     if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
         retro_content_directory = content_dir;
     if (log_cb)
@@ -1162,7 +1146,8 @@ void retro_init (void)
     {
         std::vector<retro::CoreOptionValue> values;
         for (const auto& [port, client, port_name] : alsa_midi_ports) {
-            values.emplace_back(client + ':' + port_name, "[" + client + "] " + port_name + " - " + port);
+            values.emplace_back(
+                client + ':' + port_name, "[" + client + "] " + port_name + " - " + port);
         }
         if (values.empty()) {
             values.emplace_back("none", "(no MIDI ports found)");
@@ -1249,20 +1234,20 @@ bool retro_load_game(const struct retro_game_info *game)
     return true;
 }
 
-bool retro_load_game_special(unsigned game_type, const struct retro_game_info *info, size_t num_info)
+bool retro_load_game_special(
+        unsigned /*game_type*/, const struct retro_game_info* /*info*/, size_t /*num_info*/)
 {
     return false;
 }
 
 void retro_run (void)
 {
-    /* TO-DO: Add a core option for this */
     if (dosbox_exit) {
         if (emu_thread.joinable()) {
             switchThread();
             emu_thread.join();
         }
-        environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, 0);
+        environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, nullptr);
         return;
     }
 
@@ -1294,42 +1279,36 @@ void retro_run (void)
         check_variables();
     }
 
-    if (emu_thread.joinable()) {
-        /* Once C is mounted, mount the overlay */
-        if (Drives['C' - 'A'] && mount_overlay)
-        {
-            std::size_t last_slash = gamePath.find_last_of("/\\");
-            std::string s1 = gamePath.substr(0, last_slash);
-            std::size_t second_to_last_slash = s1.find_last_of("/\\");
-            std::string s2 = s1.substr(second_to_last_slash + 1, last_slash);
+    /* Once C is mounted, mount the overlay */
+    if (Drives['C' - 'A'] && mount_overlay) {
+        std::size_t last_slash = gamePath.find_last_of("/\\");
+        std::string s1 = gamePath.substr(0, last_slash);
+        std::size_t second_to_last_slash = s1.find_last_of("/\\");
+        std::string s2 = s1.substr(second_to_last_slash + 1, last_slash);
 
-            std::string save_directory = retro_save_directory + slash + s2 + slash;
-            normalize_path(save_directory);
-            mount_overlay_filesystem('C', save_directory.c_str());
-            mount_overlay = false;
-        }
-        /* Read input */
-        MAPPER_Run(false);
-
-        /* Run emulator */
-        switchThread();
-
-        // If we have a new frame, submit it.
-        video_cb(dosbox_frontbuffer_uploaded ? nullptr : dosbox_frontbuffer, RDOSGFXwidth,
-                 RDOSGFXheight, RDOSGFXpitch);
-        dosbox_frontbuffer_uploaded = true;
-
-        if (core_timing == CORE_TIMING_SYNCED) {
-            MIXER_CallBack(0, audioData, samplesPerFrame * 4);
-        }
-        /* Upload audio */
-        audio_batch_cb((int16_t*)audioData, samplesPerFrame);
+        std::string save_directory = retro_save_directory + slash + s2 + slash;
+        normalize_path(save_directory);
+        mount_overlay_filesystem('C', save_directory.c_str());
+        mount_overlay = false;
     }
-    else
-    {
-        if (log_cb)
-            log_cb(RETRO_LOG_WARN, "[dosbox] run called without emulator thread\n");
+
+    /* Read input */
+    MAPPER_Run(false);
+
+    /* Run emulator */
+    switchThread();
+
+    // If we have a new frame, submit it.
+    video_cb(dosbox_frontbuffer_uploaded ? nullptr : dosbox_frontbuffer, RDOSGFXwidth,
+             RDOSGFXheight, RDOSGFXpitch);
+    dosbox_frontbuffer_uploaded = true;
+
+    if (core_timing == CORE_TIMING_SYNCED) {
+        MIXER_CallBack(nullptr, audioData, samplesPerFrame * 4);
     }
+    /* Upload audio */
+    audio_batch_cb((int16_t*)audioData, samplesPerFrame);
+
     if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
         retro_midi_interface.flush();
     }
@@ -1342,12 +1321,12 @@ void retro_reset (void)
 }
 
 /* Stubs */
-void *retro_get_memory_data(unsigned type) { return 0; }
-size_t retro_get_memory_size(unsigned type) { return 0; }
-size_t retro_serialize_size (void) { return 0; }
-bool retro_serialize(void *data, size_t size) { return false; }
-bool retro_unserialize(const void * data, size_t size) { return false; }
-void retro_cheat_reset(void) { }
-void retro_cheat_set(unsigned unused, bool unused1, const char* unused2) { }
-void retro_unload_game (void) { }
-unsigned retro_get_region (void) { return RETRO_REGION_NTSC; }
+void *retro_get_memory_data(unsigned /*type*/) { return 0; }
+size_t retro_get_memory_size(unsigned /*type*/) { return 0; }
+size_t retro_serialize_size() { return 0; }
+bool retro_serialize(void* /*data*/, size_t /*size*/) { return false; }
+bool retro_unserialize(const void* /*data*/, size_t /*size*/) { return false; }
+void retro_cheat_reset() { }
+void retro_cheat_set(unsigned /*unused*/, bool /*unused1*/, const char* /*unused2*/) { }
+void retro_unload_game() { }
+unsigned retro_get_region() { return RETRO_REGION_NTSC; }

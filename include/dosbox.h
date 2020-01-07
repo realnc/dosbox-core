@@ -72,6 +72,8 @@ extern bool SDLNetInited;
 #include "logging.h"
 #endif // the logging system.
 
+#ifdef __LIBRETRO__
 void DOSBOX_UnlockSpeed( bool pressed );
+#endif
 
 #endif /* DOSBOX_DOSBOX_H */

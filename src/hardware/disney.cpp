@@ -24,6 +24,10 @@
 #include "pic.h"
 #include "setup.h"
 
+#ifdef __LIBRETRO__
+#include "libretro_dosbox.h"
+#endif
+
 #define DISNEY_BASE 0x0378
 
 #define DISNEY_SIZE 128
@@ -388,7 +392,6 @@ public:
 };
 
 static DISNEY* test;
-extern bool disney_init;
 
 static void DISNEY_ShutDown(Section* sec){
 	if (disney_init)

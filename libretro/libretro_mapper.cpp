@@ -17,17 +17,6 @@
 struct Processable;
 static std::vector<Processable*> inputList;
 
-extern retro_log_printf_t log_cb;
-
-JoystickType joystick_type;
-extern bool connected[16];
-extern bool gamepad[16];
-extern bool emulated_mouse;
-
-extern unsigned deadzone;
-extern float mouse_speed_factor_x;
-extern float mouse_speed_factor_y;
-
 static bool keyboardState[KBD_LAST];
 static bool slowMouse;
 static bool fastMouse;
@@ -95,32 +84,33 @@ struct InputItem
 struct Processable
 {
     virtual void process() = 0;
+    virtual ~Processable() = default;
 };
 
-struct EventHandler : public Processable
+struct EventHandler final: public Processable
 {
 
-    MAPPER_Handler* handler;
-    unsigned key;
-    unsigned mods;
+    MAPPER_Handler* handler_;
+    unsigned key_;
+    unsigned mods_;
 
     InputItem<EventHandler> item;
 
     EventHandler(MAPPER_Handler* handler, MapKeys key, unsigned mods) :
-        handler(handler), key(eventKeyMap[key]), mods(mods) { }
+        handler_(handler), key_(eventKeyMap[key]), mods_(mods) { }
 
-    void process()
+    void process() override
     {
         const uint32_t modsList =   keyboardState[eventMOD1] ? 1 : 0 |
                                     keyboardState[eventMOD2] ? 1 : 0;
-        item.process(*this, (mods == modsList) && keyboardState[key]);
+        item.process(*this, (mods_ == modsList) && keyboardState[key_]);
     }
 
-    void press() const          { handler(true); }
-    void release() const        { handler(false); }
+    void press() const          { handler_(true); }
+    void release() const        { handler_(false); }
 };
 
-struct MouseButton : public Processable
+struct MouseButton final: public Processable
 {
     unsigned retroButton;
     unsigned dosboxButton;
@@ -129,12 +119,14 @@ struct MouseButton : public Processable
 
     MouseButton(unsigned retro, unsigned dosbox) : retroButton(retro), dosboxButton(dosbox) { }
 
-    void process()       { item.process(*this, input_cb(0, RDEV(MOUSE), 0, retroButton)); }
+    void process() override
+    { item.process(*this, input_cb(0, RDEV(MOUSE), 0, retroButton)); }
+
     void press() const   { Mouse_ButtonPressed(dosboxButton); }
     void release() const { Mouse_ButtonReleased(dosboxButton); }
 };
 
-struct EmulatedMouseButton : public Processable
+struct EmulatedMouseButton final: public Processable
 {
     unsigned retroPort;
     unsigned retroID;
@@ -145,7 +137,9 @@ struct EmulatedMouseButton : public Processable
     EmulatedMouseButton(unsigned rP, unsigned rID, unsigned dosbox) :
         retroPort(rP), retroID(rID), dosboxButton(dosbox) { }
 
-    void process()       { item.process(*this, input_cb(retroPort, RDEV(JOYPAD), 0, retroID)); }
+    void process() override
+    { item.process(*this, input_cb(retroPort, RDEV(JOYPAD), 0, retroID)); }
+
     void press() const
     {
         if (dosboxButton == 2)
@@ -166,7 +160,7 @@ struct EmulatedMouseButton : public Processable
     }
 };
 
-struct JoystickButton : public Processable
+struct JoystickButton final: public Processable
 {
     unsigned retroPort;
     unsigned retroID;
@@ -178,12 +172,14 @@ struct JoystickButton : public Processable
     JoystickButton(unsigned rP, unsigned rID, unsigned dP, unsigned dID) :
         retroPort(rP), retroID(rID), dosboxPort(dP), dosboxID(dID) { }
 
-    void process()       { item.process(*this, input_cb(retroPort, RDEV(JOYPAD), 0, retroID)); }
+    void process() override
+    { item.process(*this, input_cb(retroPort, RDEV(JOYPAD), 0, retroID)); }
+
     void press() const   { JOYSTICK_Button(dosboxPort, dosboxID & 1, true);  }
     void release() const { JOYSTICK_Button(dosboxPort, dosboxID & 1, false); }
 };
 
-struct JoystickAxis : public Processable
+struct JoystickAxis final: public Processable
 {
     unsigned retroPort;
     unsigned retroSide;
@@ -195,16 +191,16 @@ struct JoystickAxis : public Processable
     JoystickAxis(unsigned rP, unsigned rS, unsigned rA, unsigned dP, unsigned dA) :
         retroPort(rP), retroSide(rS), retroAxis(rA), dosboxPort(dP), dosboxAxis(dA) { }
 
-    void process()
+    void process() override
     {
-        const float value = (float)input_cb(retroPort, RDEV(ANALOG), retroSide, retroAxis);
+        const float value = input_cb(retroPort, RDEV(ANALOG), retroSide, retroAxis);
 
         if(dosboxAxis == 0) JOYSTICK_Move_X(dosboxPort, value / 32768.0f);
         else                JOYSTICK_Move_Y(dosboxPort, value / 32768.0f);
     }
 };
 
-struct JoystickHat : public Processable
+struct JoystickHat final: public Processable
 {
     unsigned retroPort;
     unsigned retroID;
@@ -216,7 +212,9 @@ struct JoystickHat : public Processable
     JoystickHat(unsigned rP, unsigned rID, unsigned dP, unsigned dA) :
         retroPort(rP), retroID(rID), dosboxPort(dP), dosboxAxis(dA) { }
 
-    void process()       { item.process(*this, input_cb(retroPort, RDEV(JOYPAD), 0, retroID)); }
+    void process() override
+    { item.process(*this, input_cb(retroPort, RDEV(JOYPAD), 0, retroID)); }
+
     void press() const
     {
         if(dosboxAxis==0)
@@ -254,8 +252,7 @@ struct JoystickHat : public Processable
     }
 };
 
-
-void keyboard_event(bool down, unsigned keycode, uint32_t character, uint16_t key_modifiers)
+void keyboard_event(bool down, unsigned keycode, uint32_t /*character*/, uint16_t /*key_modifiers*/)
 {
     for (int i = 0; keyMap[i].retroID; i ++)
     {
@@ -361,6 +358,8 @@ void MAPPER_Init()
         { 255, 255, 255, 255, "" },
     };
 
+    // Currently unused.
+#if 0
     struct retro_input_descriptor desc_kbd[] = {
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Kbd Left" },
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Kbd Up" },
@@ -370,6 +369,7 @@ void MAPPER_Init()
         { 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Esc" },
         { 255, 255, 255, 255, "" },
     };
+#endif
 
     struct retro_input_descriptor empty = { 0 };
 
@@ -560,12 +560,14 @@ void MAPPER_Init()
     environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 }
 
-void MAPPER_AddHandler(MAPPER_Handler * handler,MapKeys key,Bitu mods,char const * const eventname,char const * const buttonname)
+void MAPPER_AddHandler(
+        MAPPER_Handler* handler, MapKeys key, Bitu mods, const char* const /*eventname*/,
+        const char* const /*buttonname*/)
 {
     inputList.push_back(new EventHandler(handler, key, mods));
 }
 
-void MAPPER_Run(bool pressed)
+void MAPPER_Run(bool /*pressed*/)
 {
     poll_cb();
 
@@ -579,19 +581,19 @@ void MAPPER_Run(bool pressed)
         int16_t emulated_mouseX = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
         int16_t emulated_mouseY = input_cb(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
 
-        if (abs(emulated_mouseX) <= deadzone * 32768 / 100)
+        if (abs(emulated_mouseX) <= mouse_emu_deadzone * 32768 / 100)
             emulated_mouseX = 0;
-        if (abs(emulated_mouseY) <= deadzone * 32768 / 100)
+        if (abs(emulated_mouseY) <= mouse_emu_deadzone * 32768 / 100)
             emulated_mouseY = 0;
 
         float slowdown = 32768.0;
         if (fastMouse)
-            slowdown /= 3.0;
+            slowdown /= 3.0f;
         if (slowMouse)
-            slowdown *= 8.0;
+            slowdown *= 8.0f;
 
-        float adjusted_emulated_mouseX = (float) emulated_mouseX * mouse_speed_factor_x * 8.0 / slowdown;
-        float adjusted_emulated_mouseY = (float) emulated_mouseY * mouse_speed_factor_y * 8.0 / slowdown;
+        float adjusted_emulated_mouseX = emulated_mouseX * mouse_speed_factor_x * 8.0f / slowdown;
+        float adjusted_emulated_mouseY = emulated_mouseY * mouse_speed_factor_y * 8.0f / slowdown;
 
        Mouse_CursorMoved(adjusted_emulated_mouseX, adjusted_emulated_mouseY, 0, 0, true);
     }
@@ -599,15 +601,15 @@ void MAPPER_Run(bool pressed)
     {
         float slowdown = 1.0;
         if (fastMouse)
-            slowdown /= 3.0;
+            slowdown /= 3.0f;
         if (slowMouse)
-            slowdown *= 8.0;
-        float adjusted_mouseX = (float) mouseX * mouse_speed_factor_x / slowdown;
-        float adjusted_mouseY = (float) mouseY * mouse_speed_factor_y / slowdown;
+            slowdown *= 8.0f;
+        float adjusted_mouseX = mouseX * mouse_speed_factor_x / slowdown;
+        float adjusted_mouseY = mouseY * mouse_speed_factor_y / slowdown;
         Mouse_CursorMoved(adjusted_mouseX, adjusted_mouseY, 0, 0, true);
     }
     for (std::vector<Processable*>::iterator i = inputList.begin(); i != inputList.end(); i ++)
         (*i)->process();
 }
 
-void Mouse_AutoLock(bool enable){ return; };
+void Mouse_AutoLock(bool /*enable*/) { }

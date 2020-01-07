@@ -19,8 +19,8 @@ static std::mutex emu_mutex;
 static std::mutex main_mutex;
 
 // For spinning.
-static std::atomic_flag emu_lock = ATOMIC_FLAG_INIT;
-static std::atomic_flag main_lock = ATOMIC_FLAG_INIT;
+static std::atomic_flag emu_flag = ATOMIC_FLAG_INIT;
+static std::atomic_flag main_flag = ATOMIC_FLAG_INIT;
 
 static void switchToEmuWait()
 {
@@ -57,10 +57,10 @@ static void switchToMainWait()
 
 static void switchToEmuSpin()
 {
-    main_lock.test_and_set(std::memory_order_acquire);
-    emu_lock.clear(std::memory_order_release);
+    main_flag.test_and_set(std::memory_order_acquire);
+    emu_flag.clear(std::memory_order_release);
     std::this_thread::yield();
-    while (main_lock.test_and_set(std::memory_order_acquire)) {
+    while (main_flag.test_and_set(std::memory_order_acquire)) {
         if (dosbox_exit || frontend_exit) {
             return;
         }
@@ -69,10 +69,10 @@ static void switchToEmuSpin()
 
 static void switchToMainSpin()
 {
-    emu_lock.test_and_set(std::memory_order_acquire);
-    main_lock.clear(std::memory_order_release);
+    emu_flag.test_and_set(std::memory_order_acquire);
+    main_flag.clear(std::memory_order_release);
     std::this_thread::yield();
-    while (emu_lock.test_and_set(std::memory_order_acquire)) {
+    while (emu_flag.test_and_set(std::memory_order_acquire)) {
         if (frontend_exit) {
             throw 1;
         }
@@ -124,31 +124,31 @@ void switchThread()
     }
 }
 
-void useSpinlockThreadSync(const bool use_spinlock)
+void useSpinlockThreadSync(const bool use_spinlock_)
 {
-    if (use_spinlock == ::use_spinlock) {
+    if (use_spinlock_ == ::use_spinlock) {
         return;
     }
 
-    ::use_spinlock = use_spinlock;
+    ::use_spinlock = use_spinlock_;
 
     if (std::this_thread::get_id() == main_thread_id) {
-        if (use_spinlock) {
+        if (use_spinlock_) {
             std::unique_lock emu_lock(emu_mutex);
             emu_keep_waiting = false;
             emu_lock.unlock();
             emu_cv.notify_one();
         } else {
-            emu_lock.clear(std::memory_order_release);
+            emu_flag.clear(std::memory_order_release);
         }
     } else {
-        if (use_spinlock) {
+        if (use_spinlock_) {
             std::unique_lock main_lock(emu_mutex);
             main_keep_waiting = false;
             main_lock.unlock();
             main_cv.notify_one();
         } else {
-            main_lock.clear(std::memory_order_release);
+            main_flag.clear(std::memory_order_release);
         }
     }
 }

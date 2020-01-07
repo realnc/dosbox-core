@@ -25,9 +25,9 @@ auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std:
     snd_seq_client_info_set_client(client_info, -1);
 
     while (snd_seq_query_next_client(seq.get(), client_info) == 0) {
-        const int client = snd_seq_client_info_get_client(client_info);
+        const int client_num = snd_seq_client_info_get_client(client_info);
 
-        snd_seq_port_info_set_client(port_info, client);
+        snd_seq_port_info_set_client(port_info, client_num);
         snd_seq_port_info_set_port(port_info, -1);
 
         while (snd_seq_query_next_port(seq.get(), port_info) == 0) {
@@ -39,9 +39,10 @@ auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std:
             {
                 auto port = std::to_string(snd_seq_client_info_get_client(client_info))
                     + ':' + std::to_string(snd_seq_port_info_get_port(port_info));
-                auto client = snd_seq_client_info_get_name(client_info);
+                auto client_name = snd_seq_client_info_get_name(client_info);
                 auto port_name = snd_seq_port_info_get_name(port_info);
-                port_list.emplace_back(std::move(port), std::move(client), std::move(port_name));
+                port_list.emplace_back(
+                    std::move(port), std::move(client_name), std::move(port_name));
             }
         }
     }

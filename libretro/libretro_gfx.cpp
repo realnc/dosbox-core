@@ -7,16 +7,16 @@
 #include <algorithm>
 #include <cstring>
 
-Bit8u dosbox_framebuffers[2][1024 * 768 * 4] = { 0 };
+Bit8u dosbox_framebuffers[2][1024 * 768 * 4] = {{0}};
 Bit8u *dosbox_frontbuffer = dosbox_framebuffers[0];
 static Bit8u *dosbox_backbuffer = dosbox_framebuffers[1];
 bool dosbox_frontbuffer_uploaded = false;
 Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 float dosbox_aspect_ratio = 0;
 unsigned RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_0RGB1555;
-static GFX_CallBack_t dosbox_gfx_cb = NULL;
+static GFX_CallBack_t dosbox_gfx_cb = nullptr;
 
-Bitu GFX_GetBestMode(Bitu flags)
+Bitu GFX_GetBestMode(Bitu /*flags*/)
 {
     return GFX_CAN_32 | GFX_RGBONLY;
 }
@@ -26,7 +26,8 @@ Bitu GFX_GetRGB(Bit8u red,Bit8u green,Bit8u blue)
     return (red << 16) | (green << 8) | (blue << 0);
 }
 
-Bitu GFX_SetSize(Bitu width,Bitu height,Bitu flags,double scalex,double scaley,GFX_CallBack_t cb)
+Bitu GFX_SetSize(
+        Bitu width ,Bitu height ,Bitu /*flags*/, double scalex, double scaley, GFX_CallBack_t cb)
 {
     memset(dosbox_framebuffers, 0, sizeof(dosbox_framebuffers));
     RDOSGFXwidth = width;
@@ -65,8 +66,7 @@ void GFX_EndUpdate( const Bit16u *changedLines )
 }
 
 // Stubs
-void GFX_SetTitle(Bit32s cycles, int frameskip, bool paused){}
-void GFX_ShowMsg(char const* format,...){}
+void GFX_SetTitle(Bit32s /*cycles*/, int /*frameskip*/, bool /*paused*/) {}
+void GFX_ShowMsg(char const* /*format*/,...) {}
 void GFX_Events(){}
-void GFX_SetPalette(Bitu start,Bitu count,GFX_PalEntry * entries){}
-
+void GFX_SetPalette(Bitu /*start*/, Bitu /*count*/, GFX_PalEntry* /*entries*/) {}

@@ -44,9 +44,6 @@
 #include "pci_bus.h"
 #ifdef __LIBRETRO__
 #include "libretro.h"
-extern retro_log_printf_t log_cb;
-extern MachineType machine;
-extern SVGACards svgaCard;
 #else
 MachineType machine;
 SVGACards svgaCard;

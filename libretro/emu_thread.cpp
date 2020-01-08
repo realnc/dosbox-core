@@ -59,7 +59,6 @@ static void switchToEmuSpin()
 {
     main_flag.test_and_set(std::memory_order_acquire);
     emu_flag.clear(std::memory_order_release);
-    std::this_thread::yield();
     while (main_flag.test_and_set(std::memory_order_acquire)) {
         if (dosbox_exit || frontend_exit) {
             return;
@@ -71,7 +70,6 @@ static void switchToMainSpin()
 {
     emu_flag.test_and_set(std::memory_order_acquire);
     main_flag.clear(std::memory_order_release);
-    std::this_thread::yield();
     while (emu_flag.test_and_set(std::memory_order_acquire)) {
         if (frontend_exit) {
             throw 1;

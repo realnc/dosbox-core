@@ -28,7 +28,12 @@
 
 #define PIT_TICK_RATE 1193182
 
+#ifdef __LIBRETRO__
+#include "fake_timing.h"
+#define GetTicks() fakeGetTicks()
+#else
 #define GetTicks() SDL_GetTicks()
+#endif
 
 typedef void (*TIMER_TickHandler)(void);
 

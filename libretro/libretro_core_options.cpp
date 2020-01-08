@@ -53,17 +53,17 @@ retro::CoreOptions retro::core_options {
         {
             "core_timing",
             "Core: Timing mode",
-            "The internal modes work on an internal scheduler. DOSBox will render frames at its "
-                "own pace which results in additional input lag and periodic stutter, but cycles "
-                "modes \"auto\" and \"max\" should work as intended.\n\n"
-                "External mode works based on the frontend's scheduler. It has no input lag and "
-                "does not produce stutter, but requires a fixed cycle rate.",
+            "External mode is the recommended setting. It enables the frontend to drive frame "
+                "pacing. It has no input lag and allows frontend features like DRC and Frame Delay "
+                "to work correctly. Internal mode runs out of sync with the frontend. This allows "
+                "for 60FPS output when running 70FPS games, but input lag and stutter/judder are "
+                "increased. Use only if you absolutely need 60FPS output with no tearing in 70FPS "
+                "games. ",
             {
-                { "internal_fixed", "internal (fixed 60fps)" },
-                { "internal_variable", "internal (variable fps)" },
-                { "external", "external (variable fps)" },
+                { "external" },
+                { "internal", "internal (fixed 60FPS)" },
             },
-            "internal_fixed"
+            "external"
         },
         {
             "thread_sync",

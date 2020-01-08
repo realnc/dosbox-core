@@ -212,7 +212,7 @@ void RENDER_EndUpdate( bool abort ) {
 	if (GCC_UNLIKELY(!render.updating))
 #ifdef __LIBRETRO__
 	{
-		if (core_timing == CORE_TIMING_SYNCED) {
+		if (run_synced) {
 			GFX_EndUpdate( NULL );
 			switchThread();
 		}
@@ -241,7 +241,7 @@ void RENDER_EndUpdate( bool abort ) {
 		render.frameskip.hadSkip[render.frameskip.index] = 0;
 	} else {
 #ifdef __LIBRETRO__
-		if (core_timing == CORE_TIMING_SYNCED)
+		if (run_synced)
 			GFX_EndUpdate( NULL );
 #endif
 #if 0
@@ -255,7 +255,7 @@ void RENDER_EndUpdate( bool abort ) {
 	render.frameskip.index = (render.frameskip.index + 1) & (RENDER_SKIP_CACHE - 1);
 	render.updating=false;
 #ifdef __LIBRETRO__
-	if (core_timing == CORE_TIMING_SYNCED)
+	if (run_synced)
 		switchThread();
 #endif
 }

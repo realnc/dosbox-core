@@ -44,19 +44,16 @@ Bitu GFX_SetSize(
 
 bool GFX_StartUpdate(Bit8u * & pixels,Bitu & pitch)
 {
-    pixels = (core_timing == CORE_TIMING_SYNCED) ? dosbox_framebuffers[0] : dosbox_backbuffer;
+    pixels = run_synced ? dosbox_framebuffers[0] : dosbox_backbuffer;
     pitch = RDOSGFXpitch;
     return true;
 }
 
 void GFX_EndUpdate( const Bit16u *changedLines )
 {
-    if (core_timing == CORE_TIMING_SYNCED)
-    {
+    if (run_synced) {
         dosbox_frontbuffer_uploaded = !changedLines;
-    }
-    else if (dosbox_frontbuffer_uploaded && changedLines)
-    {
+    } else if (dosbox_frontbuffer_uploaded && changedLines) {
         std::swap(dosbox_frontbuffer, dosbox_backbuffer);
         dosbox_frontbuffer_uploaded = false;
         // Tell dosbox to draw the next frame completely, not just the scanlines that changed.

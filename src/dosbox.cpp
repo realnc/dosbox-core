@@ -159,7 +159,11 @@ static Bitu Normal_Loop(void) {
 }
 
 //For trying other delays
+#ifdef __LIBRETRO__
+#define wrap_delay(a) fakeDelay(a)
+#else
 #define wrap_delay(a) SDL_Delay(a)
+#endif
 
 void increaseticks() { //Make it return ticksRemain and set it in the function above to remove the global variable.
 #ifndef __LIBRETRO__

@@ -419,8 +419,7 @@ static inline bool Mixer_irq_important(void) {
 	 * non stuttering audo */
 	return (ticksLocked || (CaptureState & (CAPTURE_WAVE|CAPTURE_VIDEO)));
 #else
-	/* In synced mode, prefer non stuttering audio */
-	return ticksLocked && core_timing != CORE_TIMING_SYNCED;
+	return ticksLocked;
 #endif
 }
 

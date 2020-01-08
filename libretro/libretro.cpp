@@ -22,6 +22,7 @@
 #include "dos/drives.h"
 #include "dosbox.h"
 #include "emu_thread.h"
+#include "fake_timing.h"
 #include "file/file_path.h"
 #include "ints/int10.h"
 #include "joystick.h"
@@ -104,7 +105,7 @@ bool emulated_mouse;
 
 /* core option variables */
 static bool adv_core_options;
-core_timing_mode core_timing = CORE_TIMING_UNSYNCED;
+bool run_synced = true;
 static bool use_spinlock = false;
 
 /* directories */
@@ -578,9 +579,10 @@ static void leave_thread(Bitu)
     MIXER_CallBack(nullptr, audioData, samplesPerFrame * 4);
     switchThread();
 
-    if (core_timing != CORE_TIMING_SYNCED)
+    if (!run_synced) {
         /* Schedule the next frontend interrupt */
         PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+    }
 }
 
 static void update_gfx_mode(bool change_fps)
@@ -596,9 +598,7 @@ static void update_gfx_mode(bool change_fps)
 
     if (change_fps)
     {
-        const float new_fps =   (core_timing == CORE_TIMING_SYNCED || core_timing == CORE_TIMING_MATCH_FPS)
-                                ? render.src.fps
-                                : default_fps;
+        const float new_fps = run_synced ? render.src.fps : default_fps;
 
         new_av_info.timing.fps = new_fps;
         new_av_info.timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
@@ -679,31 +679,15 @@ void check_variables()
     bool gus = false;
 
     {
-        const auto& value = core_options["core_timing"]->toString();
-        core_timing_mode old_timing = core_timing;
+        const bool old_timing = run_synced;
+        run_synced = core_options["core_timing"]->toString() == "external";
 
-        if (value == "external")
-            core_timing = CORE_TIMING_SYNCED;
-        else if (value == "internal_variable")
-            core_timing = CORE_TIMING_MATCH_FPS;
-        else
-            core_timing = CORE_TIMING_UNSYNCED;
-
-        if (dosbox_initialiazed)
-        {
-            if (old_timing == CORE_TIMING_SYNCED && core_timing != CORE_TIMING_SYNCED)
-            {
-                DOSBOX_UnlockSpeed(false);
+        if (dosbox_initialiazed && run_synced != old_timing) {
+            if (!run_synced) {
                 PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
             }
-            if (old_timing != CORE_TIMING_SYNCED && core_timing == CORE_TIMING_SYNCED)
-                DOSBOX_UnlockSpeed(true);
-            if (old_timing != CORE_TIMING_UNSYNCED && core_timing == CORE_TIMING_UNSYNCED)
-                update_gfx_mode(true);
+            update_gfx_mode(true);
         }
-
-        cycles_mode = "fixed";
-        update_cycles = true;
     }
 
     use_spinlock = core_options["thread_sync"]->toString() == "spin";
@@ -810,12 +794,7 @@ void check_variables()
         }
         catch (...) { }
 
-        if (core_timing != CORE_TIMING_SYNCED)
-            cycles_mode = core_options["cpu_cycles_mode"]->toString();
-        else
-            cycles_mode = "fixed";
-        update_cycles = true;
-
+        cycles_mode = core_options["cpu_cycles_mode"]->toString();
         cycles_limit = core_options["cpu_cycles_limit"]->toInt();
         cycles = core_options["cpu_cycles"]->toInt();
         cycles_multiplier = core_options["cpu_cycles_multiplier"]->toInt();
@@ -899,13 +878,10 @@ void check_variables()
         }
     }
 
-    /* show cycles if core timing is different from external */
-    core_options.setVisible("cpu_cycles_mode", core_timing != CORE_TIMING_SYNCED);
-
     /* show cycles adjustment if core timing is external or cycle mode is fixed */
     core_options.setVisible(
         {"cpu_cycles", "cpu_cycles_multiplier", "cpu_cycles_fine", "cpu_cycles_multiplier_fine"},
-        cycles_mode == "fixed" || core_timing == CORE_TIMING_SYNCED);
+        cycles_mode == "fixed");
 
     /* show cycles max adjustment if core cycle mode is max */
     core_options.setVisible("cpu_cycles_limit", cycles_mode == "max");
@@ -956,12 +932,10 @@ static void start_dosbox(void)
     dosbox_initialiazed = true;
     check_variables();
 
-    if (core_timing == CORE_TIMING_SYNCED)
-        /* In synced mode, frontend takes care of timing, not dosbox */
-        DOSBOX_UnlockSpeed(true);
-    else
+    if (!run_synced) {
         /* When not synced, schedule the first frontend interrupt */
         PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+    }
 
     try
     {
@@ -1251,11 +1225,9 @@ void retro_run (void)
         return;
     }
 
-    if (core_timing != CORE_TIMING_SYNCED) {
-        bool fast_forward = false;
-        environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward);
-        DOSBOX_UnlockSpeed(fast_forward);
-    }
+    bool fast_forward = false;
+    environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward);
+    DOSBOX_UnlockSpeed(fast_forward);
 
     if (disk_load_image[0]!='\0')
     {
@@ -1266,9 +1238,9 @@ void retro_run (void)
 
     /* Dynamic resolution switching */
     if (RDOSGFXwidth != currentWidth || RDOSGFXheight != currentHeight ||
-        (core_timing != CORE_TIMING_UNSYNCED && fabs(currentFPS - render.src.fps) > 0.05f && render.src.fps != 0))
+        (run_synced && fabs(currentFPS - render.src.fps) > 0.05f && render.src.fps != 0))
     {
-        update_gfx_mode(core_timing != CORE_TIMING_UNSYNCED);
+        update_gfx_mode(run_synced);
     }
     else if (dosbox_aspect_ratio != current_aspect_ratio)
     {
@@ -1296,19 +1268,20 @@ void retro_run (void)
     MAPPER_Run(false);
 
     /* Run emulator */
+    fakeTimingReset();
     switchThread();
 
     // If we have a new frame, submit it.
     if (dosbox_frontbuffer_uploaded) {
         video_cb(nullptr, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
-    } else if (core_timing == CORE_TIMING_SYNCED) {
+    } else if (run_synced) {
         video_cb(dosbox_framebuffers[0], RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
     } else {
         video_cb(dosbox_frontbuffer, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
     }
     dosbox_frontbuffer_uploaded = true;
 
-    if (core_timing == CORE_TIMING_SYNCED) {
+    if (run_synced) {
         MIXER_CallBack(nullptr, audioData, samplesPerFrame * 4);
     }
     /* Upload audio */

@@ -1299,8 +1299,13 @@ void retro_run (void)
     switchThread();
 
     // If we have a new frame, submit it.
-    video_cb(dosbox_frontbuffer_uploaded ? nullptr : dosbox_frontbuffer, RDOSGFXwidth,
-             RDOSGFXheight, RDOSGFXpitch);
+    if (dosbox_frontbuffer_uploaded) {
+        video_cb(nullptr, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+    } else if (core_timing == CORE_TIMING_SYNCED) {
+        video_cb(dosbox_framebuffers[0], RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+    } else {
+        video_cb(dosbox_frontbuffer, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+    }
     dosbox_frontbuffer_uploaded = true;
 
     if (core_timing == CORE_TIMING_SYNCED) {

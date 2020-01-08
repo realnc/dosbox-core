@@ -53,7 +53,6 @@ void GFX_EndUpdate( const Bit16u *changedLines )
 {
     if (core_timing == CORE_TIMING_SYNCED)
     {
-        dosbox_frontbuffer = dosbox_framebuffers[0];
         dosbox_frontbuffer_uploaded = !changedLines;
     }
     else if (dosbox_frontbuffer_uploaded && changedLines)

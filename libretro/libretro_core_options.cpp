@@ -21,8 +21,11 @@ retro::CoreOptions retro::core_options {
     {
         {
             "use_options",
-            "Core: Enable options",
-            "Enable options. Disable in-case of using pre-generated configuration files (restart).",
+            "Core: Enable core options (restart)",
+            "Disabling core options can be useful if you prefer to use dosbox .conf files to set "
+                "configuration settings. Note that you can still use core options together with "
+                ".conf files, for example if your .conf files only contain an [autoexec] section, "
+                "or dosbox settings not yet available as core options.",
             {
                 { true },
                 { false },
@@ -31,8 +34,8 @@ retro::CoreOptions retro::core_options {
         },
         {
             "adv_options",
-            "Core: Enable advanced options",
-            "Enable advanced options that are not required for normal operation.",
+            "Core: Show all options",
+            "Show all options, including those that usually do not require changing.",
             {
                 { true },
                 { false },
@@ -68,13 +71,12 @@ retro::CoreOptions retro::core_options {
         {
             "thread_sync",
             "Core: Thread synchronization method",
-            "\"Wait\" is the most common method for synchronizing threads and should generally "
-                "work well on most systems. If for some reason it doesn't work well on your system "
-                "and you're seeing too much stutter, setting this to \"spin\" might offer better "
-                "frame times with less stutter. However, \"spin\" will also result in constant "
-                "100% usage on one of your CPU cores. Even though this is \"idle load\" and "
-                "doesn't increase CPU temperatures by much, it will prevent the CPU from clocking "
-                "down which on laptops will affect battery life. ",
+            "\"Wait\" is the recommended method and should work well on most systems. If for some "
+                "reason it doesn't and you're seeing stutter, setting this to \"spin\" might help "
+                "(or it might make it worse.) However, \"spin\" will also result in 100% usage on "
+                "one of your CPU cores. This is \"idle load\" and doesn't increase CPU "
+                "temperatures by much, but it will prevent the CPU from clocking down which on "
+                "laptops will affect battery life. ",
             {
                 { "wait" },
                 { "spin" },
@@ -136,64 +138,59 @@ retro::CoreOptions retro::core_options {
         {
             "memory_size",
             "System: Memory size (restart)",
-            "The amount of memory that the emulated machine has.",
+            "The amount of memory that the emulated machine has. This value is best left at its "
+                "default to avoid problems with some games, though few games might require a higher "
+                "value.",
             {
-                { 4 },
-                { 8 },
-                { 16 },
-                { 24 },
-                { 32 },
-                { 48 },
-                { 64 },
+                { 4, "4MB" },
+                { 8, "8MB" },
+                { 16, "16MB" },
+                { 24, "24MB" },
+                { 32, "32MB" },
+                { 48, "48MB" },
+                { 64, "64MB" },
             },
-            32
+            16
         },
-#if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
         {
             "cpu_core",
             "System: CPU core",
-#if defined(C_DYNREC)
-            "CPU core used for emulation. Auto will switch to dynamic if appropiate. Dynamic core "
-                "DYNREC available.",
-#else
-            "CPU core used for emulation. Auto will switch to dynamic if appropiate. Dynamic core "
-                "DYNAMIC_X86 available.",
-#endif
+            "CPU core used for emulation. "
+        #if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
+                "When set to \"auto\", the \"normal\" interpreter core will be used for real mode "
+                "games, while the faster \"dynamic\" recompiler core will be used for protected "
+                "mode games. The \"simple\" interpreter core is optimized for old real mode games.",
             {
-                { "auto", "auto (real-mode games use normal, protected-mode games use dynamic if "
-                          "available)" },
-#if defined(C_DYNREC)
-                { "dynamic", "dynamic (dynarec using dynrec implementation)" },
-#else
-                { "dynamic", "dynamic (dynarec using dynamic_x86 implementation)" },
-#endif
-                { "normal", "normal (interpreter)" },
-                { "simple", "simple (interpreter optimized for old real-mode games)" },
+                { "auto" },
+            #if defined(C_DYNREC)
+                { "dynamic", "dynamic (generic recompiler)" },
+            #else
+                { "dynamic", "dynamic (x86 recompiler)" },
+            #endif
+                { "normal" },
+                { "simple" },
             },
             "auto"
-        },
-#else
-        {
-            "cpu_core",
-            "System: CPU core",
-            "CPU core used for emulation. Theare are no dynamic cores available on this platform.",
+        #else
+            "\"Simple\" is optimized for old real-mode games. (There are no dynamic recompiler "
+                "cores available on this platform.)",
             {
-                { "normal", "normal (interpreter)" },
-                { "simple", "simple (interpreter optimized for old real-mode games)" },
+                { "normal" },
+                { "simple" },
             },
             "normal"
+        #endif
         },
-#endif
         {
             "cpu_type",
             "System: CPU type",
-            "Emulated CPU type. Auto is the fastest choice.",
+            "Emulated CPU type. \"Auto\" is the fastest choice.",
             {
-                { "auto", "auto (fastest choice)" },
-                { "386", "386" },
+                { "auto" },
+                { "386" },
                 { "386_slow", "386 (slow)" },
                 { "386_prefetch", "386 (prefetch queue emulation)" },
-                { "486", "486" },
+                { "486" },
                 { "486_slow", "486 (slow)" },
                 { "pentium_slow", "pentium (slow)" },
             },
@@ -203,13 +200,15 @@ retro::CoreOptions retro::core_options {
             "cpu_cycles_mode",
             "System: CPU cycles mode",
             "Method to determine the amount of CPU cycles that DOSBox tries to emulate per "
-                "milisecond. Use auto unless you have performance problems. A value that is too "
-                "high for your system may cause slowdown.",
+                "millisecond. \"Auto\" will use 3000 cycles in real mode games, \"max\" in "
+                "protected mode games. \"Max\" will try to use as much cycles as possible. Some "
+                "games are CPU speed sensitive and don't react well to max cycles. In that case, "
+                "using \"fixed\" and configuring the cycle count manually is recommended, but a "
+                "value that is too high for your system may cause slowdown.",
             {
-                { "auto", "auto (sets 3000 cycles in real mode games, max in protected mode "
-                          "games)" },
-                { "fixed", "fixed (manually configure emulated CPU speed" },
-                { "max", "max (sets cycles to default value of the host CPU)" },
+                { "auto" },
+                { "fixed" },
+                { "max" },
             },
             "auto"
         },
@@ -277,7 +276,7 @@ retro::CoreOptions retro::core_options {
         {
             "cpu_cycles_limit",
             "System: Max CPU cycles limit",
-            "Limit the maximum amount of CPU cycles used.",
+            "Limit the maximum amount of CPU cycles used when using \"max\" mode.",
             {
                 { 10, "10%" },
                 { 20, "20%" },
@@ -296,11 +295,10 @@ retro::CoreOptions retro::core_options {
         {
             "aspect_correction",
             "Video: Aspect ratio correction.",
-            "When enabled, the core's aspect ratio is set to what a CRT monitor would display. "
-                "This is required for all non 4:3 VGA resolutions to look as intended. When "
-                "disabled, the core's aspect ratio is set to match the current VGA resolution's "
-                "width to height ratio, providing square pixels but resulting in a stretched or "
-                "squashed image.",
+            "When enabled, the aspect ratio will match that of a CRT monitor. This is required for "
+                "non-square pixel VGA resolutions to look as intended. Disable this if you want "
+                "unscaled square pixel aspect ratios, but this will result in a squashed or "
+                "stretched image.",
             {
                 { true },
                 { false },
@@ -309,8 +307,10 @@ retro::CoreOptions retro::core_options {
         },
         {
             "scaler",
-            "Video: Scaler",
-            "Scaler used to scale or improve image quality.",
+            "Video: DOSBox scaler",
+            "Built-in, CPU-based DOSBox scalers. These are provided here only as a last resort. "
+                "You should generally set this to \"none\" and instead use the scaling options and "
+                "shaders that are provided by your frontend.",
             {
                 { "none" },
                 { "normal2x" },
@@ -488,8 +488,8 @@ retro::CoreOptions retro::core_options {
         {
             "gus",
             "Sound: Gravis Ultrasound support",
-            "Enables Gravis Ultrasound emulation. Thee ULTRADIR directory is not configurable. It "
-                "is always set to C:\\ULTRASND and is not configurable via options.",
+            "Enables Gravis Ultrasound emulation. The ULTRADIR directory is not configurable. It "
+                "is always set to C:\\ULTRASND.",
             {
                 { false },
                 { true },

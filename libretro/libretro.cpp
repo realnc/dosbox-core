@@ -104,7 +104,6 @@ bool connected[16];
 bool emulated_mouse;
 
 /* core option variables */
-static bool adv_core_options;
 bool run_synced = true;
 static bool use_spinlock = false;
 
@@ -696,7 +695,7 @@ void check_variables()
     if (!core_options["use_options"]->toBool())
         return;
 
-    adv_core_options = core_options["adv_options"]->toBool();
+    const auto adv_core_options = core_options["adv_options"]->toBool();
 
     /* save machine type for option hiding purpose */
     machine_type = core_options["machine_type"]->toString();
@@ -903,8 +902,9 @@ void check_variables()
     /* show ultrasound options only if it's it enabled and advanced options is enabled */
     core_options.setVisible({"gusrate", "gusbase", "gusirq", "gusdma"}, adv_core_options && gus);
 
-    /* show tandy and disney options only if advanced options is enabled */
-    core_options.setVisible({"tandy", "disney"}, adv_core_options);
+    /* show these only if advanced options is enabled */
+    core_options.setVisible(
+        {"thread_sync", "cpu_type", "scaler", "mpu_type", "tandy", "disney"}, adv_core_options);
 }
 
 static void start_dosbox(void)

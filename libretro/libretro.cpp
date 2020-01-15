@@ -787,11 +787,8 @@ void check_variables()
                 MAPPER_Init();
         }
 
-        try {
-            mouse_speed_factor_x = core_options["mouse_speed_factor_x"].toFloat();
-            mouse_speed_factor_y = core_options["mouse_speed_factor_y"].toFloat();
-        }
-        catch (...) { }
+        mouse_speed_factor_x = core_options["mouse_speed_factor_x"].toFloat();
+        mouse_speed_factor_y = core_options["mouse_speed_factor_y"].toFloat();
 
         cycles_mode = core_options["cpu_cycles_mode"].toString();
         cycles_limit = core_options["cpu_cycles_limit"].toInt();

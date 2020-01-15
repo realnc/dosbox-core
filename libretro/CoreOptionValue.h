@@ -69,7 +69,7 @@ inline CoreOptionValue::CoreOptionValue(const bool value, std::string label) noe
 
 inline auto CoreOptionValue::isValid() const noexcept -> bool
 {
-    return toString().empty();
+    return !toString().empty();
 }
 
 inline auto CoreOptionValue::toString() const noexcept -> const std::string&

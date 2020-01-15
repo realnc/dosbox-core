@@ -5,12 +5,12 @@
 
 namespace retro {
 
-auto CoreOptions::operator [](std::string_view key) -> const CoreOptionValue*
+auto CoreOptions::operator [](std::string_view key) -> const CoreOptionValue&
 {
     const auto* option = this->option(key);
     if (!option) {
         // TODO: log
-        return nullptr;
+        return invalid_value_;
     }
 
     retro_variable var{option->key().c_str()};
@@ -25,7 +25,7 @@ auto CoreOptions::operator [](std::string_view key) -> const CoreOptionValue*
         // TODO: log
         return option->defaultValue();
     }
-    return &*value;
+    return *value;
 }
 
 auto CoreOptions::changed() const noexcept -> bool
@@ -81,8 +81,8 @@ void CoreOptions::updateRetroOptions()
         def.key = option.key().c_str();
         def.desc = option.desc().c_str();
         def.info = option.info().empty() ? nullptr : option.info().c_str();
-        def.default_value = option.defaultValue() ?
-              option.defaultValue()->toString().c_str()
+        def.default_value = option.defaultValue().isValid() ?
+              option.defaultValue().toString().c_str()
             : nullptr;
         int i = 0;
         for (const auto& value : option) {
@@ -110,11 +110,11 @@ void CoreOptions::updateFrontendV0()
             str += "; ";
 
             // Default value goes first.
-            str += option.defaultValue()->toString();
+            str += option.defaultValue().toString();
 
             // Add remaining values.
             for (const auto& value : option) {
-                if (&value != option.defaultValue()) {
+                if (&value != &option.defaultValue()) {
                     str += '|';
                     str += value.toString();
                 }

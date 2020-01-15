@@ -110,11 +110,11 @@ public:
     void setEnvironmentCallback(retro_environment_t cb);
 
     /* Query frontend for the current value of the option corresponding to the specified key.
-     * Returns the default value of the option if the query fails. Returns null if 'key' doesn't
-     * correspond to an option.
+     * Returns the default value of the option if the query fails. Returns an invalid value if 'key'
+     * doesn't correspond to an option.
      */
     [[nodiscard]]
-    auto operator [](std::string_view key) -> const CoreOptionValue*;
+    auto operator [](std::string_view key) -> const CoreOptionValue&;
 
     /* Returns true if any values were changed by the frontend since the last query.
      */
@@ -144,6 +144,7 @@ private:
     std::string key_prefix_;
     // TODO: log when called.
     retro_environment_t env_cb_ = [](unsigned, void*) { return false; };
+    CoreOptionValue invalid_value_{""};
 
     void updateRetroOptions();
     void updateFrontendV0();

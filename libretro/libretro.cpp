@@ -628,18 +628,18 @@ bool check_blaster_variables(bool autoexec)
 {
     using namespace retro;
 
-    const auto& sb_type = core_options["sblaster_type"]->toString();
+    const auto& sb_type = core_options["sblaster_type"].toString();
 
     update_dosbox_variable(autoexec, "sblaster", "sbtype", sb_type);
     update_dosbox_variable(
-        autoexec, "sblaster", "sbbase", core_options["sblaster_base"]->toString());
-    update_dosbox_variable(autoexec, "sblaster", "irq", core_options["sblaster_irq"]->toString());
-    update_dosbox_variable(autoexec, "sblaster", "dma", core_options["sblaster_dma"]->toString());
-    update_dosbox_variable(autoexec, "sblaster", "hdma", core_options["sblaster_hdma"]->toString());
+        autoexec, "sblaster", "sbbase", core_options["sblaster_base"].toString());
+    update_dosbox_variable(autoexec, "sblaster", "irq", core_options["sblaster_irq"].toString());
+    update_dosbox_variable(autoexec, "sblaster", "dma", core_options["sblaster_dma"].toString());
+    update_dosbox_variable(autoexec, "sblaster", "hdma", core_options["sblaster_hdma"].toString());
     update_dosbox_variable(
-        autoexec, "sblaster", "oplmode", core_options["sblaster_opl_mode"]->toString());
+        autoexec, "sblaster", "oplmode", core_options["sblaster_opl_mode"].toString());
     update_dosbox_variable(
-        autoexec, "sblaster", "oplemu", core_options["sblaster_opl_emu"]->toString());
+        autoexec, "sblaster", "oplemu", core_options["sblaster_opl_emu"].toString());
     return sb_type != "none";
 }
 
@@ -649,12 +649,12 @@ bool check_gus_variables(bool autoexec)
 
     auto gus_value = core_options["gus"];
 
-    update_dosbox_variable(autoexec, "gus", "gus", gus_value->toString());
-    update_dosbox_variable(autoexec, "gus", "gusrate", core_options["gusrate"]->toString());
-    update_dosbox_variable(autoexec, "gus", "gusbase", core_options["gusbase"]->toString());
-    update_dosbox_variable(autoexec, "gus", "gusirq", core_options["gusirq"]->toString());
-    update_dosbox_variable(autoexec, "gus", "gusdma", core_options["gusdma"]->toString());
-    return gus_value->toBool();
+    update_dosbox_variable(autoexec, "gus", "gus", gus_value.toString());
+    update_dosbox_variable(autoexec, "gus", "gusrate", core_options["gusrate"].toString());
+    update_dosbox_variable(autoexec, "gus", "gusbase", core_options["gusbase"].toString());
+    update_dosbox_variable(autoexec, "gus", "gusirq", core_options["gusirq"].toString());
+    update_dosbox_variable(autoexec, "gus", "gusdma", core_options["gusdma"].toString());
+    return gus_value.toBool();
 }
 
 void core_autoexec()
@@ -679,7 +679,7 @@ void check_variables()
 
     {
         const bool old_timing = run_synced;
-        run_synced = core_options["core_timing"]->toString() == "external";
+        run_synced = core_options["core_timing"].toString() == "external";
 
         if (dosbox_initialiazed && run_synced != old_timing) {
             if (!run_synced) {
@@ -689,20 +689,20 @@ void check_variables()
         }
     }
 
-    use_spinlock = core_options["thread_sync"]->toString() == "spin";
+    use_spinlock = core_options["thread_sync"].toString() == "spin";
     useSpinlockThreadSync(use_spinlock);
 
-    if (!core_options["use_options"]->toBool())
+    if (!core_options["use_options"].toBool())
         return;
 
-    const auto adv_core_options = core_options["adv_options"]->toBool();
+    const auto adv_core_options = core_options["adv_options"].toBool();
 
     /* save machine type for option hiding purpose */
-    machine_type = core_options["machine_type"]->toString();
+    machine_type = core_options["machine_type"].toString();
 
     if (!dosbox_initialiazed)
     {
-        update_dosbox_variable(false, "dosbox", "memsize", core_options["memory_size"]->toString());
+        update_dosbox_variable(false, "dosbox", "memsize", core_options["memory_size"].toString());
 
         svgaCard = SVGA_None;
         machine = MCH_VGA;
@@ -757,17 +757,17 @@ void check_variables()
         }
         update_dosbox_variable(false, "dosbox", "machine", machine_type);
 
-        mount_overlay = core_options["save_overlay"]->toBool();
+        mount_overlay = core_options["save_overlay"].toBool();
     }
     else
     {
         if (machine == MCH_HERC) {
-            herc_pal = core_options["machine_hercules_palette"]->toInt();
+            herc_pal = core_options["machine_hercules_palette"].toInt();
             Herc_Palette();
             VGA_DAC_CombineColor(1,7);
         } else if (machine == MCH_CGA) {
-            CGA_Composite_Mode(core_options["machine_cga_composite_mode"]->toInt());
-            CGA_Model(core_options["machine_cga_model"]->toInt());
+            CGA_Composite_Mode(core_options["machine_cga_composite_mode"].toInt());
+            CGA_Model(core_options["machine_cga_model"].toInt());
         }
 
         blaster = check_blaster_variables(false);
@@ -775,39 +775,39 @@ void check_variables()
 
         {
             const bool prev = emulated_mouse;
-            emulated_mouse = core_options["emulated_mouse"]->toBool();
+            emulated_mouse = core_options["emulated_mouse"].toBool();
             if (prev != emulated_mouse)
                 MAPPER_Init();
         }
 
         {
             const unsigned prev = mouse_emu_deadzone;
-            mouse_emu_deadzone = core_options["emulated_mouse_deadzone"]->toInt();
+            mouse_emu_deadzone = core_options["emulated_mouse_deadzone"].toInt();
             if (prev != mouse_emu_deadzone)
                 MAPPER_Init();
         }
 
         try {
-            mouse_speed_factor_x = core_options["mouse_speed_factor_x"]->toFloat();
-            mouse_speed_factor_y = core_options["mouse_speed_factor_y"]->toFloat();
+            mouse_speed_factor_x = core_options["mouse_speed_factor_x"].toFloat();
+            mouse_speed_factor_y = core_options["mouse_speed_factor_y"].toFloat();
         }
         catch (...) { }
 
-        cycles_mode = core_options["cpu_cycles_mode"]->toString();
-        cycles_limit = core_options["cpu_cycles_limit"]->toInt();
-        cycles = core_options["cpu_cycles"]->toInt();
-        cycles_multiplier = core_options["cpu_cycles_multiplier"]->toInt();
-        cycles_fine = core_options["cpu_cycles_fine"]->toInt();
-        cycles_multiplier_fine = core_options["cpu_cycles_multiplier_fine"]->toInt();
+        cycles_mode = core_options["cpu_cycles_mode"].toString();
+        cycles_limit = core_options["cpu_cycles_limit"].toInt();
+        cycles = core_options["cpu_cycles"].toInt();
+        cycles_multiplier = core_options["cpu_cycles_multiplier"].toInt();
+        cycles_fine = core_options["cpu_cycles_fine"].toInt();
+        cycles_multiplier_fine = core_options["cpu_cycles_multiplier_fine"].toInt();
         update_cycles = true;
 
-        update_dosbox_variable(false, "cpu", "cputype", core_options["cpu_type"]->toString());
-        update_dosbox_variable(false, "cpu", "core", core_options["cpu_core"]->toString());
+        update_dosbox_variable(false, "cpu", "cputype", core_options["cpu_type"].toString());
+        update_dosbox_variable(false, "cpu", "core", core_options["cpu_core"].toString());
         update_dosbox_variable(
-            false, "render", "aspect", core_options["aspect_correction"]->toString());
-        update_dosbox_variable(false, "render", "scaler", core_options["scaler"]->toString());
+            false, "render", "aspect", core_options["aspect_correction"].toString());
+        update_dosbox_variable(false, "render", "scaler", core_options["scaler"].toString());
         update_dosbox_variable(
-            false, "joystick", "timed", core_options["joystick_timed"]->toString());
+            false, "joystick", "timed", core_options["joystick_timed"].toString());
 
         if (update_cycles)
         {
@@ -829,15 +829,14 @@ void check_variables()
             update_cycles = false;
         }
 
-        update_dosbox_variable(
-            false, "speaker", "pcspeaker", core_options["pcspeaker"]->toString());
+        update_dosbox_variable(false, "speaker", "pcspeaker", core_options["pcspeaker"].toString());
 
         {
-            const auto& mpu_type = core_options["mpu_type"]->toString();
+            const auto& mpu_type = core_options["mpu_type"].toString();
             update_dosbox_variable(false, "midi", "mpu401", mpu_type);
             core_options.setVisible("midi_driver", mpu_type != "none");
 
-            const auto& midi_driver = core_options["midi_driver"]->toString();
+            const auto& midi_driver = core_options["midi_driver"].toString();
             use_retro_midi = midi_driver == "libretro";
             update_dosbox_variable(false, "midi", "mididevice", use_retro_midi ? "none" : midi_driver);
             if (use_retro_midi && !have_retro_midi) {
@@ -848,7 +847,7 @@ void check_variables()
             }
         #if defined(HAVE_ALSA)
             // Dosbox only accepts the numerical MIDI port, not client/port names.
-            const auto& current_value = core_options["midi_port"]->toString();
+            const auto& current_value = core_options["midi_port"].toString();
             for (const auto& [port, client, port_name] : alsa_midi_ports) {
                 if (client + ':' + port_name == current_value) {
                     update_dosbox_variable(false, "midi", "midiconfig", port);
@@ -858,20 +857,21 @@ void check_variables()
             core_options.setVisible("midi_port", midi_driver == "alsa" && mpu_type != "none");
         #endif
         #ifdef __WIN32__
-            update_dosbox_variable(false, "midi", "midiconfig", core_options["midi_port"]->toString());
+            update_dosbox_variable(
+                false, "midi", "midiconfig", core_options["midi_port"].toString());
             core_options.setVisible("midi_port", midi_driver == "win32" && mpu_type != "none");
         #endif
         }
 
     #if defined(C_IPX)
-        update_dosbox_variable(false, "ipx", "ipx", core_options["ipx"]->toString());
+        update_dosbox_variable(false, "ipx", "ipx", core_options["ipx"].toString());
     #endif
 
-        update_dosbox_variable(false, "speaker", "tandy", core_options["tandy"]->toString());
+        update_dosbox_variable(false, "speaker", "tandy", core_options["tandy"].toString());
 
         if (!dosbox_initialiazed)
         {
-            const auto& disney_val = core_options["disney"]->toString();
+            const auto& disney_val = core_options["disney"].toString();
             update_dosbox_variable(false, "speaker", "disney", disney_val);
             disney_init = disney_val == "on";
         }

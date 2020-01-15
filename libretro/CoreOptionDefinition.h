@@ -30,7 +30,7 @@ public:
     auto info() const noexcept -> const std::string&;
 
     [[nodiscard]]
-    auto defaultValue() const noexcept -> const CoreOptionValue*;
+    auto defaultValue() const noexcept -> const CoreOptionValue&;
 
     void setValues(std::vector<CoreOptionValue> values, const CoreOptionValue& default_value);
 
@@ -52,6 +52,7 @@ private:
     std::string info_;
     std::vector<CoreOptionValue> values_;
     int default_value_index_ = 0;
+    CoreOptionValue invalid_value_{""};
 };
 
 inline CoreOptionDefinition::CoreOptionDefinition(
@@ -98,12 +99,12 @@ inline auto CoreOptionDefinition::info() const noexcept -> const std::string&
     return info_;
 }
 
-inline auto CoreOptionDefinition::defaultValue() const noexcept -> const CoreOptionValue*
+inline auto CoreOptionDefinition::defaultValue() const noexcept -> const CoreOptionValue&
 {
     if (values_.empty()) {
-        return nullptr;
+        return invalid_value_;
     }
-    return &values_[default_value_index_];
+    return values_[default_value_index_];
 }
 
 inline auto CoreOptionDefinition::begin() const noexcept

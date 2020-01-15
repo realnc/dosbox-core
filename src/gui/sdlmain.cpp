@@ -55,6 +55,10 @@
 
 #if C_OPENGL
 #include "SDL_opengl.h"
+//Define to disable the usage of the pixel buffer object
+//#define DB_DISABLE_DBO
+//Define to report opengl errors
+//#define DB_OPENGL_ERROR
 
 #ifndef APIENTRY
 #define APIENTRY
@@ -99,6 +103,7 @@ extern char** environ;
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
+#include <winuser.h>
 #if C_DDRAW
 #include <ddraw.h>
 struct private_hwdata {
@@ -223,8 +228,28 @@ struct SDL_Block {
 
 static SDL_Block sdl;
 
+#if C_OPENGL
+#ifdef DB_OPENGL_ERROR
+void OPENGL_ERROR(const char* message) {
+	GLenum r = glGetError();
+	if (r == GL_NO_ERROR) return;
+	LOG_MSG("errors from %s",message);
+	do {
+		LOG_MSG("%X",r);
+	} while ( (r=glGetError()) != GL_NO_ERROR);
+}
+#else 
+void OPENGL_ERROR(const char*) {
+	return;
+}
+#endif
+#endif
+
 #define SETMODE_SAVES 1  //Don't set Video Mode if nothing changes.
 #define SETMODE_SAVES_CLEAR 1 //Clear the screen, when the Video Mode is reused
+//Restart graphics subsystem of SDL when switching windowed and fullscreen in OPENGL
+//#define SETMODE_RESTARTS_SUBSYSTEM 1 
+
 SDL_Surface* SDL_SetVideoMode_Wrap(int width,int height,int bpp,Bit32u flags){
 #if SETMODE_SAVES
 	static int i_height = 0;
@@ -269,13 +294,50 @@ SDL_Surface* SDL_SetVideoMode_Wrap(int width,int height,int bpp,Bit32u flags){
 	}
 #endif //WIN32
 #endif //SETMODE_SAVES
+	
+
+#if C_OPENGL
+#ifdef SETMODE_RESTARTS_SUBSYSTEM
+	SDL_Surface* s = NULL;
+	Bit32u fx = flags ^i_flags;
+	Bit32u fa = flags & i_flags;
+	if (fa&SDL_OPENGL) {
+		if (fx & SDL_FULLSCREEN) {
+			if (!(flags & SDL_FULLSCREEN)) {
+				//RESTART FOR MACS
+				
+				//MAYBE move this above the Videomode call above and do not do the setvideomode below. 
+				//Yes this will mess up the title bar and icon. But it is for trying...
+
+				LOG_MSG("HIT RESTART");
+				SDL_QuitSubSystem(SDL_INIT_VIDEO);
+				SDL_InitSubSystem(SDL_INIT_VIDEO);
+				LOG_MSG("AFTERRESTART");
+				s = SDL_SetVideoMode(width,height,bpp,flags);
+				if (s == NULL) LOG_MSG("Failed to videomode");
+				glFinish();
+			}
+		}
+	}
+#else //SETMODE_RESTARTS_SUBSYSTEM
 	SDL_Surface* s = SDL_SetVideoMode(width,height,bpp,flags);
+#endif //SETMODE_RESTARTS_SUBSYSTEM
+#else  //C_OPENGL
+	SDL_Surface* s = SDL_SetVideoMode(width,height,bpp,flags);
+#endif
+
+
 #if SETMODE_SAVES
 	if (s == NULL) return s; //Only store when successful
 	i_height = height;
 	i_width = width;
 	i_bpp = bpp;
 	i_flags = flags;
+#endif
+#if C_OPENGL
+	if(flags & SDL_OPENGL) {
+		OPENGL_ERROR("after setmode in wrap");
+	}
 #endif
 	return s;
 }
@@ -714,7 +776,10 @@ dosurface:
 		}		
 
 		glMatrixMode (GL_PROJECTION);
-		glDeleteTextures(1,&sdl.opengl.texture);
+
+		if (sdl.opengl.texture > 0) {
+			glDeleteTextures(1,&sdl.opengl.texture);
+		}
  		glGenTextures(1,&sdl.opengl.texture);
 		glBindTexture(GL_TEXTURE_2D,sdl.opengl.texture);
 		// No borders
@@ -763,6 +828,9 @@ dosurface:
 		glEnd();
 
 		glEndList();
+
+		OPENGL_ERROR("End of setsize");
+
 		sdl.desktop.type=SCREEN_OPENGL;
 		retFlags = GFX_CAN_32 | GFX_SCALING;
 		if (sdl.opengl.pixel_buffer_object)
@@ -923,8 +991,11 @@ bool GFX_StartUpdate(Bit8u * & pixels,Bitu & pitch) {
 		if(sdl.opengl.pixel_buffer_object) {
 		    glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, sdl.opengl.buffer);
 		    pixels=(Bit8u *)glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_EXT, GL_WRITE_ONLY);
-		} else
+		} else {
 		    pixels=(Bit8u *)sdl.opengl.framebuf;
+		}
+		OPENGL_ERROR("end of start update");
+		if (pixels == NULL) return false;
 		pitch=sdl.opengl.pitch;
 		sdl.updating=true;
 		return true;
@@ -1236,7 +1307,7 @@ static void GUI_StartUp(Section * sec) {
 			}
 		}
 	}
-
+	Bit16u windowspercentage  = 0;
 	sdl.desktop.window.width  = 0;
 	sdl.desktop.window.height = 0;
 	const char* windowresolution=section->Get_string("windowresolution");
@@ -1250,13 +1321,20 @@ static void GUI_StartUp(Section * sec) {
 				*height = 0;
 				sdl.desktop.window.height = (Bit16u)atoi(height+1);
 				sdl.desktop.window.width  = (Bit16u)atoi(res);
+			} else {
+				char* percentage = const_cast<char*>(strchr(windowresolution,'%'));
+				if(percentage && *percentage) {
+					*percentage = 0;
+					windowspercentage = (Bit16u) atoi(res);
+					if (windowspercentage) putenv(const_cast<char*>("SDL_VIDEO_CENTERED=1"));
+				}
 			}
 		}
 	}
 	sdl.desktop.doublebuf=section->Get_bool("fulldouble");
 #if SDL_VERSION_ATLEAST(1, 2, 10)
-#ifdef WIN32
 	const SDL_VideoInfo* vidinfo = SDL_GetVideoInfo();
+#ifdef WIN32
 	if (vidinfo) {
 		int sdl_w = vidinfo->current_w;
 		int sdl_h = vidinfo->current_h;
@@ -1270,15 +1348,32 @@ static void GUI_StartUp(Section * sec) {
 	if (!sdl.desktop.full.width || !sdl.desktop.full.height){
 		//Can only be done on the very first call! Not restartable.
 		//On windows don't use it as SDL returns the values without taking in account the dpi scaling
-		const SDL_VideoInfo* vidinfo = SDL_GetVideoInfo();
 		if (vidinfo) {
 			sdl.desktop.full.width = vidinfo->current_w;
 			sdl.desktop.full.height = vidinfo->current_h;
 		}
 	}
+	
+	if (!sdl.desktop.window.width || !sdl.desktop.window.height) {
+		if (vidinfo && windowspercentage) {
+			sdl.desktop.window.width = ((vidinfo->current_w*windowspercentage)/3200)*32;
+			sdl.desktop.window.height = ((vidinfo->current_h*windowspercentage)/2400)*24;
+		}
+	}
+
+
 #endif
 #endif
 
+#ifdef WIN32
+	//Can use the same code as above, if the OS scaling is disabled.
+	if (!sdl.desktop.window.width && windowspercentage) {
+		sdl.desktop.window.width = ((GetSystemMetrics(SM_CXSCREEN)*windowspercentage)/3200)*32;
+	}
+	if (!sdl.desktop.window.height && windowspercentage) {
+		sdl.desktop.window.height = ((GetSystemMetrics(SM_CYSCREEN)*windowspercentage)/2400)*24;
+	}
+#endif
 	if (!sdl.desktop.full.width) {
 #ifdef WIN32
 		sdl.desktop.full.width=(Bit16u)GetSystemMetrics(SM_CXSCREEN);
@@ -1329,34 +1424,40 @@ static void GUI_StartUp(Section * sec) {
 
 	sdl.overlay=0;
 #if C_OPENGL
-   if(sdl.desktop.want_type==SCREEN_OPENGL){ /* OPENGL is requested */
-	sdl.surface=SDL_SetVideoMode_Wrap(640,400,0,SDL_OPENGL);
-	if (sdl.surface == NULL) {
-		LOG_MSG("Could not initialize OpenGL, switching back to surface");
-		sdl.desktop.want_type=SCREEN_SURFACE;
-	} else {
-	sdl.opengl.buffer=0;
-	sdl.opengl.framebuf=0;
-	sdl.opengl.texture=0;
-	sdl.opengl.displaylist=0;
-	glGetIntegerv (GL_MAX_TEXTURE_SIZE, &sdl.opengl.max_texsize);
-	glGenBuffersARB = (PFNGLGENBUFFERSARBPROC)SDL_GL_GetProcAddress("glGenBuffersARB");
-	glBindBufferARB = (PFNGLBINDBUFFERARBPROC)SDL_GL_GetProcAddress("glBindBufferARB");
-	glDeleteBuffersARB = (PFNGLDELETEBUFFERSARBPROC)SDL_GL_GetProcAddress("glDeleteBuffersARB");
-	glBufferDataARB = (PFNGLBUFFERDATAARBPROC)SDL_GL_GetProcAddress("glBufferDataARB");
-	glMapBufferARB = (PFNGLMAPBUFFERARBPROC)SDL_GL_GetProcAddress("glMapBufferARB");
-	glUnmapBufferARB = (PFNGLUNMAPBUFFERARBPROC)SDL_GL_GetProcAddress("glUnmapBufferARB");
-	const char * gl_ext = (const char *)glGetString (GL_EXTENSIONS);
-	if(gl_ext && *gl_ext){
-		sdl.opengl.packed_pixel=(strstr(gl_ext,"EXT_packed_pixels") != NULL);
-		sdl.opengl.paletted_texture=(strstr(gl_ext,"EXT_paletted_texture") != NULL);
-		sdl.opengl.pixel_buffer_object=(strstr(gl_ext,"GL_ARB_pixel_buffer_object") != NULL ) &&
-		    glGenBuffersARB && glBindBufferARB && glDeleteBuffersARB && glBufferDataARB &&
-		    glMapBufferARB && glUnmapBufferARB;
-    	} else {
-		sdl.opengl.packed_pixel=sdl.opengl.paletted_texture=false;
-	}
-	}
+	if (sdl.desktop.want_type == SCREEN_OPENGL) { /* OPENGL is requested */
+		sdl.surface = SDL_SetVideoMode_Wrap(640,400,0,SDL_OPENGL);
+		if (sdl.surface == NULL) {
+			LOG_MSG("Could not initialize OpenGL, switching back to surface");
+			sdl.desktop.want_type = SCREEN_SURFACE;
+		} else {
+			sdl.opengl.buffer=0;
+			sdl.opengl.framebuf=0;
+			sdl.opengl.texture=0;
+			sdl.opengl.displaylist=0;
+			glGetIntegerv (GL_MAX_TEXTURE_SIZE, &sdl.opengl.max_texsize);
+			glGenBuffersARB = (PFNGLGENBUFFERSARBPROC)SDL_GL_GetProcAddress("glGenBuffersARB");
+			glBindBufferARB = (PFNGLBINDBUFFERARBPROC)SDL_GL_GetProcAddress("glBindBufferARB");
+			glDeleteBuffersARB = (PFNGLDELETEBUFFERSARBPROC)SDL_GL_GetProcAddress("glDeleteBuffersARB");
+			glBufferDataARB = (PFNGLBUFFERDATAARBPROC)SDL_GL_GetProcAddress("glBufferDataARB");
+			glMapBufferARB = (PFNGLMAPBUFFERARBPROC)SDL_GL_GetProcAddress("glMapBufferARB");
+			glUnmapBufferARB = (PFNGLUNMAPBUFFERARBPROC)SDL_GL_GetProcAddress("glUnmapBufferARB");
+			const char * gl_ext = (const char *)glGetString (GL_EXTENSIONS);
+			if(gl_ext && *gl_ext){
+				sdl.opengl.packed_pixel=(strstr(gl_ext,"EXT_packed_pixels") != NULL);
+				sdl.opengl.paletted_texture=(strstr(gl_ext,"EXT_paletted_texture") != NULL);
+				sdl.opengl.pixel_buffer_object=(strstr(gl_ext,"GL_ARB_pixel_buffer_object") != NULL ) &&
+				    glGenBuffersARB && glBindBufferARB && glDeleteBuffersARB && glBufferDataARB &&
+				    glMapBufferARB && glUnmapBufferARB;
+    			} else {
+				sdl.opengl.packed_pixel = false;
+				sdl.opengl.paletted_texture = false;
+				sdl.opengl.pixel_buffer_object = false;
+			}
+#ifdef DB_DISABLE_DBO
+			sdl.opengl.pixel_buffer_object = false;
+#endif
+			LOG_MSG("OpenGL extension: pixel_bufer_object %d",sdl.opengl.pixel_buffer_object);
+		}
 	} /* OPENGL is requested end */
 
 #endif	//OPENGL
@@ -1978,10 +2079,22 @@ static void erasemapperfile() {
 	exit(0);
 }
 
+void Disable_OS_Scaling() {
+#if defined (WIN32)
+	typedef BOOL (*function_set_dpi_pointer)();
+	function_set_dpi_pointer function_set_dpi;
+	function_set_dpi = (function_set_dpi_pointer) GetProcAddress(LoadLibrary("user32.dll"), "SetProcessDPIAware");
+	if (function_set_dpi) {
+		function_set_dpi();
+	}
+#endif
+}
 
 //extern void UI_Init(void);
 int main(int argc, char* argv[]) {
 	try {
+		Disable_OS_Scaling(); //Do this early on, maybe override it through some parameter.
+
 		CommandLine com_line(argc,argv);
 		Config myconf(&com_line);
 		control=&myconf;

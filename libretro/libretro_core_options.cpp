@@ -480,13 +480,12 @@ retro::CoreOptions retro::core_options {
                 "quality, but is quite demanding on the CPU. \"Compat\" is the next best option. "
                 "It is less accurate, but also less demanding.",
             {
-                { "default" },
-                { "compat" },
-                { "fast" },
-                { "mame" },
                 { "nuked", "Nuked OPL3" },
+                { "compat" },
+                { "mame" },
+                { "fast" },
             },
-            "default"
+            "compat"
         },
         {
             "gus",

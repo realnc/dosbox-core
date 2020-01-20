@@ -4,16 +4,12 @@
 
 #define MOUSE_SPEED_FACTORS \
     { \
-        { "0.10" }, { "0.11" }, { "0.12" }, { "0.13" }, { "0.14" }, { "0.15" }, { "0.16" }, \
-        { "0.17" }, { "0.18" }, { "0.19" }, { "0.20" }, { "0.21" }, { "0.22" }, { "0.23" }, \
-        { "0.24" }, { "0.25" }, { "0.26" }, { "0.27" }, { "0.28" }, { "0.29" }, { "0.30" }, \
-        { "0.31" }, { "0.32" }, { "0.33" }, { "0.34" }, { "0.35" }, { "0.36" }, { "0.37" }, \
-        { "0.38" }, { "0.39" }, { "0.40" }, { "0.43" }, { "0.45" }, { "0.48" }, { "0.50" }, \
-        { "0.55" }, { "0.60" }, { "0.65" }, { "0.70" }, { "0.75" }, { "0.80" }, { "0.85" }, \
-        { "0.90" }, { "0.95" }, { "1.00" }, { "1.10" }, { "1.17" }, { "1.25" }, { "1.38" }, \
-        { "1.50" }, { "1.63" }, { "1.75" }, { "2.00" }, { "2.25" }, { "2.50" }, { "2.75" }, \
-        { "3.00" }, { "3.25" }, { "3.50" }, { "3.75" }, { "4.00" }, { "4.25" }, { "4.50" }, \
-        { "4.75" }, { "5.00" }, \
+        "0.10", "0.11", "0.12", "0.13", "0.14", "0.15", "0.16", "0.17", "0.18", "0.19", "0.20", \
+        "0.21", "0.22", "0.23", "0.24", "0.25", "0.26", "0.27", "0.28", "0.29", "0.30", "0.31", \
+        "0.32", "0.33", "0.34", "0.35", "0.36", "0.37", "0.38", "0.39", "0.40", "0.43", "0.45", \
+        "0.48", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90", "0.95", \
+        "1.00", "1.10", "1.17", "1.25", "1.38", "1.50", "1.63", "1.75", "2.00", "2.25", "2.50", \
+        "2.75", "3.00", "3.25", "3.50", "3.75", "4.00", "4.25", "4.50", "4.75", "5.00", \
     }
 
 retro::CoreOptions retro::core_options {
@@ -27,8 +23,8 @@ retro::CoreOptions retro::core_options {
                 ".conf files, for example if your .conf files only contain an [autoexec] section, "
                 "or dosbox settings not yet available as core options.",
             {
-                { true },
-                { false },
+                true,
+                false,
             },
             true
         },
@@ -37,8 +33,8 @@ retro::CoreOptions retro::core_options {
             "Core: Show all options",
             "Show all options, including those that usually do not require changing.",
             {
-                { true },
-                { false },
+                true,
+                false,
             },
             false
         },
@@ -48,8 +44,8 @@ retro::CoreOptions retro::core_options {
             "Enable overlay file system to redirect filesystem changes to the save directory. "
                 "Disable if you have problems starting some games.",
             {
-                { true },
-                { false },
+                true,
+                false,
             },
             false
         },
@@ -63,7 +59,7 @@ retro::CoreOptions retro::core_options {
                 "increased. Use only if you absolutely need 60FPS output with no tearing in 70FPS "
                 "games. ",
             {
-                { "external" },
+                "external",
                 { "internal", "internal (fixed 60FPS)" },
             },
             "external"
@@ -78,8 +74,8 @@ retro::CoreOptions retro::core_options {
                 "temperatures by much, but it will prevent the CPU from clocking down which on "
                 "laptops will affect battery life. ",
             {
-                { "wait" },
-                { "spin" },
+                "wait",
+                "spin",
             },
             "wait"
         },
@@ -161,22 +157,22 @@ retro::CoreOptions retro::core_options {
                 "games, while the faster \"dynamic\" recompiler core will be used for protected "
                 "mode games. The \"simple\" interpreter core is optimized for old real mode games.",
             {
-                { "auto" },
+                "auto",
             #if defined(C_DYNREC)
                 { "dynamic", "dynamic (generic recompiler)" },
             #else
                 { "dynamic", "dynamic (x86 recompiler)" },
             #endif
-                { "normal" },
-                { "simple" },
+                "normal",
+                "simple",
             },
             "auto"
         #else
             "\"Simple\" is optimized for old real-mode games. (There are no dynamic recompiler "
                 "cores available on this platform.)",
             {
-                { "normal" },
-                { "simple" },
+                "normal",
+                "simple",
             },
             "normal"
         #endif
@@ -186,11 +182,11 @@ retro::CoreOptions retro::core_options {
             "System: CPU type",
             "Emulated CPU type. \"Auto\" is the fastest choice.",
             {
-                { "auto" },
-                { "386" },
+                "auto",
+                "386",
                 { "386_slow", "386 (slow)" },
                 { "386_prefetch", "386 (prefetch queue emulation)" },
-                { "486" },
+                "486",
                 { "486_slow", "486 (slow)" },
                 { "pentium_slow", "pentium (slow)" },
             },
@@ -206,9 +202,9 @@ retro::CoreOptions retro::core_options {
                 "using \"fixed\" and configuring the cycle count manually is recommended, but a "
                 "value that is too high for your system may cause slowdown.",
             {
-                { "auto" },
-                { "fixed" },
-                { "max" },
+                "auto",
+                "fixed",
+                "max",
             },
             "auto"
         },
@@ -217,10 +213,10 @@ retro::CoreOptions retro::core_options {
             "System: Coarse CPU cycles multiplier",
             "Multiplier for coarse CPU cycles tuning.",
             {
-                { 100 },
-                { 1000 },
-                { 10000 },
-                { 100000 },
+                100,
+                1000,
+                10000,
+                100000,
             },
             1000
         },
@@ -229,16 +225,16 @@ retro::CoreOptions retro::core_options {
             "System: Coarse CPU cycles value",
             "Value for coarse CPU cycles tuning.",
             {
-                { 0 },
-                { 1 },
-                { 2 },
-                { 3 },
-                { 4 },
-                { 5 },
-                { 6 },
-                { 7 },
-                { 8 },
-                { 9 },
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
             },
             1
         },
@@ -247,11 +243,11 @@ retro::CoreOptions retro::core_options {
             "System: Fine CPU cycles multiplier",
             "Multiplier for fine CPU cycles tuning.",
             {
-                { 1 },
-                { 10 },
-                { 100 },
-                { 1000 },
-                { 10000 },
+                1,
+                10,
+                100,
+                1000,
+                10000,
             },
             100
         },
@@ -260,16 +256,16 @@ retro::CoreOptions retro::core_options {
             "System: Fine CPU cycles value",
             "Value for fine CPU cycles tuning.",
             {
-                { 0 },
-                { 1 },
-                { 2 },
-                { 3 },
-                { 4 },
-                { 5 },
-                { 6 },
-                { 7 },
-                { 8 },
-                { 9 },
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
             },
             0
         },
@@ -300,8 +296,8 @@ retro::CoreOptions retro::core_options {
                 "unscaled square pixel aspect ratios, but this will result in a squashed or "
                 "stretched image.",
             {
-                { true },
-                { false },
+                true,
+                false,
             },
             true
         },
@@ -312,24 +308,24 @@ retro::CoreOptions retro::core_options {
                 "You should generally set this to \"none\" and instead use the scaling options and "
                 "shaders that are provided by your frontend.",
             {
-                { "none" },
-                { "normal2x" },
-                { "normal3x" },
-                { "advmame2x" },
-                { "advmame3x" },
-                { "advinterp2x" },
-                { "advinterp3x" },
-                { "hq2x" },
-                { "hq3x" },
-                { "2xsai" },
-                { "super2xsai" },
-                { "supereagle" },
-                { "tv2x" },
-                { "tv3x" },
-                { "rgb2x" },
-                { "rgb3x" },
-                { "scan2x" },
-                { "scan3x" },
+                "none",
+                "normal2x",
+                "normal3x",
+                "advmame2x",
+                "advmame3x",
+                "advinterp2x",
+                "advinterp3x",
+                "hq2x",
+                "hq3x",
+                "2xsai",
+                "super2xsai",
+                "supereagle",
+                "tv2x",
+                "tv3x",
+                "rgb2x",
+                "rgb3x",
+                "scan2x",
+                "scan3x",
             },
             "none"
         },
@@ -339,8 +335,8 @@ retro::CoreOptions retro::core_options {
             "Enable timed intervals for joystick axes. Experiment with this option if your "
                 "joystick drifts.",
             {
-                { false },
-                { true },
+                false,
+                true,
             },
             false
         },
@@ -349,8 +345,8 @@ retro::CoreOptions retro::core_options {
             "Input: Enable gamepad emulated mouse",
             "Enable mouse emulation via the right stick on your gamepad.",
             {
-                { false },
-                { true },
+                false,
+                true,
             },
             false
         },
@@ -404,14 +400,14 @@ retro::CoreOptions retro::core_options {
             "Sound: SoundBlaster Base Address",
             "The I/O address for the emulated SoundBlaster card.",
             {
-                { "220" },
-                { "240" },
-                { "260" },
-                { "280" },
-                { "2a0" },
-                { "2c0" },
-                { "2e0" },
-                { "300" },
+                "220",
+                "240",
+                "260",
+                "280",
+                "2a0",
+                "2c0",
+                "2e0",
+                "300",
             },
             "220"
         },
@@ -420,13 +416,13 @@ retro::CoreOptions retro::core_options {
             "Sound: SoundBlaster IRQ Number",
             "The IRQ number for the emulated SoundBlaster card.",
             {
-                { 3 },
-                { 5 },
-                { 7 },
-                { 9 },
-                { 10 },
-                { 11 },
-                { 12 },
+                3,
+                5,
+                7,
+                9,
+                10,
+                11,
+                12,
             },
             7
         },
@@ -435,12 +431,12 @@ retro::CoreOptions retro::core_options {
             "Sound: SoundBlaster DMA Number",
             "The DMA number for the emulated SoundBlaster card.",
             {
-                { 0 },
-                { 1 },
-                { 3 },
-                { 5 },
-                { 6 },
-                { 7 },
+                0,
+                1,
+                3,
+                5,
+                6,
+                7,
             },
             1
         },
@@ -449,12 +445,12 @@ retro::CoreOptions retro::core_options {
             "Sound: SoundBlaster High DMA Number",
             "The High DMA number for the emulated SoundBlaster card.",
             {
-                { 0 },
-                { 1 },
-                { 3 },
-                { 5 },
-                { 6 },
-                { 7 },
+                0,
+                1,
+                3,
+                5,
+                6,
+                7,
             },
             5
         },
@@ -469,7 +465,7 @@ retro::CoreOptions retro::core_options {
                 { "dualopl2", "Dual OPL-2 (used by SoundBlaster Pro 1.0 for stereo sound)" },
                 { "opl3", "OPL-3 (AdLib / OPL-3 / Yamaha YMF262)" },
                 { "opl3gold", "OPL-3 Gold (AdLib Gold / OPL-3 / Yamaha YMF262)" },
-                { "none" },
+                "none",
             },
             "auto"
         },
@@ -481,9 +477,9 @@ retro::CoreOptions retro::core_options {
                 "It is less accurate, but also less demanding.",
             {
                 { "nuked", "Nuked OPL3" },
-                { "compat" },
-                { "mame" },
-                { "fast" },
+                "compat",
+                "mame",
+                "fast",
             },
             "compat"
         },
@@ -493,8 +489,8 @@ retro::CoreOptions retro::core_options {
             "Enables Gravis Ultrasound emulation. The ULTRADIR directory is not configurable. It "
                 "is always set to C:\\ULTRASND.",
             {
-                { false },
-                { true },
+                false,
+                true,
             },
             false
         },
@@ -503,14 +499,14 @@ retro::CoreOptions retro::core_options {
             "Sound: Ultrasound sample rate",
             "Gravis Ultrasound emulation sample rate.",
             {
-                { 8000 },
-                { 11025 },
-                { 16000 },
-                { 22050 },
-                { 32000 },
-                { 44100 },
-                { 48000 },
-                { 49716 },
+                8000,
+                11025,
+                16000,
+                22050,
+                32000,
+                44100,
+                48000,
+                49716,
             },
             44100
         },
@@ -519,14 +515,14 @@ retro::CoreOptions retro::core_options {
             "Sound: Ultrasound IO address",
             "The IO base address for the emulated Gravis Ultrasound card.",
             {
-                { "220" },
-                { "240" },
-                { "260" },
-                { "280" },
-                { "2a0" },
-                { "2c0" },
-                { "2e0" },
-                { "300" },
+                "220",
+                "240",
+                "260",
+                "280",
+                "2a0",
+                "2c0",
+                "2e0",
+                "300",
             },
             "240"
         },
@@ -535,13 +531,13 @@ retro::CoreOptions retro::core_options {
             "Sound: Ultrasound IRQ",
             "The IRQ number for the emulated Gravis Ultrasound card.",
             {
-                { 3 },
-                { 5 },
-                { 7 },
-                { 9 },
-                { 10 },
-                { 11 },
-                { 12 },
+                3,
+                5,
+                7,
+                9,
+                10,
+                11,
+                12,
             },
             5
         },
@@ -550,12 +546,12 @@ retro::CoreOptions retro::core_options {
             "Sound: Ultrasound DMA",
             "The DMA channel for the emulated Gravis Ultrasound card.",
             {
-                { 0 },
-                { 1 },
-                { 3 },
-                { 5 },
-                { 6 },
-                { 7 },
+                0,
+                1,
+                3,
+                5,
+                6,
+                7,
             },
             3
         },
@@ -564,9 +560,9 @@ retro::CoreOptions retro::core_options {
             "Sound: MPU-401 type",
             "Type of MPU-401 MIDI interface to emulate. \"Intelligent\" mode is the best choice.",
             {
-                { "intelligent" },
+                "intelligent",
                 { "uart", "UART" },
-                { "none" },
+                "none",
             },
             "intelligent"
         },
@@ -576,14 +572,14 @@ retro::CoreOptions retro::core_options {
             "Driver to use for MIDI playback. The libretro driver forwards MIDI to the frontend, "
                 "in which case you need to configure MIDI output there. ",
             {
-                { "none" },
+                "none",
             #ifdef HAVE_ALSA
                 { "alsa", "ALSA" },
             #endif
             #ifdef __WIN32__
                 { "win32", "Windows MIDI" },
             #endif
-                { "libretro" },
+                "libretro",
             },
             "none"
         },
@@ -608,8 +604,8 @@ retro::CoreOptions retro::core_options {
             "Sound: Enable PC speaker",
             "Enable PC speaker emulation.",
             {
-                { false },
-                { true },
+                false,
+                true,
             },
             false
         },
@@ -618,7 +614,7 @@ retro::CoreOptions retro::core_options {
             "Sound: Enable Tandy Sound System",
             "Enable Tandy Sound System Emulation. Auto only works if machine is set to tandy.",
             {
-                { "auto" },
+                "auto",
                 { "on", "true" },
                 { "off", "false" },
             },
@@ -639,8 +635,8 @@ retro::CoreOptions retro::core_options {
             "Network: Enable IPX",
             "Enable IPX over UDP tunneling.",
             {
-                { false },
-                { true },
+                false,
+                true,
             },
             false
         },

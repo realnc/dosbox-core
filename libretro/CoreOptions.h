@@ -89,9 +89,9 @@ namespace retro {
  *
  * To query the frontend for the current value of an option, use the [] operator:
  *
- *     bool overclock = core_options["overclock"]->toBool();
- *     int frames_to_skip = core_options["frameskip"]->toInt();
- *     string midi_device = core_options["midi_device"]->toString();
+ *     bool overclock = core_options["overclock"].toBool();
+ *     int frames_to_skip = core_options["frameskip"].toInt();
+ *     string midi_device = core_options["midi_device"].toString();
  *
  * Note that the omission of the key prefix when using functions of this class is only a
  * convenience. The actual CoreOptionDefinition instances contain the full key. For example:

@@ -256,6 +256,10 @@ static void mount_overlay_filesystem(const char drive, const char* const path)
 
     mem_writeb(Real2Phys(dos.tables.mediaid) + (drive - 'A') * 9, overlay->GetMediaByte());
     overlay->dirCache.SetLabel((drive + std::string("_OVERLAY")).c_str(), false, false);
+    // Preserve current working directory if not marked as deleted.
+    if (overlay->TestDir(base_drive->curdir)) {
+        strcpy(overlay->curdir, base_drive->curdir);
+    }
     Drives[drive - 'A'] = overlay.release();
     delete base_drive;
 }

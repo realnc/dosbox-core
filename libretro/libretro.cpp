@@ -223,7 +223,7 @@ static void mount_overlay_filesystem(const char drive, const char* const path)
     if (log_cb)
         log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path);
     try {
-        std::filesystem::create_directory(path);
+        std::filesystem::create_directories(path);
     }
     catch (const std::exception& e) {
         if (log_cb)

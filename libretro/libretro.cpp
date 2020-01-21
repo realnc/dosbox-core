@@ -43,6 +43,8 @@
 #include <cmath>
 #include <cstdarg>
 #include <cstdlib>
+#include <filesystem>
+#include <memory>
 #include <string>
 #include <thread>
 #ifdef _WIN32
@@ -199,98 +201,63 @@ void write_out (const char * format,...)
 
 bool mount_overlay_filesystem(char drive, const char* path)
 {
-    Bit16u sizes[4];
-    Bit8u mediaid;
-    Bit8u o_error = 0;
-    std::string str_size;
-    str_size="512,32,32765,16000";
-    mediaid=0xF8;
-    Bit8u bit8size=(Bit8u) sizes[1];
-
-    DOS_Drive * overlay;
-
-    localDrive* ldp = dynamic_cast<localDrive*>(Drives[drive-'A']);
-    cdromDrive* cdp = dynamic_cast<cdromDrive*>(Drives[drive-'A']);
-
     if (log_cb)
         log_cb(RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path, drive);
 
-    struct stat path_stat;
-
-    if (stat(path, &path_stat) == 0 && S_ISDIR(path_stat.st_mode))
-    {
-        if (log_cb)
-            log_cb(RETRO_LOG_INFO, "[dosbox] save directory already exists %s\n", path);
-    }
-    else
-    {
-        if (log_cb)
-            log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path);
-#if (WIN32)
-        if (mkdir(path) == -1)
-#else
-        if (mkdir(path, 0700) == -1)
-#endif
-        {
-            if (log_cb)
-                log_cb(RETRO_LOG_INFO, "[dosbox] error creating save directory %s\n", path);
-            return false;
-        }
-    }
-    if (!Drives[drive-'A'])
-    {
+    if (!Drives[drive - 'A']) {
         if (log_cb)
             log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not mounted\n", drive);
         write_out("No basedrive mounted yet!");
         return false;
     }
 
-    if (!ldp || cdp)
+    auto* base_drive = dynamic_cast<localDrive*>(Drives[drive - 'A']);
+    if (!base_drive || dynamic_cast<cdromDrive*>(base_drive)
+        || dynamic_cast<Overlay_Drive*>(base_drive))
     {
         if (log_cb)
             log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not compatible\n", drive);
         return false;
     }
-    std::string base = ldp->getBasedir();
-    overlay = new Overlay_Drive(base.c_str(), path, sizes[0], bit8size, sizes[2], sizes[3], mediaid, o_error);
 
-
-    if (overlay)
-    {
-        if (o_error)
-        {
-            if (o_error == 1)
-            {
-                if (log_cb)
-                    log_cb(RETRO_LOG_INFO, "[dosbox] can't mix absolute and relative paths");
-            }
-            else if (o_error == 2)
-            {
-                if (log_cb)
-                    log_cb(RETRO_LOG_INFO, "[dosbox] overlay can't be in the same underlying file system");
-            }
-            else
-            {
-                if (log_cb)
-                    log_cb(RETRO_LOG_INFO, "[dosbox] something went wrong");
-            }
-            delete overlay;
-            return false;
-        }
-        delete Drives[drive-'A'];
-        Drives[drive-'A'] = nullptr;
+    if (log_cb)
+        log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path);
+    try {
+        std::filesystem::create_directory(path);
     }
-    else
-    {
+    catch (const std::exception& e) {
         if (log_cb)
-            log_cb(RETRO_LOG_INFO, "[dosbox] overlay construction failed");
+            log_cb(RETRO_LOG_ERROR, "[dosbox] error creating overlay directory %s: %s\n", path,
+                   e.what());
         return false;
     }
-    Drives[drive - 'A'] = overlay;
-    mem_writeb(Real2Phys(dos.tables.mediaid) + (drive-'A') * 9, overlay->GetMediaByte());
-    std::string label;
-    label = drive; label += "_OVERLAY";
-    overlay->dirCache.SetLabel(label.c_str(), false, false);
+
+    // Give the overlay the same size as the base drive.
+    Bit16u bytes_per_sector;
+    Bit8u sectors_per_cluster;
+    Bit16u total_clusters;
+    Bit16u free_clusters;
+    base_drive->AllocationInfo(
+        &bytes_per_sector, &sectors_per_cluster, &total_clusters, &free_clusters);
+    Bit8u o_error = 0;
+    auto overlay = std::make_unique<Overlay_Drive>(
+        base_drive->getBasedir(), path, bytes_per_sector, sectors_per_cluster, total_clusters,
+        free_clusters, 0xF8, o_error);
+    if (o_error) {
+        if (o_error == 1 && log_cb) {
+            log_cb(RETRO_LOG_INFO, "[dosbox] can't mix absolute and relative paths");
+        } else if (o_error == 2 && log_cb) {
+            log_cb(RETRO_LOG_INFO, "[dosbox] overlay can't be in the same underlying file system");
+        } else if (log_cb){
+            log_cb(RETRO_LOG_INFO, "[dosbox] something went wrong");
+        }
+        return false;
+    }
+
+    mem_writeb(Real2Phys(dos.tables.mediaid) + (drive - 'A') * 9, overlay->GetMediaByte());
+    overlay->dirCache.SetLabel((drive + std::string("_OVERLAY")).c_str(), false, false);
+    Drives[drive - 'A'] = overlay.release();
+    delete base_drive;
     return true;
 }
 

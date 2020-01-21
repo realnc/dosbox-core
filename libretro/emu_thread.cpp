@@ -46,7 +46,7 @@ static void switchToMainWait()
     std::unique_lock main_lock(main_mutex);
     main_keep_waiting = false;
     if (frontend_exit) {
-        throw 1;
+        throw EmuThreadCanceled();
     }
     main_lock.unlock();
     std::unique_lock emu_lock(emu_mutex);
@@ -72,7 +72,7 @@ static void switchToMainSpin()
     main_flag.clear(std::memory_order_release);
     while (emu_flag.test_and_set(std::memory_order_acquire)) {
         if (frontend_exit) {
-            throw 1;
+            throw EmuThreadCanceled();
         }
     }
 }

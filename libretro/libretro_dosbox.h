@@ -37,4 +37,7 @@ class CoreOptions;
 extern CoreOptions core_options;
 }
 
-bool update_dosbox_variable(bool autoexec, std::string section_string, std::string var_string, std::string val_string);
+void core_autoexec();
+auto update_dosbox_variable(
+        bool autoexec, const std::string& section_string, const std::string& var_string,
+        const std::string& val_string) -> bool;

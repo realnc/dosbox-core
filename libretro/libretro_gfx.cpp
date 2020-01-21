@@ -16,18 +16,19 @@ float dosbox_aspect_ratio = 0;
 unsigned RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_0RGB1555;
 static GFX_CallBack_t dosbox_gfx_cb = nullptr;
 
-Bitu GFX_GetBestMode(Bitu /*flags*/)
+auto GFX_GetBestMode(const Bitu /*flags*/) -> Bitu
 {
     return GFX_CAN_32 | GFX_RGBONLY;
 }
 
-Bitu GFX_GetRGB(Bit8u red,Bit8u green,Bit8u blue)
+auto GFX_GetRGB(const Bit8u red, const Bit8u green, const Bit8u blue) -> Bitu
 {
     return (red << 16) | (green << 8) | (blue << 0);
 }
 
-Bitu GFX_SetSize(
-        Bitu width ,Bitu height ,Bitu /*flags*/, double scalex, double scaley, GFX_CallBack_t cb)
+auto GFX_SetSize(
+        const Bitu width, const Bitu height, const Bitu /*flags*/, const double scalex,
+        const double scaley, const GFX_CallBack_t cb) -> Bitu
 {
     memset(dosbox_framebuffers, 0, sizeof(dosbox_framebuffers));
     RDOSGFXwidth = width;
@@ -42,14 +43,14 @@ Bitu GFX_SetSize(
     return GFX_GetBestMode(0);
 }
 
-bool GFX_StartUpdate(Bit8u * & pixels,Bitu & pitch)
+auto GFX_StartUpdate(Bit8u*& pixels, Bitu& pitch) -> bool
 {
     pixels = run_synced ? dosbox_framebuffers[0] : dosbox_backbuffer;
     pitch = RDOSGFXpitch;
     return true;
 }
 
-void GFX_EndUpdate( const Bit16u *changedLines )
+void GFX_EndUpdate(const Bit16u* const changedLines)
 {
     if (run_synced) {
         dosbox_frontbuffer_uploaded = !changedLines;

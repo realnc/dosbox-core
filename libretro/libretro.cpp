@@ -19,6 +19,7 @@
 
 #include "CoreOptions.h"
 #include "control.h"
+#include "dos/cdrom.h"
 #include "dos/drives.h"
 #include "dosbox.h"
 #include "emu_thread.h"
@@ -98,8 +99,6 @@ extern Bit8u herc_pal;
 MachineType machine = MCH_VGA;
 SVGACards svgaCard = SVGA_None;
 
-enum { CDROM_USE_SDL, CDROM_USE_ASPI, CDROM_USE_IOCTL_DIO, CDROM_USE_IOCTL_DX, CDROM_USE_IOCTL_MCI };
-
 /* input variables */
 bool gamepad[16]; /* true means gamepad, false means joystick */
 bool connected[16];
@@ -168,7 +167,8 @@ static std::thread emu_thread;
 /* helper functions */
 static char last_written_character = 0;
 
-void write_out_buffer(const char * format,...) {
+static void write_out_buffer(const char* const format,...)
+{
     char buf[2048];
     va_list msg;
 
@@ -193,13 +193,13 @@ void write_out_buffer(const char * format,...) {
     dos.internal_output=false;
 }
 
-void write_out (const char * format,...)
+static void write_out(const char* const format,...)
 {
     write_out_buffer("\n");
     write_out_buffer(format);
 }
 
-bool mount_overlay_filesystem(char drive, const char* path)
+static void mount_overlay_filesystem(const char drive, const char* const path)
 {
     if (log_cb)
         log_cb(RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path, drive);
@@ -208,7 +208,7 @@ bool mount_overlay_filesystem(char drive, const char* path)
         if (log_cb)
             log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not mounted\n", drive);
         write_out("No basedrive mounted yet!");
-        return false;
+        return;
     }
 
     auto* base_drive = dynamic_cast<localDrive*>(Drives[drive - 'A']);
@@ -217,7 +217,7 @@ bool mount_overlay_filesystem(char drive, const char* path)
     {
         if (log_cb)
             log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not compatible\n", drive);
-        return false;
+        return;
     }
 
     if (log_cb)
@@ -229,7 +229,7 @@ bool mount_overlay_filesystem(char drive, const char* path)
         if (log_cb)
             log_cb(RETRO_LOG_ERROR, "[dosbox] error creating overlay directory %s: %s\n", path,
                    e.what());
-        return false;
+        return;
     }
 
     // Give the overlay the same size as the base drive.
@@ -251,17 +251,16 @@ bool mount_overlay_filesystem(char drive, const char* path)
         } else if (log_cb){
             log_cb(RETRO_LOG_INFO, "[dosbox] something went wrong");
         }
-        return false;
+        return;
     }
 
     mem_writeb(Real2Phys(dos.tables.mediaid) + (drive - 'A') * 9, overlay->GetMediaByte());
     overlay->dirCache.SetLabel((drive + std::string("_OVERLAY")).c_str(), false, false);
     Drives[drive - 'A'] = overlay.release();
     delete base_drive;
-    return true;
 }
 
-bool mount_disk_image(const char *path, bool silent)
+static auto mount_disk_image(const char* const path, const bool silent) -> bool
 {
     char msg[256];
 
@@ -392,7 +391,7 @@ bool mount_disk_image(const char *path, bool silent)
     return false;
 }
 
-bool unmount_disk_image(char *path)
+static auto unmount_disk_image(const char* const path) -> bool
 {
     char drive;
     std::string extension = strrchr(path, '.');
@@ -427,7 +426,9 @@ bool unmount_disk_image(char *path)
     return true;
 }
 
-bool compare_dosbox_variable(std::string section_string, std::string var_string, std::string val_string)
+static auto compare_dosbox_variable(
+        const std::string& section_string, const std::string& var_string,
+        const std::string& val_string) -> bool
 {
     bool ret = false;
     Section* section = control->GetSection(section_string);
@@ -438,7 +439,9 @@ bool compare_dosbox_variable(std::string section_string, std::string var_string,
     return ret;
 }
 
-bool update_dosbox_variable(bool autoexec, std::string section_string, std::string var_string, std::string val_string)
+auto update_dosbox_variable(
+        const bool autoexec, const std::string& section_string, const std::string& var_string,
+        const std::string& val_string) -> bool
 {
     bool ret = false;
     if (dosbox_initialiazed)
@@ -456,28 +459,28 @@ bool update_dosbox_variable(bool autoexec, std::string section_string, std::stri
         std::string inputline = var_string + "=" + val_string;
         ret = section->HandleInputline(inputline.c_str());
         if (!autoexec)
-        section->ExecuteInit(false);
+            section->ExecuteInit(false);
     }
     log_cb(RETRO_LOG_INFO, "[dosbox] variable %s::%s updated\n", section_string.c_str(), var_string.c_str(), val_string.c_str());
     return ret;
 }
 
-static unsigned disk_get_num_images()
+static auto disk_get_num_images() -> unsigned
 {
     return disk_count;
 }
 
-static bool disk_get_eject_state()
+static auto disk_get_eject_state() -> bool
 {
     return disk_tray_ejected;
 }
 
-static unsigned disk_get_image_index()
+static auto disk_get_image_index() -> unsigned
 {
     return disk_index;
 }
 
-static bool disk_set_eject_state(bool ejected)
+static auto disk_set_eject_state(const bool ejected) -> bool
 {
     if (log_cb && ejected)
         log_cb(RETRO_LOG_INFO, "[dosbox] tray open\n");
@@ -501,7 +504,7 @@ static bool disk_set_eject_state(bool ejected)
     return false;
 }
 
-static bool disk_set_image_index(unsigned index)
+static auto disk_set_image_index(const unsigned index) -> bool
 {
     if (index < disk_get_num_images())
     {
@@ -513,7 +516,7 @@ static bool disk_set_image_index(unsigned index)
     return false;
 }
 
-static bool disk_add_image_index()
+static auto disk_add_image_index() -> bool
 {
     disk_count++;
     if (log_cb)
@@ -521,7 +524,8 @@ static bool disk_add_image_index()
     return true;
 }
 
-static bool disk_replace_image_index(unsigned index, const struct retro_game_info *info)
+static auto disk_replace_image_index(
+        const unsigned index, const retro_game_info* const info) -> bool
 {
     if (index < disk_get_num_images())
         snprintf(disk_array[index], sizeof(char) * PATH_MAX_LENGTH, "%s", info->path);
@@ -530,7 +534,7 @@ static bool disk_replace_image_index(unsigned index, const struct retro_game_inf
     return false;
 }
 
-static struct retro_disk_control_callback disk_interface = {
+static retro_disk_control_callback disk_interface {
     disk_set_eject_state,
     disk_get_eject_state,
     disk_get_image_index,
@@ -540,7 +544,7 @@ static struct retro_disk_control_callback disk_interface = {
     disk_add_image_index,
 };
 
-static void leave_thread(Bitu)
+static void leave_thread(const Bitu /*val*/)
 {
     MIXER_CallBack(nullptr, audioData, samplesPerFrame * 4);
     switchThread();
@@ -551,10 +555,10 @@ static void leave_thread(Bitu)
     }
 }
 
-static void update_gfx_mode(bool change_fps)
+static void update_gfx_mode(const bool change_fps)
 {
     const float old_fps = currentFPS;
-    struct retro_system_av_info new_av_info;
+    retro_system_av_info new_av_info;
     bool cb_error = false;
     retro_get_system_av_info(&new_av_info);
 
@@ -591,7 +595,7 @@ static void update_gfx_mode(bool change_fps)
     current_aspect_ratio = dosbox_aspect_ratio;
 }
 
-bool check_blaster_variables(bool autoexec)
+static auto check_blaster_variables(const bool autoexec) -> bool
 {
     using namespace retro;
 
@@ -610,7 +614,7 @@ bool check_blaster_variables(bool autoexec)
     return sb_type != "none";
 }
 
-bool check_gus_variables(bool autoexec)
+static auto check_gus_variables(const bool autoexec) -> bool
 {
     using namespace retro;
 
@@ -628,10 +632,9 @@ void core_autoexec()
 {
     check_blaster_variables(true);
     check_gus_variables(true);
-
 }
 
-void check_variables()
+static void check_variables()
 {
     using namespace retro;
 
@@ -871,9 +874,8 @@ void check_variables()
         {"thread_sync", "cpu_type", "scaler", "mpu_type", "tandy", "disney"}, adv_core_options);
 }
 
-static void start_dosbox(void)
+static void start_dosbox()
 {
-
     const char* const argv[2] = {"dosbox", loadPath.c_str()};
     CommandLine com_line(loadPath.empty() ? 1 : 2, argv);
     Config myconf(&com_line);
@@ -905,7 +907,7 @@ static void start_dosbox(void)
     {
         control->StartUp();
     }
-    catch(int)
+    catch (const EmuThreadCanceled&)
     {
         if (log_cb)
             log_cb(RETRO_LOG_WARN, "[dosbox] frontend asked to exit\n");
@@ -919,14 +921,12 @@ static void start_dosbox(void)
     switchThread();
 }
 
-void restart_program(std::vector<std::string>& /*parameters*/)
+static void restart_program(const std::vector<std::string>& /*parameters*/)
 {
-
+#if 1
     if (log_cb)
         log_cb(RETRO_LOG_WARN, "[dosbox] program restart not supported\n");
-    return;
-
-#if 0
+#else
     /* TO-DO: this kinda works but it's still not working 100% hence the early return*/
     if(emuThread)
     {
@@ -955,12 +955,12 @@ std::string normalize_path(const std::string& aPath)
     return result;
 }
 
-unsigned retro_api_version(void)
+auto retro_api_version() -> unsigned
 {
     return RETRO_API_VERSION;
 }
 
-void retro_set_environment(retro_environment_t cb)
+void retro_set_environment(const retro_environment_t cb)
 {
     environ_cb = cb;
 
@@ -969,22 +969,20 @@ void retro_set_environment(retro_environment_t cb)
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allow_no_game);
     cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
 
-    static const struct retro_controller_description ports_default[] =
-    {
+    static const retro_controller_description ports_default[] {
         { "Keyboard + Mouse",    RETRO_DEVICE_KEYBOARD },
         { "Gamepad",             RETRO_DEVICE_JOYPAD },
         { "Joystick",            RETRO_DEVICE_JOYSTICK },
         { "Disconnected",        RETRO_DEVICE_NONE },
         {},
     };
-    static const struct retro_controller_description ports_keyboard[] =
-    {
+    static const retro_controller_description ports_keyboard[] {
         { "Keyboard + Mouse", RETRO_DEVICE_KEYBOARD },
         { "Disconnected",     RETRO_DEVICE_NONE },
         {},
     };
 
-    static const struct retro_controller_info ports[] = {
+    static retro_controller_info ports[] {
         { ports_default,  4 },
         { ports_default,  4 },
         { ports_keyboard, 2 },
@@ -993,13 +991,13 @@ void retro_set_environment(retro_environment_t cb)
         { ports_keyboard, 2 },
         {},
     };
-    environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+    environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, ports);
 }
 
-void retro_set_controller_port_device(unsigned port, unsigned device)
+void retro_set_controller_port_device(const unsigned port, const unsigned device)
 {
     connected[port] = false;
-    gamepad[port]    = false;
+    gamepad[port] = false;
     switch (device)
     {
         case RETRO_DEVICE_JOYPAD:
@@ -1019,7 +1017,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     MAPPER_Init();
 }
 
-void retro_get_system_info(struct retro_system_info *info)
+void retro_get_system_info(retro_system_info* const info)
 {
     info->library_name = retro_library_name.c_str();
 #if defined(GIT_VERSION) && defined(SVN_VERSION)
@@ -1034,7 +1032,7 @@ void retro_get_system_info(struct retro_system_info *info)
     info->block_extract = false;
 }
 
-void retro_get_system_av_info(struct retro_system_av_info *info)
+void retro_get_system_av_info(retro_system_av_info* const info)
 {
     info->geometry.base_width = 320;
     info->geometry.base_height = 200;
@@ -1045,10 +1043,10 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
 }
 
-void retro_init (void)
+void retro_init()
 {
     /* Initialize logger interface */
-    struct retro_log_callback log;
+    retro_log_callback log;
     if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
         log_cb = log.log;
     else
@@ -1110,7 +1108,7 @@ void retro_init (void)
     retro::core_options.updateFrontend();
 }
 
-void retro_deinit(void)
+void retro_deinit()
 {
     frontend_exit = true;
     if (emu_thread.joinable()) {
@@ -1125,7 +1123,7 @@ void retro_deinit(void)
 #endif
 }
 
-bool retro_load_game(const struct retro_game_info *game)
+auto retro_load_game(const retro_game_info* const game) -> bool
 {
     if (game) {
         // Copy the game path.
@@ -1172,13 +1170,14 @@ bool retro_load_game(const struct retro_game_info *game)
     return true;
 }
 
-bool retro_load_game_special(
-        unsigned /*game_type*/, const struct retro_game_info* /*info*/, size_t /*num_info*/)
+auto retro_load_game_special(
+        const unsigned /*game_type*/, const retro_game_info* const /*info*/,
+        const size_t /*num_info*/) -> bool
 {
     return false;
 }
 
-void retro_run (void)
+void retro_run()
 {
     if (dosbox_exit) {
         if (emu_thread.joinable()) {
@@ -1257,18 +1256,35 @@ void retro_run (void)
     samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
 }
 
-void retro_reset (void)
+void retro_reset()
 {
     restart_program(control->startup_params);
 }
 
 /* Stubs */
-void *retro_get_memory_data(unsigned /*type*/) { return 0; }
-size_t retro_get_memory_size(unsigned /*type*/) { return 0; }
-size_t retro_serialize_size() { return 0; }
-bool retro_serialize(void* /*data*/, size_t /*size*/) { return false; }
-bool retro_unserialize(const void* /*data*/, size_t /*size*/) { return false; }
-void retro_cheat_reset() { }
-void retro_cheat_set(unsigned /*unused*/, bool /*unused1*/, const char* /*unused2*/) { }
-void retro_unload_game() { }
-unsigned retro_get_region() { return RETRO_REGION_NTSC; }
+auto retro_get_memory_data(const unsigned /*type*/) -> void*
+{ return nullptr; }
+
+auto retro_get_memory_size(const unsigned /*type*/) -> size_t
+{ return 0; }
+
+auto retro_serialize_size() -> size_t
+{ return 0; }
+
+auto retro_serialize(void* const /*data*/, const size_t /*size*/) -> bool
+{ return false; }
+
+auto retro_unserialize(const void* const /*data*/, const size_t /*size*/) -> bool
+{ return false; }
+
+void retro_cheat_reset()
+{}
+
+void retro_cheat_set(unsigned /*unused*/, bool /*unused1*/, const char* /*unused2*/)
+{}
+
+void retro_unload_game()
+{}
+
+auto retro_get_region() -> unsigned
+{ return RETRO_REGION_NTSC; }

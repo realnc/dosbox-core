@@ -1,6 +1,10 @@
 // This is copyrighted software. More information is at the end of this file.
 #pragma once
 
+/* Thrown as an exception for canceling the emulation thread.
+ */
+struct EmuThreadCanceled {};
+
 /* Dosbox doesn't have a top-level main loop that we can use, so instead we run it in its own thread
  * and switch between it and the main thread. Calling this function will block the current thread
  * and unblock the other.

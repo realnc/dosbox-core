@@ -17,6 +17,9 @@
  */
 
 
+#ifdef __LIBRETRO__
+#include "libretro_dosbox.h"
+#endif
 #include "dosbox.h"
 #include "cross.h"
 #include "setup.h"
@@ -30,10 +33,6 @@
 #include <stdio.h>
 #include <limits>
 #include <limits.h>
-
-#ifdef __LIBRETRO__
-extern void core_autoexec(void);
-#endif
 
 using namespace std;
 static std::string current_config_dir; // Set by parseconfigfile so Prop_path can use it to construct the realpath

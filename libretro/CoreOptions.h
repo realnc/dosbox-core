@@ -114,7 +114,7 @@ public:
      * doesn't correspond to an option.
      */
     [[nodiscard]]
-    auto operator [](std::string_view key) -> const CoreOptionValue&;
+    auto operator [](std::string_view key) const -> const CoreOptionValue&;
 
     /* Returns true if any values were changed by the frontend since the last query.
      */
@@ -127,6 +127,9 @@ public:
     [[nodiscard]]
     auto option(std::string_view key) -> CoreOptionDefinition*;
 
+    [[nodiscard]]
+    auto option(std::string_view key) const -> const CoreOptionDefinition*;
+
     /* Submit the options to the frontend. Should be called as early as possible - ideally inside
      * retro_set_environment(), and no later than retro_load_game().
      */
@@ -134,8 +137,8 @@ public:
 
     /* Show/hide the specified option(s).
      */
-    void setVisible(std::string_view key, bool visible) noexcept;
-    void setVisible(std::initializer_list<std::string_view> keys, bool visible) noexcept;
+    void setVisible(std::string_view key, bool visible) const noexcept;
+    void setVisible(std::initializer_list<std::string_view> keys, bool visible) const noexcept;
 
 private:
     std::vector<CoreOptionDefinition> options_;
@@ -166,6 +169,12 @@ inline void CoreOptions::setEnvironmentCallback(const retro_environment_t cb)
 }
 
 inline auto CoreOptions::option(std::string_view key) -> CoreOptionDefinition*
+{
+    auto it = options_map_.find(key);
+    return it != options_map_.end() ? it->second : nullptr;
+}
+
+inline auto CoreOptions::option(std::string_view key) const -> const CoreOptionDefinition*
 {
     auto it = options_map_.find(key);
     return it != options_map_.end() ? it->second : nullptr;

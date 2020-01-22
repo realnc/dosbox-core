@@ -61,7 +61,7 @@ static void W32_ConfDir(std::string& in,bool create) {
 
 void Cross::GetPlatformConfigDir(std::string& in) {
 #ifdef __LIBRETRO__
-	in = retro_save_directory;
+	in = retro_save_directory.u8string();
 #elif WIN32
 	W32_ConfDir(in,false);
 	in += "\\DOSBox";

@@ -2,6 +2,7 @@
 #include "config.h"
 #include "libretro.h"
 #include <cstdint>
+#include <filesystem>
 #include <string>
 
 # define RETROLOG(msg) printf("%s\n", msg)
@@ -23,7 +24,7 @@ extern retro_midi_interface retro_midi_interface;
 extern bool use_retro_midi;
 extern bool have_retro_midi;
 extern bool disney_init;
-extern std::string retro_save_directory;
+extern std::filesystem::path retro_save_directory;
 extern bool autofire;
 extern unsigned mouse_emu_deadzone;
 extern float mouse_speed_factor_x;

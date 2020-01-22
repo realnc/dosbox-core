@@ -41,6 +41,7 @@
 #include "nonlibc.h"
 #endif
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdarg>
 #include <cstdlib>
@@ -60,29 +61,11 @@ extern "C" Jit dynarec_jit;
 
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
 
-#ifndef PATH_MAX_LENGTH
-#define PATH_MAX_LENGTH 4096
-#endif
-
 #define CORE_VERSION "0.74-SVN"
-
-#ifndef PATH_SEPARATOR
-#if defined(WINDOWS_PATH_STYLE) || defined(_WIN32)
-#define PATH_SEPARATOR '\\'
-#else
-#define PATH_SEPARATOR '/'
-#endif
-#endif
 
 #ifdef WITH_FAKE_SDL
 bool startup_state_capslock;
 bool startup_state_numlock;
-#endif
-
-#ifdef _WIN32
-static constexpr char slash = '\\';
-#else
-static constexpr char slash = '/';
 #endif
 
 bool autofire;
@@ -109,9 +92,9 @@ bool run_synced = true;
 static bool use_spinlock = false;
 
 /* directories */
-std::string retro_save_directory;
-static std::string retro_system_directory;
-static std::string retro_content_directory;
+std::filesystem::path retro_save_directory;
+static std::filesystem::path retro_system_directory;
+static std::filesystem::path retro_content_directory;
 static const std::string retro_library_name = "DOSBox-core";
 
 /* libretro variables */
@@ -123,9 +106,9 @@ retro_environment_t environ_cb;
 retro_log_printf_t log_cb;
 
 /* DOSBox state */
-static std::string loadPath;
-static std::string gamePath;
-static std::string configPath;
+static std::filesystem::path load_path;
+static std::filesystem::path game_path;
+static std::filesystem::path config_path;
 bool dosbox_exit;
 bool frontend_exit;
 
@@ -154,11 +137,11 @@ void retro_set_input_poll(retro_input_poll_t cb) { poll_cb = cb; }
 void retro_set_input_state(retro_input_state_t cb) { input_cb = cb; }
 
 /* disk-control variables */
-static char disk_array[16][PATH_MAX_LENGTH];
+static std::array<std::filesystem::path, 16> disk_array;
 static unsigned disk_index = 0;
 static unsigned disk_count = 0;
 static bool disk_tray_ejected;
-static char disk_load_image[PATH_MAX_LENGTH];
+static std::filesystem::path disk_load_image;
 static bool mount_overlay = true;
 
 // Thread we run dosbox in.
@@ -199,10 +182,11 @@ static void write_out(const char* const format,...)
     write_out_buffer(format);
 }
 
-static void mount_overlay_filesystem(const char drive, const char* const path)
+static void mount_overlay_filesystem(const char drive, const std::filesystem::path& path)
 {
     if (log_cb)
-        log_cb(RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path, drive);
+        log_cb(RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path.u8string().c_str(),
+               drive);
 
     if (!Drives[drive - 'A']) {
         if (log_cb)
@@ -221,14 +205,14 @@ static void mount_overlay_filesystem(const char drive, const char* const path)
     }
 
     if (log_cb)
-        log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path);
+        log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path.u8string().c_str());
     try {
         std::filesystem::create_directories(path);
     }
     catch (const std::exception& e) {
         if (log_cb)
-            log_cb(RETRO_LOG_ERROR, "[dosbox] error creating overlay directory %s: %s\n", path,
-                   e.what());
+            log_cb(RETRO_LOG_ERROR, "[dosbox] error creating overlay directory %s: %s\n",
+                   path.u8string().c_str(), e.what());
         return;
     }
 
@@ -241,8 +225,8 @@ static void mount_overlay_filesystem(const char drive, const char* const path)
         &bytes_per_sector, &sectors_per_cluster, &total_clusters, &free_clusters);
     Bit8u o_error = 0;
     auto overlay = std::make_unique<Overlay_Drive>(
-        base_drive->getBasedir(), path, bytes_per_sector, sectors_per_cluster, total_clusters,
-        free_clusters, 0xF8, o_error);
+        base_drive->getBasedir(), path.u8string().c_str(), bytes_per_sector, sectors_per_cluster,
+        total_clusters, free_clusters, 0xF8, o_error);
     if (o_error) {
         if (o_error == 1 && log_cb) {
             log_cb(RETRO_LOG_INFO, "[dosbox] can't mix absolute and relative paths");
@@ -264,7 +248,7 @@ static void mount_overlay_filesystem(const char drive, const char* const path)
     delete base_drive;
 }
 
-static auto mount_disk_image(const char* const path, const bool silent) -> bool
+static auto mount_disk_image(const std::filesystem::path& path, const bool silent) -> bool
 {
     char msg[256];
 
@@ -275,14 +259,13 @@ static auto mount_disk_image(const char* const path, const bool silent) -> bool
         return false;
     }
 
-    std::string extension = strrchr(path, '.');
-    if (extension == ".img")
-        log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as floppy %s\n", path);
-    else if (extension == ".iso" || extension == ".cue")
-        log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as cdrom %s\n", path);
-    else
-    {
-        log_cb(RETRO_LOG_INFO, "[dosbox] unsupported disk image\n %s", extension.c_str());
+    if (path.extension() == ".img") {
+        log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as floppy %s\n", path.u8string().c_str());
+    } else if (path.extension() == ".iso" || path.extension() == ".cue") {
+        log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as cdrom %s\n", path.u8string().c_str());
+    } else {
+        log_cb(RETRO_LOG_INFO, "[dosbox] unsupported disk image\n %s",
+               path.extension().u8string().c_str());
         return false;
     }
 
@@ -293,8 +276,7 @@ static auto mount_disk_image(const char* const path, const bool silent) -> bool
         return false;
     }
 
-    if (extension == ".img")
-    {
+    if (path.extension() == ".img") {
         char drive = 'A';
 
         Bit8u mediaid=0xF0;
@@ -304,7 +286,9 @@ static auto mount_disk_image(const char* const path, const bool silent) -> bool
         std::string str_size;
         std::string label;
 
-        DOS_Drive* floppy = new fatDrive(path, sizes[0],sizes[1],sizes[2],sizes[3],0);
+        // FIXME: sizes?
+        DOS_Drive* floppy =
+            new fatDrive(path.u8string().c_str(), sizes[0], sizes[1], sizes[2], sizes[3], 0);
         if(!(dynamic_cast<fatDrive*>(floppy))->created_successfully)
             return false;
 
@@ -322,12 +306,10 @@ static auto mount_disk_image(const char* const path, const bool silent) -> bool
 
         DriveManager::CycleDisks(drive - 'A', true);
 
-        snprintf(msg, sizeof(msg), "Drive %c is mounted as %s.\n", drive, path);
+        snprintf(msg, sizeof(msg), "Drive %c is mounted as %s.\n", drive, path.u8string().c_str());
         if (!silent) write_out(msg);
             return true;
-    }
-    else if (extension == ".iso" || extension == ".cue")
-    {
+    } else if (path.extension() == ".iso" || path.extension() == ".cue") {
         int error = -1;
         char drive = 'D';
 
@@ -336,7 +318,7 @@ static auto mount_disk_image(const char* const path, const bool silent) -> bool
 
         MSCDEX_SetCDInterface(CDROM_USE_SDL, -1);
 
-        DOS_Drive* iso = new isoDrive(drive, path, mediaid, error);
+        DOS_Drive* iso = new isoDrive(drive, path.u8string().c_str(), mediaid, error);
         switch (error) {
             case 0:    break;
             case 1:
@@ -387,7 +369,7 @@ static auto mount_disk_image(const char* const path, const bool silent) -> bool
 
         DriveManager::CycleDisks(drive - 'A', true);
 
-        snprintf(msg, sizeof(msg), "Drive %c is mounted as %s.\n", drive, path);
+        snprintf(msg, sizeof(msg), "Drive %c is mounted as %s.\n", drive, path.u8string().c_str());
         log_cb(RETRO_LOG_INFO, "[dosbox] %s", msg);
         if (!silent) write_out(msg);
             return true;
@@ -395,35 +377,30 @@ static auto mount_disk_image(const char* const path, const bool silent) -> bool
     return false;
 }
 
-static auto unmount_disk_image(const char* const path) -> bool
+static auto unmount_disk_image(const std::filesystem::path& path) -> bool
 {
     char drive;
-    std::string extension = strrchr(path, '.');
 
-    if (disk_count == 0)
-    {
+    if (disk_count == 0) {
         if (log_cb)
             log_cb(RETRO_LOG_INFO, "[dosbox] no disks added to index\n");
         return false;
     }
 
-    if (extension == ".img")
-    {
-        log_cb(RETRO_LOG_INFO, "[dosbox] unmounting floppy %s\n", path);
+    if (path.extension() == ".img") {
+        log_cb(RETRO_LOG_INFO, "[dosbox] unmounting floppy %s\n", path.u8string().c_str());
         drive = 'A';
-    }
-    else if (extension == ".iso" || extension == ".cue")
-    {
-        log_cb(RETRO_LOG_INFO, "[dosbox] umounting cdrom %s\n", path);
+    } else if (path.extension() == ".iso" || path.extension() == ".cue") {
+        log_cb(RETRO_LOG_INFO, "[dosbox] umounting cdrom %s\n", path.u8string().c_str());
         drive = 'D';
-    }
-    else
-    {
-        log_cb(RETRO_LOG_INFO, "[dosbox] unsupported disk image\n %s", extension.c_str());
+    } else {
+        log_cb(RETRO_LOG_INFO, "[dosbox] unsupported disk image\n %s",
+               path.extension().u8string().c_str());
         return false;
     }
-    if (Drives[drive - 'A'])
+    if (Drives[drive - 'A']) {
         DriveManager::UnmountDrive(drive - 'A');
+    }
     Drives[drive - 'A'] = nullptr;
     DriveManager::CycleDisks(drive - 'A', true);
 
@@ -531,10 +508,11 @@ static auto disk_add_image_index() -> bool
 static auto disk_replace_image_index(
         const unsigned index, const retro_game_info* const info) -> bool
 {
-    if (index < disk_get_num_images())
-        snprintf(disk_array[index], sizeof(char) * PATH_MAX_LENGTH, "%s", info->path);
-    else
+    if (index < disk_get_num_images()) {
+        disk_array[index] = info->path;
+    } else {
         disk_count--;
+    }
     return false;
 }
 
@@ -880,8 +858,8 @@ static void check_variables()
 
 static void start_dosbox()
 {
-    const char* const argv[2] = {"dosbox", loadPath.c_str()};
-    CommandLine com_line(loadPath.empty() ? 1 : 2, argv);
+    const char* const argv[2] = {"dosbox", load_path.u8string().c_str()};
+    CommandLine com_line(load_path.empty() ? 1 : 2, argv);
     Config myconf(&com_line);
     control = &myconf;
     dosbox_initialiazed = false;
@@ -890,8 +868,8 @@ static void start_dosbox()
     DOSBOX_Init();
 
     /* Load config */
-    if(!configPath.empty())
-        control->ParseConfigFile(configPath.c_str());
+    if(!config_path.empty())
+        control->ParseConfigFile(config_path.u8string().c_str());
 
     check_variables();
     control->Init();
@@ -946,17 +924,6 @@ void restart_program(std::vector<std::string>& /*parameters*/)
     dosbox_initialiazed = false;
     init_threads();
 #endif
-}
-
-std::string normalize_path(const std::string& aPath)
-{
-    std::string result = aPath;
-    for(size_t found = result.find_first_of("\\/"); std::string::npos != found; found = result.find_first_of("\\/", found + 1))
-    {
-        result[found] = PATH_SEPARATOR;
-    }
-
-    return result;
 }
 
 auto retro_api_version() -> unsigned
@@ -1064,21 +1031,24 @@ void retro_init()
 
     const char* system_dir = nullptr;
     if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir)
-        retro_system_directory = system_dir;
+        retro_system_directory = std::filesystem::path(system_dir).make_preferred();
     if (log_cb)
-        log_cb(RETRO_LOG_INFO, "[dosbox] SYSTEM_DIRECTORY: %s\n", retro_system_directory.c_str());
+        log_cb(RETRO_LOG_INFO, "[dosbox] SYSTEM_DIRECTORY: %s\n",
+               retro_system_directory.u8string().c_str());
 
     const char* save_dir = nullptr;
     if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir)
-        retro_save_directory = save_dir;
+        retro_save_directory = std::filesystem::path(save_dir).make_preferred();
     if (log_cb)
-        log_cb(RETRO_LOG_INFO, "[dosbox] SAVE_DIRECTORY: %s\n", retro_save_directory.c_str());
+        log_cb(RETRO_LOG_INFO, "[dosbox] SAVE_DIRECTORY: %s\n",
+               retro_save_directory.u8string().c_str());
 
     const char* content_dir = nullptr;
     if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir)
-        retro_content_directory = content_dir;
+        retro_content_directory = std::filesystem::path(content_dir).make_preferred();
     if (log_cb)
-        log_cb(RETRO_LOG_INFO, "[dosbox] CONTENT_DIRECTORY: %s\n", retro_content_directory.c_str());
+        log_cb(RETRO_LOG_INFO, "[dosbox] CONTENT_DIRECTORY: %s\n",
+               retro_content_directory.u8string().c_str());
 
 #ifdef HAVE_ALSA
     // Add values to the midi port option. We don't use numerical ports since these can change. We
@@ -1129,47 +1099,29 @@ void retro_deinit()
 
 auto retro_load_game(const retro_game_info* const game) -> bool
 {
-    if (game) {
-        // Copy the game path.
-        loadPath = normalize_path(game->path);
-        const size_t lastDot = loadPath.find_last_of('.');
-        char tmp[PATH_MAX_LENGTH];
-        snprintf(tmp, sizeof(tmp), "%s", game->path);
-        gamePath = std::string(tmp);
+    if (game && game->path) {
+        load_path = std::filesystem::path(game->path).make_preferred();
+        game_path = load_path;
+    }
 
-        // Find any config file to load.
-        if (std::string::npos != lastDot) {
-            std::string extension = loadPath.substr(lastDot + 1);
-            std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
-
-            if(extension == "conf") {
-                configPath = loadPath;
-                loadPath.clear();
-            } else if(extension == "iso" || extension == "cue") {
-                configPath = normalize_path(retro_save_directory + slash + retro_library_name + ".conf");
-                if (log_cb) {
-                    log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
-                }
-                disk_add_image_index();
-                snprintf(disk_load_image, sizeof(disk_load_image), "%s", loadPath.c_str());
-                loadPath.clear();
-            } else if(configPath.empty()) {
-                configPath = normalize_path(retro_save_directory + slash + retro_library_name + ".conf");
-                if (log_cb) {
-                    log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
-                }
-            }
-        }
+    if (load_path.extension() == ".conf") {
+        config_path = load_path;
+        load_path.clear();
     } else {
-        configPath = normalize_path(retro_save_directory + slash +  retro_library_name + ".conf");
         if (log_cb) {
-            log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n", configPath.c_str());
+            log_cb(RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n",
+                   config_path.u8string().c_str());
+        }
+        config_path = retro_save_directory / (retro_library_name + ".conf");
+        if (load_path.extension() == ".iso" || load_path.extension() == ".cue") {
+            disk_add_image_index();
+            disk_load_image = load_path;
+            load_path.clear();
         }
     }
 
     emu_thread = std::thread(start_dosbox);
     switchThread();
-
     samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
     return true;
 }
@@ -1196,11 +1148,10 @@ void retro_run()
     environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward);
     DOSBOX_UnlockSpeed(fast_forward);
 
-    if (disk_load_image[0]!='\0')
-    {
+    if (!disk_load_image.empty()) {
         mount_disk_image(disk_load_image, false);
-        snprintf(disk_array[0], sizeof(char) * PATH_MAX_LENGTH, "%s", disk_load_image);
-        disk_load_image[0] = '\0';
+        disk_array[0] = disk_load_image;
+        disk_load_image.clear();
     }
 
     /* Dynamic resolution switching */
@@ -1220,14 +1171,9 @@ void retro_run()
 
     /* Once C is mounted, mount the overlay */
     if (Drives['C' - 'A'] && mount_overlay) {
-        std::size_t last_slash = gamePath.find_last_of("/\\");
-        std::string s1 = gamePath.substr(0, last_slash);
-        std::size_t second_to_last_slash = s1.find_last_of("/\\");
-        std::string s2 = s1.substr(second_to_last_slash + 1, last_slash);
-
-        std::string save_directory = retro_save_directory + slash + s2 + slash;
-        normalize_path(save_directory);
-        mount_overlay_filesystem('C', save_directory.c_str());
+        auto overlay_directory =
+            retro_save_directory / retro_library_name / game_path.parent_path().filename();
+        mount_overlay_filesystem('C', overlay_directory.make_preferred());
         mount_overlay = false;
     }
 

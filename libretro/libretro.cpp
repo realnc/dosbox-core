@@ -616,14 +616,57 @@ void core_autoexec()
     check_gus_variables(true);
 }
 
+static void check_cpu_cycle_variables()
+{
+    using namespace retro;
+
+    const auto& mode = core_options["cpu_cycles_mode"].toString();
+    const int realmode_cycles =
+          core_options["cpu_cycles_realmode"].toInt()
+        * core_options["cpu_cycles_multiplier_realmode"].toInt()
+        + core_options["cpu_cycles_fine_realmode"].toInt()
+        * core_options["cpu_cycles_multiplier_fine_realmode"].toInt();
+    const int cycles =
+          core_options["cpu_cycles"].toInt()
+        * core_options["cpu_cycles_multiplier"].toInt()
+        + core_options["cpu_cycles_fine"].toInt()
+        * core_options["cpu_cycles_multiplier_fine"].toInt();
+    const auto cycles_str = std::to_string(cycles);
+    const std::string max_limits_str = [cycles, &cycles_str] {
+        const auto& limit = core_options["cpu_cycles_limit"].toString();
+        std::string retval;
+        if (limit != "none") {
+            retval += ' ' + limit;
+        }
+        if (cycles > 0) {
+            retval += " limit " + cycles_str;
+        }
+        return retval;
+    }();
+
+    std::string output = mode;
+    if (mode == "fixed" && cycles > 0) {
+        output += ' ' + cycles_str;
+    } else if (mode == "max") {
+        output += max_limits_str;
+    } else {
+        if (realmode_cycles > 0) {
+            output += ' ' + std::to_string(realmode_cycles);
+        }
+        output += max_limits_str;
+    }
+    update_dosbox_variable(false, "cpu", "cycles", output);
+
+    core_options.setVisible("cpu_cycles_limit", mode == "max" || mode == "auto");
+    core_options.setVisible(
+        {"cpu_cycles_multiplier_realmode", "cpu_cycles_realmode",
+         "cpu_cycles_multiplier_fine_realmode", "cpu_cycles_fine_realmode"}, mode == "auto");
+}
+
 static void check_variables()
 {
     using namespace retro;
 
-    static unsigned cycles, cycles_fine, cycles_limit;
-    static unsigned cycles_multiplier, cycles_multiplier_fine;
-    static bool update_cycles = false;
-    std::string cycles_mode;
     std::string machine_type;
 
     bool blaster = false;
@@ -742,14 +785,6 @@ static void check_variables()
         mouse_speed_factor_x = core_options["mouse_speed_factor_x"].toFloat();
         mouse_speed_factor_y = core_options["mouse_speed_factor_y"].toFloat();
 
-        cycles_mode = core_options["cpu_cycles_mode"].toString();
-        cycles_limit = core_options["cpu_cycles_limit"].toInt();
-        cycles = core_options["cpu_cycles"].toInt();
-        cycles_multiplier = core_options["cpu_cycles_multiplier"].toInt();
-        cycles_fine = core_options["cpu_cycles_fine"].toInt();
-        cycles_multiplier_fine = core_options["cpu_cycles_multiplier_fine"].toInt();
-        update_cycles = true;
-
         update_dosbox_variable(false, "cpu", "cputype", core_options["cpu_type"].toString());
         update_dosbox_variable(false, "cpu", "core", core_options["cpu_core"].toString());
         update_dosbox_variable(
@@ -758,25 +793,7 @@ static void check_variables()
         update_dosbox_variable(
             false, "joystick", "timed", core_options["joystick_timed"].toString());
 
-        if (update_cycles)
-        {
-            if (cycles_mode == "fixed")
-            {
-                char s[32];
-                snprintf(s, sizeof(s), "%d", cycles * cycles_multiplier + cycles_fine * cycles_multiplier_fine);
-                update_dosbox_variable(false, "cpu", "cycles", s);
-            }
-            else if (cycles_mode == "max")
-            {
-                char s[32];
-                snprintf(s, sizeof(s), "%s %d%%", cycles_mode.c_str(), cycles_limit);
-                update_dosbox_variable(false, "cpu", "cycles", s);
-            }
-            else
-                update_dosbox_variable(false, "cpu", "cycles", cycles_mode);
-
-            update_cycles = false;
-        }
+        check_cpu_cycle_variables();
 
         update_dosbox_variable(false, "speaker", "pcspeaker", core_options["pcspeaker"].toString());
 
@@ -825,14 +842,6 @@ static void check_variables()
             disney_init = disney_val == "on";
         }
     }
-
-    /* show cycles adjustment if core timing is external or cycle mode is fixed */
-    core_options.setVisible(
-        {"cpu_cycles", "cpu_cycles_multiplier", "cpu_cycles_fine", "cpu_cycles_multiplier_fine"},
-        cycles_mode == "fixed");
-
-    /* show cycles max adjustment if core cycle mode is max */
-    core_options.setVisible("cpu_cycles_limit", cycles_mode == "max");
 
     /* show cga options only if machine is cga and advanced options is enabled */
     core_options.setVisible(

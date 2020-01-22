@@ -2,6 +2,21 @@
 #include "CoreOptions.h"
 #include "libretro_dosbox.h"
 
+#define CYCLES_COARSE_MULTIPLIERS \
+    100, \
+    1000, \
+    10000, \
+    100000,
+
+#define CYCLES_FINE_MULTIPLIERS \
+    1, \
+    10, \
+    100, \
+    1000, \
+    10000,
+
+#define CYCLES_VALUES 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+
 #define MOUSE_SPEED_FACTORS \
     { \
         "0.10", "0.11", "0.12", "0.13", "0.14", "0.15", "0.16", "0.17", "0.18", "0.19", "0.20", \
@@ -195,12 +210,13 @@ retro::CoreOptions retro::core_options {
         {
             "cpu_cycles_mode",
             "System: CPU cycles mode",
-            "Method to determine the amount of CPU cycles that DOSBox tries to emulate per "
-                "millisecond. \"Auto\" will use 3000 cycles in real mode games, \"max\" in "
-                "protected mode games. \"Max\" will try to use as much cycles as possible. Some "
-                "games are CPU speed sensitive and don't react well to max cycles. In that case, "
-                "using \"fixed\" and configuring the cycle count manually is recommended, but a "
-                "value that is too high for your system may cause slowdown.",
+            "Method to determine the amount of emulated CPU cycles per millisecond. \"Fixed\" mode "
+                "emulates the amount of cycles you have set. \"Max\" mode will emulate as many "
+                "cycles as possible, depending on the limits you have set. You can configure a "
+                "maximum CPU load percentage as well as a cycle amount as limits. \"Auto\" will "
+                "emulate the fixed cycle amount set in the \"real mode\" cycles options when "
+                "running real mode games, while for protected mode games it will switch to \"max\" "
+                "mode.",
             {
                 "auto",
                 "fixed",
@@ -209,64 +225,35 @@ retro::CoreOptions retro::core_options {
             "auto"
         },
         {
-            "cpu_cycles_multiplier",
-            "System: Coarse CPU cycles multiplier",
-            "Multiplier for coarse CPU cycles tuning.",
-            {
-                100,
-                1000,
-                10000,
-                100000,
-            },
+            "cpu_cycles_multiplier_realmode",
+            "System: Real mode coarse CPU cycles multiplier",
+            "Multiplier for coarse CPU cycles tuning when running real mode games in \"auto\" "
+                "cycles mode.",
+            { CYCLES_COARSE_MULTIPLIERS },
             1000
         },
         {
-            "cpu_cycles",
-            "System: Coarse CPU cycles value",
-            "Value for coarse CPU cycles tuning.",
-            {
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-            },
-            1
+            "cpu_cycles_realmode",
+            "System: Real mode coarse CPU cycles value",
+            "Value for coarse CPU cycles tuning when running real mode games in \"auto\" cycles "
+                "mode.",
+            { CYCLES_VALUES },
+            3
         },
         {
-            "cpu_cycles_multiplier_fine",
-            "System: Fine CPU cycles multiplier",
-            "Multiplier for fine CPU cycles tuning.",
-            {
-                1,
-                10,
-                100,
-                1000,
-                10000,
-            },
+            "cpu_cycles_multiplier_fine_realmode",
+            "System: Real mode fine CPU cycles multiplier",
+            "Multiplier for fine CPU cycles tuning when running real mode games in \"auto\" cycles "
+                "mode.",
+            { CYCLES_FINE_MULTIPLIERS },
             100
         },
         {
-            "cpu_cycles_fine",
-            "System: Fine CPU cycles value",
-            "Value for fine CPU cycles tuning.",
-            {
-                0,
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-            },
+            "cpu_cycles_fine_realmode",
+            "System: Real mode fine CPU cycles value",
+            "Value for fine CPU cycles tuning when running real mode games in \"auto\" cycles "
+                "mode.",
+            { CYCLES_VALUES },
             0
         },
         {
@@ -274,19 +261,48 @@ retro::CoreOptions retro::core_options {
             "System: Max CPU cycles limit",
             "Limit the maximum amount of CPU cycles used when using \"max\" mode.",
             {
-                { 10, "10%" },
-                { 20, "20%" },
-                { 30, "30%" },
-                { 40, "40%" },
-                { 50, "50%" },
-                { 60, "60%" },
-                { 70, "70%" },
-                { 80, "80%" },
-                { 90, "90%" },
-                { 100, "100%" },
-                { 105, "105%" },
+                "none",
+                "10%",
+                "20%",
+                "30%",
+                "40%",
+                "50%",
+                "60%",
+                "70%",
+                "80%",
+                "90%",
+                "100%",
+                "105%",
             },
+            "100%"
+        },
+        {
+            "cpu_cycles_multiplier",
+            "System: Coarse CPU cycles multiplier",
+            "Multiplier for coarse CPU cycles tuning.",
+            { CYCLES_COARSE_MULTIPLIERS },
+            1000
+        },
+        {
+            "cpu_cycles",
+            "System: Coarse CPU cycles value",
+            "Value for coarse CPU cycles tuning.",
+            { CYCLES_VALUES },
+            1
+        },
+        {
+            "cpu_cycles_multiplier_fine",
+            "System: Fine CPU cycles multiplier",
+            "Multiplier for fine CPU cycles tuning.",
+            { CYCLES_FINE_MULTIPLIERS },
             100
+        },
+        {
+            "cpu_cycles_fine",
+            "System: Fine CPU cycles value",
+            "Value for fine CPU cycles tuning.",
+            { CYCLES_VALUES },
+            0
         },
         {
             "aspect_correction",

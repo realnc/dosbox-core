@@ -925,7 +925,7 @@ static void start_dosbox()
     switchThread();
 }
 
-static void restart_program(const std::vector<std::string>& /*parameters*/)
+void restart_program(std::vector<std::string>& /*parameters*/)
 {
 #if 1
     if (log_cb)

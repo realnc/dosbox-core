@@ -23,9 +23,7 @@ CXX:=$(cross_prefix)$(CXX)
 LD:=$(cross_prefix)$(LD)
 
 platform ?= unix
-ifeq ($(UNAME),Linux)
-	platform = linux
-else ifneq ($(findstring MINGW,$(UNAME)),)
+ifneq ($(findstring MINGW,$(UNAME)),)
 	platform = win
 else ifneq ($(findstring Darwin,$(UNAME)),)
 	platform = osx
@@ -245,7 +243,8 @@ else ifeq ($(platform), win)
 	endif
 	COMMONFLAGS += -DWIN32=1 -D__USE_W32_SOCKETS -Werror=return-type
 else
-	ifeq ($(platform), linux)
+	ifeq ($(UNAME),Linux)
+		WITH_ALSA_MIDI := 1
 		COMMONFLAGS += -DHAVE_ALSA
 	endif
 	COMMONFLAGS += -DC_HAVE_MPROTECT="1"

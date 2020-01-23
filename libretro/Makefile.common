@@ -18,14 +18,6 @@ INCFLAGS += \
 	-I$(CORE_DIR)/src/midi/munt
 
 # common files
-ifeq ($(platform), linux)
-	SOURCES_CXX += \
-		$(CORE_DIR)/libretro/midi_alsa.cpp
-endif
-ifeq ($(platform), win)
-	SOURCES_CXX += \
-		$(CORE_DIR)/libretro/midi_win32.cpp
-endif
 SOURCES_CXX += \
 	$(CORE_DIR)/libretro/CoreOptionDefinition.cpp \
 	$(CORE_DIR)/libretro/CoreOptionValue.cpp \
@@ -153,6 +145,15 @@ SOURCES_CXX += \
 	$(CORE_DIR)/src/hardware/ipx.cpp \
 	$(CORE_DIR)/src/hardware/ipxserver.cpp
 endif
+endif
+
+ifeq ($(WITH_ALSA_MIDI), 1)
+	SOURCES_CXX += \
+		$(CORE_DIR)/libretro/midi_alsa.cpp
+endif
+ifeq ($(platform), win)
+	SOURCES_CXX += \
+		$(CORE_DIR)/libretro/midi_win32.cpp
 endif
 
 SOURCES_C := \

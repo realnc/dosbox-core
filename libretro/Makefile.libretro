@@ -264,10 +264,11 @@ ifeq ($(DEBUG), 1)
 	COMMONFLAGS += -O0 -g
 else
 	COMMONFLAGS += -O3 -DNDEBUG -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
-	ifneq ($(WITH_FAKE_SDL), 1)
-		ifeq ($(WITH_IPX), 1)
-			COMMONFLAGS += -DC_IPX
-		endif
+endif
+
+ifneq ($(WITH_FAKE_SDL), 1)
+	ifeq ($(WITH_IPX), 1)
+		COMMONFLAGS += -DC_IPX
 	endif
 endif
 

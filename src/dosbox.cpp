@@ -166,11 +166,7 @@ static Bitu Normal_Loop(void) {
 #endif
 
 void increaseticks() { //Make it return ticksRemain and set it in the function above to remove the global variable.
-#ifndef __LIBRETRO__
 	if (GCC_UNLIKELY(ticksLocked)) { // For Fast Forward Mode
-#else
-	if (ticksLocked) { // For Fast Forward Mode
-#endif
 		ticksRemain=5;
 		/* Reset any auto cycle guessing for this frame */
 		ticksLast = GetTicks();

@@ -202,7 +202,7 @@ void E_Exit(const char * format,...) {
 	}
 	dosbox_exit = true;
 	switchThread();
-	throw 1;
+	throw EmuThreadCanceled();
 #else
 	throw(buf);
 #endif

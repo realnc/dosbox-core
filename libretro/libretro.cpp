@@ -71,7 +71,7 @@ bool startup_state_numlock;
 bool autofire;
 static bool dosbox_initialiazed = false;
 
-unsigned mouse_emu_deadzone;
+int mouse_emu_deadzone;
 float mouse_speed_factor_x = 1.0;
 float mouse_speed_factor_y = 1.0;
 

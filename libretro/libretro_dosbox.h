@@ -26,7 +26,7 @@ extern bool have_retro_midi;
 extern bool disney_init;
 extern std::filesystem::path retro_save_directory;
 extern bool autofire;
-extern unsigned mouse_emu_deadzone;
+extern int mouse_emu_deadzone;
 extern float mouse_speed_factor_x;
 extern float mouse_speed_factor_y;
 extern bool connected[16];

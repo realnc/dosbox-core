@@ -457,6 +457,7 @@ static auto compare_dosbox_variable(
     return ret;
 }
 
+// TODO: this should have std::string_view params
 auto update_dosbox_variable(
     const bool autoexec, const std::string& section_string, const std::string& var_string,
     const std::string& val_string) -> bool
@@ -690,6 +691,30 @@ static void check_cpu_cycle_variables()
         mode == "auto");
 }
 
+static void update_mt32_variables(const bool mt32_enabled, const bool show_all)
+{
+    update_dosbox_variable(false, "midi", "mt32.romdir", retro_system_directory.u8string());
+
+    for (const auto* name : {"mt32.thread", "mt32.partials", "mt32.analog"}) {
+        update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
+        retro::core_options.setVisible(name, mt32_enabled);
+    }
+
+    for (const auto* name :
+         {"mt32.reverse.stereo", "mt32.dac", "mt32.reverb.mode", "mt32.reverb.time",
+          "mt32.reverb.level", "mt32.rate", "mt32.src.quality", "mt32.niceampramp"})
+    {
+        update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
+        retro::core_options.setVisible(name, mt32_enabled && show_all);
+    }
+
+    const bool is_threaded = retro::core_options["mt32.thread"].toBool();
+    for (const auto* name : {"mt32.chunk", "mt32.prebuffer"}) {
+        update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
+        retro::core_options.setVisible(name, mt32_enabled && is_threaded && show_all);
+    }
+}
+
 static void check_variables()
 {
     using namespace retro;
@@ -820,6 +845,9 @@ static void check_variables()
             use_retro_midi = midi_driver == "libretro";
             update_dosbox_variable(
                 false, "midi", "mididevice", use_retro_midi ? "none" : midi_driver);
+
+            update_mt32_variables(midi_driver == "mt32", adv_core_options);
+
             if (use_retro_midi && !have_retro_midi) {
                 have_retro_midi =
                     environ_cb(RETRO_ENVIRONMENT_GET_MIDI_INTERFACE, &retro_midi_interface);

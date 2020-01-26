@@ -587,8 +587,9 @@ retro::CoreOptions retro::core_options {
         {
             "midi_driver",
             "Sound: MIDI driver",
-            "Driver to use for MIDI playback. The libretro driver forwards MIDI to the frontend, "
-                "in which case you need to configure MIDI output there. ",
+            "Driver to use for MIDI playback. The MT-32 emulation driver uses Munt and needs the "
+                "correct ROMs in the frontend's system directory. The libretro driver forwards "
+                "MIDI to the frontend, in which case you need to configure MIDI output there.",
             {
                 "none",
             #ifdef HAVE_ALSA
@@ -597,6 +598,7 @@ retro::CoreOptions retro::core_options {
             #ifdef __WIN32__
                 { "win32", "Windows MIDI" },
             #endif
+                { "mt32", "MT-32 emulator" },
                 "libretro",
             },
             "none"
@@ -617,6 +619,247 @@ retro::CoreOptions retro::core_options {
             // No values. We detect and set MIDI ports at runtime.
         },
         #endif
+        {
+            "mt32.reverse.stereo",
+            "Sound (MT-32): Reverse stereo channels",
+            {
+                false,
+                true,
+            },
+            false
+        },
+        {
+            "mt32.thread",
+            "Sound (MT-32): Threaded emulation",
+            "Run MT-32 emulation in its own thread. Improves performance on multi-core CPUs.",
+            {
+                false,
+                true,
+            },
+            false
+        },
+        {
+            "mt32.chunk",
+            "Sound (MT-32): Threaded chunk size",
+            "Minimum milliseconds of data to render at once. Increasing this value reduces "
+                "rendering overhead which may improve performance but also increases audio lag.",
+            {
+                { 2, "2ms" },
+                { 3, "3ms" },
+                { 4, "4ms" },
+                { 5, "5ms" },
+                { 7, "7ms" },
+                { 10, "10ms" },
+                { 13, "13ms" },
+                { 16, "16ms" },
+                { 20, "20ms" },
+                { 24, "24ms" },
+                { 28, "28ms" },
+                { 32, "32ms" },
+                { 40, "40ms" },
+                { 48, "48ms" },
+                { 56, "56ms" },
+                { 64, "64ms" },
+                { 80, "80ms" },
+                { 96, "96ms" },
+            },
+            16
+        },
+        {
+            "mt32.prebuffer",
+            "Sound (MT-32): Threaded prebuffer size",
+            "How many milliseconds of data to render ahead. Increasing this value may help to "
+                "avoid underruns but also increases audio lag. Cannot be set less than or equal to "
+                "the chunk size value.",
+            {
+                { 3, "3ms" },
+                { 4, "4ms" },
+                { 5, "5ms" },
+                { 7, "7ms" },
+                { 10, "10ms" },
+                { 13, "13ms" },
+                { 16, "16ms" },
+                { 20, "20ms" },
+                { 24, "24ms" },
+                { 28, "28ms" },
+                { 32, "32ms" },
+                { 40, "40ms" },
+                { 48, "48ms" },
+                { 56, "56ms" },
+                { 64, "64ms" },
+                { 80, "80ms" },
+                { 96, "96ms" },
+                { 112, "112ms" },
+                { 128, "128ms" },
+                { 144, "144ms" },
+                { 160, "160ms" },
+                { 176, "176ms" },
+                { 192, "192ms" },
+            },
+            32
+        },
+        {
+            "mt32.partials",
+            "Sound (MT-32): Max partials",
+            "The maximum number of partials playing simultaneously. A value of 32 matches real "
+                "MT-32 hardware. Lowering this value increases performance at the cost of notes "
+                "getting cut off sooner. Increasing it allows more notes to stay audible compared "
+                "to real hardware at the cost of performance.",
+            {
+                8,
+                9,
+                10,
+                11,
+                12,
+                14,
+                16,
+                20,
+                24,
+                28,
+                32,
+                40,
+                48,
+                56,
+                64,
+                72,
+                80,
+                96,
+                112,
+                128,
+                144,
+                160,
+                176,
+                192,
+                224,
+                256,
+            },
+            32
+        },
+        {
+            "mt32.dac",
+            "Sound (MT-32): DAC input emulation mode",
+            "High quality: Produces samples at double the volume, without tricks. Higher quality "
+                "than the real devices.\n"
+                "Pure: Produces samples that exactly match the bits output from the emulated LA32. "
+                "Nicer overdrive characteristics than the DAC hacks (it simply clips samples "
+                "within range.) Much less likely to overdrive than any other mode. Half the volume "
+                "of any of the other modes.\n"
+                "Gen 1: Re-orders the LA32 output bits as in the early generation MT-32.\n"
+                "Gen 2: Re-orders the LA32 output bits as in the later generations MT-32 and "
+                "CM-32Ls.",
+            {
+                { 0, "high quality" },
+                { 1, "pure" },
+                { 2, "gen 1" },
+                { 3, "gen 2" },
+            },
+            0
+        },
+        {
+            "mt32.analog",
+            "Sound (MT-32): Analog output emulation mode",
+            "Digital: Only digital path is emulated. The output samples correspond to the digital "
+                "output signal appeared at the DAC entrance. Fastest mode.\n"
+                "Coarse: Coarse emulation of LPF circuit. High frequencies are boosted, sample "
+                "rate remains unchanged. A bit better sounding but also a bit slower.\n"
+                "Accurate: Finer emulation of LPF circuit. Output signal is upsampled to 48 kHz to "
+                "allow emulation of audible mirror spectra above 16 kHz, which is passed through "
+                "the LPF circuit without significant attenuation. Sounding is closer to the analog "
+                "output from real hardware but also slower than \"digital\" and \"coarse\".\n"
+                "Oversampled: Same as \"accurate\" but the output signal is 2x oversampled, i.e. "
+                "the output sample rate is 96 kHz. Even slower than all the other modes but better "
+                "retains highest frequencies while further resampled in DOSBox mixer.",
+            {
+                { 0, "digital" },
+                { 1, "coarse" },
+                { 2, "accurate" },
+                { 3, "oversampled" },
+            },
+            2
+        },
+        {
+            "mt32.reverb.mode",
+            "Sound (MT-32): Reverb mode",
+            "Reverb emulation mode. \"Auto\" will automatically adjust reverb parameters to match "
+                "the loaded control ROM version.",
+            {
+                { 0, "room" },
+                { 1, "hall" },
+                { 2, "plate" },
+                { 3, "tap delay" },
+                { "auto" },
+            },
+            "auto"
+        },
+        {
+            "mt32.reverb.time",
+            "Sound (MT-32): Reverb decay time",
+            {
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+            },
+            5
+        },
+        {
+            "mt32.reverb.level",
+            "Sound (MT-32): Reverb level",
+            {
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+            },
+            3
+        },
+        {
+            "mt32.rate",
+            "Sound (MT-32): Sample rate",
+            {
+                { 8000, "8kHz" },
+                { 11025, "11.025kHz" },
+                { 16000, "16kHz" },
+                { 22050, "22.05kHz" },
+                { 32000, "32kHz" },
+                { 44100, "44.1kHz" },
+                { 48000, "48kHz" },
+                { 49716, "49.716kHz" },
+            },
+            44100
+        },
+        {
+            "mt32.src.quality",
+            "Sound (MT-32): Resampling quality",
+            {
+                { 0, "fastest" },
+                { 1, "fast" },
+                { 2, "good" },
+                { 3, "best" },
+            },
+            2
+        },
+        {
+            "mt32.niceampramp",
+            "Sound (MT-32): Nice amp ramp",
+            "Improves amplitude ramp for sustaining instruments. Quick changes of volume or "
+                "expression on a MIDI channel may result in amp jumps on real hardware. Enabling "
+                "this option prevents this from happening. Disabling this options preserves "
+                "emulation accuracy.",
+            {
+                true,
+                false,
+            },
+            true
+        },
         {
             "pcspeaker",
             "Sound: Enable PC speaker",

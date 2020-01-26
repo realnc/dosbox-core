@@ -3,7 +3,8 @@
 
 /* Thrown as an exception for canceling the emulation thread.
  */
-struct EmuThreadCanceled {};
+struct EmuThreadCanceled
+{ };
 
 /* Dosbox doesn't have a top-level main loop that we can use, so instead we run it in its own thread
  * and switch between it and the main thread. Calling this function will block the current thread

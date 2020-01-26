@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <string>
 
-# define RETROLOG(msg) printf("%s\n", msg)
+#define RETROLOG(msg) printf("%s\n", msg)
 
 extern retro_input_poll_t poll_cb;
 extern retro_input_state_t input_cb;
@@ -14,7 +14,7 @@ extern retro_log_printf_t log_cb;
 extern bool run_synced;
 extern float dosbox_aspect_ratio;
 extern Bit8u dosbox_framebuffers[2][1024 * 768 * 4];
-extern Bit8u *dosbox_frontbuffer;
+extern Bit8u* dosbox_frontbuffer;
 extern bool dosbox_frontbuffer_uploaded;
 extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 extern unsigned RDOSGFXcolorMode;
@@ -36,9 +36,9 @@ extern bool emulated_mouse;
 namespace retro {
 class CoreOptions;
 extern CoreOptions core_options;
-}
+} // namespace retro
 
 void core_autoexec();
 auto update_dosbox_variable(
-        bool autoexec, const std::string& section_string, const std::string& var_string,
-        const std::string& val_string) -> bool;
+    bool autoexec, const std::string& section_string, const std::string& var_string,
+    const std::string& val_string) -> bool;

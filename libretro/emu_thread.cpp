@@ -38,7 +38,7 @@ static void switchToEmuWait()
         return;
     }
     main_keep_waiting = true;
-    main_cv.wait(main_lock, []{ return !main_keep_waiting; });
+    main_cv.wait(main_lock, [] { return !main_keep_waiting; });
 }
 
 static void switchToMainWait()
@@ -52,7 +52,7 @@ static void switchToMainWait()
     std::unique_lock emu_lock(emu_mutex);
     main_cv.notify_one();
     emu_keep_waiting = true;
-    emu_cv.wait(emu_lock, []{ return !emu_keep_waiting; });
+    emu_cv.wait(emu_lock, [] { return !emu_keep_waiting; });
 }
 
 static void switchToEmuSpin()

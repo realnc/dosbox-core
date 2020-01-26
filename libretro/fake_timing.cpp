@@ -13,8 +13,8 @@ void fakeDelay(const std::uint32_t ms) noexcept
 auto fakeGetTicks() noexcept -> std::uint32_t
 {
     using namespace std::chrono;
-    return duration_cast<milliseconds>(
-        steady_clock::now().time_since_epoch() + fake_delay_ticks).count();
+    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch() + fake_delay_ticks)
+        .count();
 }
 
 void fakeTimingReset() noexcept

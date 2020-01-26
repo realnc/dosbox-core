@@ -2,6 +2,8 @@
 #include "CoreOptions.h"
 #include "libretro_dosbox.h"
 
+// clang-format off
+
 #define CYCLES_COARSE_MULTIPLIERS \
     100, \
     1000, \
@@ -658,6 +660,8 @@ retro::CoreOptions retro::core_options {
         },
     }
 };
+
+// clang-format on
 
 /*
 

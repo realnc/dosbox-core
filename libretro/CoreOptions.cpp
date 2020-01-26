@@ -5,7 +5,7 @@
 
 namespace retro {
 
-auto CoreOptions::operator [](std::string_view key) const -> const CoreOptionValue&
+auto CoreOptions::operator[](std::string_view key) const -> const CoreOptionValue&
 {
     const auto* option = this->option(key);
     if (!option) {
@@ -19,8 +19,9 @@ auto CoreOptions::operator [](std::string_view key) const -> const CoreOptionVal
         return option->defaultValue();
     }
 
-    auto value = std::find_if(option->begin(), option->end(),
-        [var_val = var.value](const auto& a) { return a.toString() == var_val; });
+    auto value = std::find_if(option->begin(), option->end(), [var_val = var.value](const auto& a) {
+        return a.toString() == var_val;
+    });
     if (value == option->end()) {
         // TODO: log
         return option->defaultValue();
@@ -65,7 +66,7 @@ void CoreOptions::setVisible(std::string_view key, bool visible) const noexcept
 }
 
 void CoreOptions::setVisible(
-        const std::initializer_list<std::string_view> keys, const bool visible) const noexcept
+    const std::initializer_list<std::string_view> keys, const bool visible) const noexcept
 {
     for (const auto key : keys) {
         setVisible(key, visible);
@@ -81,9 +82,8 @@ void CoreOptions::updateRetroOptions()
         def.key = option.key().c_str();
         def.desc = option.desc().c_str();
         def.info = option.info().empty() ? nullptr : option.info().c_str();
-        def.default_value = option.defaultValue().isValid() ?
-              option.defaultValue().toString().c_str()
-            : nullptr;
+        def.default_value =
+            option.defaultValue().isValid() ? option.defaultValue().toString().c_str() : nullptr;
         int i = 0;
         for (const auto& value : option) {
             def.values[i].value = value.toString().c_str();

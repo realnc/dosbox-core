@@ -34,7 +34,7 @@ public:
     auto label() const noexcept -> const std::string&;
 
     [[nodiscard]]
-    auto operator ==(const CoreOptionValue& other) const noexcept -> bool;
+    auto operator==(const CoreOptionValue& other) const noexcept -> bool;
 
 private:
     using ValueType = std::variant<std::monostate, int, bool>;
@@ -53,19 +53,19 @@ private:
 inline CoreOptionValue::CoreOptionValue(std::string value, std::string label) noexcept
     : value_str_(std::move(value))
     , label_(std::move(label))
-{}
+{ }
 
 inline CoreOptionValue::CoreOptionValue(const char* const value, std::string label) noexcept
     : CoreOptionValue(std::string(value), std::move(label))
-{}
+{ }
 
 inline CoreOptionValue::CoreOptionValue(const int value, std::string label) noexcept
     : CoreOptionValue(ValueType(value), std::move(label))
-{}
+{ }
 
 inline CoreOptionValue::CoreOptionValue(const bool value, std::string label) noexcept
     : CoreOptionValue(ValueType(value), std::move(label))
-{}
+{ }
 
 inline auto CoreOptionValue::isValid() const noexcept -> bool
 {
@@ -106,7 +106,7 @@ inline auto CoreOptionValue::label() const noexcept -> const std::string&
     return label_;
 }
 
-inline auto CoreOptionValue::operator ==(const CoreOptionValue& other) const noexcept -> bool
+inline auto CoreOptionValue::operator==(const CoreOptionValue& other) const noexcept -> bool
 {
     if (std::holds_alternative<std::monostate>(value_)) {
         return toString() == other.toString();
@@ -115,7 +115,7 @@ inline auto CoreOptionValue::operator ==(const CoreOptionValue& other) const noe
 }
 
 inline CoreOptionValue::CoreOptionValue(
-        CoreOptionValue::ValueType value, std::string label) noexcept
+    CoreOptionValue::ValueType value, std::string label) noexcept
     : value_(std::move(value))
     , label_(std::move(label))
 {

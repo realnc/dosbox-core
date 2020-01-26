@@ -11,11 +11,11 @@ class CoreOptionDefinition final
 {
 public:
     CoreOptionDefinition(
-            std::string key, std::string desc, std::string info,
-            std::vector<CoreOptionValue> values, const CoreOptionValue& default_value);
+        std::string key, std::string desc, std::string info, std::vector<CoreOptionValue> values,
+        const CoreOptionValue& default_value);
     CoreOptionDefinition(
-            std::string key, std::string desc, std::vector<CoreOptionValue> values,
-            const CoreOptionValue& default_value);
+        std::string key, std::string desc, std::vector<CoreOptionValue> values,
+        const CoreOptionValue& default_value);
     CoreOptionDefinition(std::string key, std::string desc, std::string info = {});
 
     [[nodiscard]]
@@ -56,8 +56,8 @@ private:
 };
 
 inline CoreOptionDefinition::CoreOptionDefinition(
-        std::string key, std::string desc, std::string info, std::vector<CoreOptionValue> values,
-        const CoreOptionValue& default_value)
+    std::string key, std::string desc, std::string info, std::vector<CoreOptionValue> values,
+    const CoreOptionValue& default_value)
     : key_(std::move(key))
     , desc_(std::move(desc))
     , info_(std::move(info))
@@ -66,18 +66,17 @@ inline CoreOptionDefinition::CoreOptionDefinition(
 }
 
 inline CoreOptionDefinition::CoreOptionDefinition(
-        std::string key, std::string desc, std::vector<CoreOptionValue> values,
-        const CoreOptionValue& default_value)
-    : CoreOptionDefinition(
-          std::move(key), std::move(desc), {}, std::move(values), default_value)
-{}
+    std::string key, std::string desc, std::vector<CoreOptionValue> values,
+    const CoreOptionValue& default_value)
+    : CoreOptionDefinition(std::move(key), std::move(desc), {}, std::move(values), default_value)
+{ }
 
 inline CoreOptionDefinition::CoreOptionDefinition(
-        std::string key, std::string desc, std::string info)
+    std::string key, std::string desc, std::string info)
     : key_(std::move(key))
     , desc_(std::move(desc))
     , info_(std::move(info))
-{}
+{ }
 
 inline auto CoreOptionDefinition::key() const noexcept -> const std::string&
 {

@@ -8,8 +8,8 @@
 #include <cstring>
 
 Bit8u dosbox_framebuffers[2][1024 * 768 * 4] = {{0}};
-Bit8u *dosbox_frontbuffer = dosbox_framebuffers[0];
-static Bit8u *dosbox_backbuffer = dosbox_framebuffers[1];
+Bit8u* dosbox_frontbuffer = dosbox_framebuffers[0];
+static Bit8u* dosbox_backbuffer = dosbox_framebuffers[1];
 bool dosbox_frontbuffer_uploaded = false;
 Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 float dosbox_aspect_ratio = 0;
@@ -27,8 +27,8 @@ auto GFX_GetRGB(const Bit8u red, const Bit8u green, const Bit8u blue) -> Bitu
 }
 
 auto GFX_SetSize(
-        const Bitu width, const Bitu height, const Bitu /*flags*/, const double scalex,
-        const double scaley, const GFX_CallBack_t cb) -> Bitu
+    const Bitu width, const Bitu height, const Bitu /*flags*/, const double scalex,
+    const double scaley, const GFX_CallBack_t cb) -> Bitu
 {
     memset(dosbox_framebuffers, 0, sizeof(dosbox_framebuffers));
     RDOSGFXwidth = width;
@@ -37,8 +37,9 @@ auto GFX_SetSize(
     dosbox_aspect_ratio = (width * scalex) / (height * scaley);
     dosbox_gfx_cb = cb;
 
-    if(RDOSGFXwidth > 1024 || RDOSGFXheight > 768)
+    if (RDOSGFXwidth > 1024 || RDOSGFXheight > 768) {
         return 0;
+    }
 
     return GFX_GetBestMode(0);
 }
@@ -63,7 +64,11 @@ void GFX_EndUpdate(const Bit16u* const changedLines)
 }
 
 // Stubs
-void GFX_SetTitle(Bit32s /*cycles*/, int /*frameskip*/, bool /*paused*/) {}
-void GFX_ShowMsg(char const* /*format*/,...) {}
-void GFX_Events(){}
-void GFX_SetPalette(Bitu /*start*/, Bitu /*count*/, GFX_PalEntry* /*entries*/) {}
+void GFX_SetTitle(Bit32s /*cycles*/, int /*frameskip*/, bool /*paused*/)
+{ }
+void GFX_ShowMsg(char const* /*format*/, ...)
+{ }
+void GFX_Events()
+{ }
+void GFX_SetPalette(Bitu /*start*/, Bitu /*count*/, GFX_PalEntry* /*entries*/)
+{ }

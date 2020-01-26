@@ -114,7 +114,7 @@ public:
      * doesn't correspond to an option.
      */
     [[nodiscard]]
-    auto operator [](std::string_view key) const -> const CoreOptionValue&;
+    auto operator[](std::string_view key) const -> const CoreOptionValue&;
 
     /* Returns true if any values were changed by the frontend since the last query.
      */

@@ -37,8 +37,8 @@ auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std:
             if ((port_type & SND_SEQ_PORT_TYPE_MIDI_GENERIC)
                 && (port_caps & (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE)))
             {
-                auto port = std::to_string(snd_seq_client_info_get_client(client_info))
-                    + ':' + std::to_string(snd_seq_port_info_get_port(port_info));
+                auto port = std::to_string(snd_seq_client_info_get_client(client_info)) + ':'
+                    + std::to_string(snd_seq_port_info_get_port(port_info));
                 auto client_name = snd_seq_client_info_get_name(client_info);
                 auto port_name = snd_seq_port_info_get_name(port_info);
                 port_list.emplace_back(

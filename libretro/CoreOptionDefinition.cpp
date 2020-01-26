@@ -4,7 +4,7 @@
 namespace retro {
 
 void CoreOptionDefinition::setValues(
-        std::vector<CoreOptionValue> values, const CoreOptionValue& default_value)
+    std::vector<CoreOptionValue> values, const CoreOptionValue& default_value)
 {
     for (size_t i = 0; i < values.size(); ++i) {
         if (values[i] == default_value) {

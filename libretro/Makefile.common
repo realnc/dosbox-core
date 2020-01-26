@@ -67,6 +67,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/src/dosbox.cpp \
 	$(CORE_DIR)/src/fpu/fpu.cpp \
 	$(CORE_DIR)/src/gui/midi.cpp \
+	$(CORE_DIR)/src/gui/midi_mt32.cpp \
 	$(CORE_DIR)/src/gui/render_scalers.cpp \
 	$(CORE_DIR)/src/gui/render.cpp \
 	$(CORE_DIR)/src/hardware/adlib.cpp \

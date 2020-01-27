@@ -7,6 +7,10 @@ LIBRETRO_SDL_DIR := \
 ifeq ($(WITH_FAKE_SDL), 1)
 INCFLAGS += \
 		-I$(CORE_DIR)/libretro/fakesdl
+SOURCES_CXX += \
+	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_endian.cpp \
+	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_thread.cpp \
+	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_timer.cpp
 endif
 
 # include flags

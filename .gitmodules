@@ -4,3 +4,6 @@
 [submodule "libretro/deps/common"]
 	path = libretro/deps/common
 	url = https://github.com/libretro/libretro-common.git
+[submodule "libretro/deps/munt"]
+	path = libretro/deps/munt
+	url = https://github.com/munt/munt.git

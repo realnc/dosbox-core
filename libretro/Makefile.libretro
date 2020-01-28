@@ -21,6 +21,7 @@ AS:=$(cross_prefix)$(AS)
 CC:=$(cross_prefix)$(CC)
 CXX:=$(cross_prefix)$(CXX)
 LD:=$(cross_prefix)$(LD)
+CMAKE=$(cross_prefix)cmake
 
 platform ?= unix
 ifneq ($(findstring MINGW,$(UNAME)),)
@@ -262,8 +263,10 @@ else
 endif
 ifeq ($(DEBUG), 1)
 	COMMONFLAGS += -O0 -g
+	CMAKE_BUILD_TYPE = Debug
 else
 	COMMONFLAGS += -O3 -DNDEBUG -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
+	CMAKE_BUILD_TYPE = Release
 endif
 
 ifneq ($(WITH_FAKE_SDL), 1)
@@ -282,10 +285,19 @@ include Makefile.common
 OBJECTS  = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS   += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
-LDFLAGS  += -lm $(fpic)
+LDFLAGS  += -lm $(fpic) -Lmunt_build -lmt32emu
 
 all: $(TARGET)
-$(TARGET): $(OBJECTS)
+
+munt_build/libmt32emu.a:
+	mkdir -p munt_build
+	cd munt_build \
+	&& $(CMAKE) -DCMAKE_CXX_FLAGS="-std=c++17 -fPIC" -DCMAKE_C_FLAGS="-fPIC" \
+	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) -Dlibmt32emu_C_INTERFACE=ON -Dlibmt32emu_SHARED=OFF \
+	    -Dlibmt32emu_WITH_INTERNAL_RESAMPLER=ON ../deps/munt/mt32emu \
+	&& $(MAKE) MAKEOVERRIDES=
+
+$(TARGET): munt_build/libmt32emu.a $(OBJECTS)
 
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
@@ -301,5 +313,6 @@ endif
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
+	rm -rf "$(CORE_DIR)/libretro/munt_build"
 
 .PHONY: clean install uninstall

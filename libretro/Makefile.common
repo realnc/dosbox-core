@@ -19,7 +19,7 @@ INCFLAGS += \
 	-I$(CORE_DIR)/libretro \
 	-I$(LIBRETRO_COMM_DIR)/include \
 	-I$(CORE_DIR)/include \
-	-I$(CORE_DIR)/src/midi/munt
+	-I$(CORE_DIR)/libretro/munt_build/include
 
 # common files
 SOURCES_CXX += \

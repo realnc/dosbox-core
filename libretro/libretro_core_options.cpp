@@ -620,6 +620,19 @@ retro::CoreOptions retro::core_options {
         },
         #endif
         {
+            "mt32.type",
+            "Sound (MT-32): Hardware type",
+            "Type of MT-32 module to emulate. MT-32 is the older, original model. The CM-32L "
+                "and LAPC-I are later models that provide some extra instruments not found on the "
+                "original MT-32. Some games make use of these extra sounds and won't sound correct "
+                "on the original MT-32.",
+            {
+                { "mt32", "MT-32" },
+                { "cm32l", "CM-32L/LAPC-I" },
+            },
+            "cm32l"
+        },
+        {
             "mt32.reverse.stereo",
             "Sound (MT-32): Reverse stereo channels",
             {

@@ -53,25 +53,28 @@ bool MidiHandler_mt32::Open(const char *conf) {
 
 	char pathName[4096];
 
-	makeROMPathName(pathName, romDir, "CM32L_CONTROL.ROM", addPathSeparator);
-	if (MT32EMU_RC_ADDED_CONTROL_ROM != service->addROMFile(pathName)) {
+	const bool preferCm32l = strcmp(section->Get_string("mt32.type"), "cm32l") == 0;
+	if (preferCm32l) {
+		makeROMPathName(pathName, romDir, "CM32L_CONTROL.ROM", addPathSeparator);
+	} else {
 		makeROMPathName(pathName, romDir, "MT32_CONTROL.ROM", addPathSeparator);
-		if (MT32EMU_RC_ADDED_CONTROL_ROM != service->addROMFile(pathName)) {
-			delete service;
-			service = NULL;
-			LOG_MSG("MT32: Control ROM file not found");
-			return false;
-		}
 	}
-	makeROMPathName(pathName, romDir, "CM32L_PCM.ROM", addPathSeparator);
-	if (MT32EMU_RC_ADDED_PCM_ROM != service->addROMFile(pathName)) {
+	if (MT32EMU_RC_ADDED_CONTROL_ROM != service->addROMFile(pathName)) {
+		delete service;
+		service = NULL;
+		LOG_MSG("MT32: %s control ROM file not found", preferCm32l ? "CM-32L" : "MT-32");
+		return false;
+	}
+	if (preferCm32l) {
+		makeROMPathName(pathName, romDir, "CM32L_PCM.ROM", addPathSeparator);
+	} else {
 		makeROMPathName(pathName, romDir, "MT32_PCM.ROM", addPathSeparator);
-		if (MT32EMU_RC_ADDED_PCM_ROM != service->addROMFile(pathName)) {
-			delete service;
-			service = NULL;
-			LOG_MSG("MT32: PCM ROM file not found");
-			return false;
-		}
+	}
+	if (MT32EMU_RC_ADDED_PCM_ROM != service->addROMFile(pathName)) {
+		delete service;
+		service = NULL;
+		LOG_MSG("MT32: %s PCM ROM file not found", preferCm32l ? "CM-32L" : "MT-32");
+		return false;
 	}
 
 	service->setPartialCount(Bit32u(section->Get_int("mt32.partials")));

@@ -4,6 +4,16 @@ Pstring->Set_help("Name of the directory where MT-32 Control and PCM ROM files c
 	"    MT32_CONTROL.ROM or CM32L_CONTROL.ROM - control ROM file.\n"
 	"    MT32_PCM.ROM or CM32L_PCM.ROM - PCM ROM file.");
 
+const char *mt32types[] = {"cm32l", "mt32",0};
+Pstring = secprop->Add_string("mt32.type",Property::Changeable::WhenIdle,"cm32l");
+Pint->Set_values(mt32types);
+Pbool->Set_help("Type of MT-32 device to emulate\n"
+	"MT-32 = mt32\n"
+	"Emulate the original MT-32.\n\n"
+
+	"CM-32L/LAPC-I = cm32l - default\n"
+	"Emulate the later CM-32L and LAPC-I models. They provide extra instruments needed by some games.");
+
 Pbool = secprop->Add_bool("mt32.reverse.stereo",Property::Changeable::WhenIdle,false);
 Pbool->Set_help("Reverse stereo channels for MT-32 output");
 

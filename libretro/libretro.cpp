@@ -695,7 +695,7 @@ static void update_mt32_variables(const bool mt32_enabled, const bool show_all)
 {
     update_dosbox_variable(false, "midi", "mt32.romdir", retro_system_directory.u8string());
 
-    for (const auto* name : {"mt32.thread", "mt32.partials", "mt32.analog"}) {
+    for (const auto* name : {"mt32.type", "mt32.thread", "mt32.partials", "mt32.analog"}) {
         update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
         retro::core_options.setVisible(name, mt32_enabled);
     }

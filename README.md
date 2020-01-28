@@ -9,6 +9,9 @@ plus a few select community enhancements:
 * [Nuked OPL3](https://nukeykt.retrohost.net)  
   A cycle-accurate OPL3 (YMF262) emulator.
 
+* [Munt MT-32](https://github.com/munt/munt)  
+  A high quality emulator of the Roland MT-32, CM-32L and LAPC-I MIDI modules.
+
 (More will be added in the future.)
 
 DOSBox-core was originally based on the https://github.com/libretro/dosbox-svn

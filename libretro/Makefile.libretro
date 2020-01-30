@@ -22,6 +22,7 @@ CC:=$(cross_prefix)$(CC)
 CXX:=$(cross_prefix)$(CXX)
 LD:=$(cross_prefix)$(LD)
 CMAKE=$(cross_prefix)cmake
+PKGCONFIG=$(cross_prefix)pkg-config
 
 platform ?= unix
 ifneq ($(findstring MINGW,$(UNAME)),)
@@ -280,12 +281,25 @@ INCFLAGS	:=
 SOURCES_C   :=
 SOURCES_CXX :=
 
+DEPS_BIN_DIR = $(CURDIR)/deps_bin
+LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
+LIBINSTPATCH = $(DEPS_BIN_DIR)/lib/pkgconfig/libinstpatch-1.0.pc
+FLUIDSYNTH_BUILD_DIR = $(DEPS_BIN_DIR)/fluidsynth_build
+FLUIDSYNTH = $(DEPS_BIN_DIR)/lib/pkgconfig/fluidsynth.pc
+export PKG_CONFIG_PATH := $(DEPS_BIN_DIR)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+# When cross compiling with MXE, we need PKG_CONFIG_PATH_<TARGET_TRIPLET> but with all dashes and
+# dots converted to underscores.
+ifdef TARGET_TRIPLET
+	export PKG_CONFIG_PATH_$(subst .,_,$(subst -,_,$(TARGET_TRIPLET))) = $(PKG_CONFIG_PATH)
+endif
+
 include Makefile.common
 
 OBJECTS  = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
+COMMONFLAGS += `$(PKGCONFIG) --cflags fluidsynth`
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS   += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
-LDFLAGS  += -lm $(fpic) -Lmunt_build -lmt32emu
+LDFLAGS  += -lm $(fpic) -Lmunt_build -lmt32emu `$(PKGCONFIG) --libs fluidsynth libinstpatch-1.0`
 
 all: $(TARGET)
 
@@ -297,7 +311,60 @@ munt_build/libmt32emu.a:
 	    -Dlibmt32emu_WITH_INTERNAL_RESAMPLER=ON ../deps/munt/mt32emu \
 	&& $(MAKE) MAKEOVERRIDES=
 
-$(TARGET): munt_build/libmt32emu.a $(OBJECTS)
+# Always a release build because ubsan is forced in debug builds.
+$(LIBINSTPATCH):
+	mkdir -p "$(LIBINSTPATCH_BUILD_DIR)"
+	cd "$(LIBINSTPATCH_BUILD_DIR)" \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=Release \
+	    -DBUILD_SHARED_LIBS=OFF \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DLIB_INSTALL_DIR=lib \
+	    "$(CURDIR)/deps/libinstpatch" \
+	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install
+
+# Always a release build because debug build creates broken .pc file with mingw.
+$(FLUIDSYNTH): $(LIBINSTPATCH)
+	mkdir -p "$(FLUIDSYNTH_BUILD_DIR)"
+	cd "$(FLUIDSYNTH_BUILD_DIR)" \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=Release \
+	    -DBUILD_SHARED_LIBS=OFF \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DLIB_INSTALL_DIR=lib \
+	    -DDEFAULT_SOUNDFONT= \
+	    -Denable-alsa=OFF \
+	    -Denable-aufile=OFF \
+	    -Denable-dbus=OFF \
+	    -Denable-dsound=OFF \
+	    -Denable-ipv6=OFF \
+	    -Denable-jack=OFF \
+	    -Denable-ladspa=OFF \
+	    -Denable-lash=OFF \
+	    -Denable-libinstpatch=ON \
+	    -Denable-libsndfile=ON \
+	    -Denable-midishare=OFF \
+	    -Denable-network=OFF \
+	    -Denable-oboe=OFF \
+	    -Denable-opensles=OFF \
+	    -Denable-oss=OFF \
+	    -Denable-pkgconfig=ON \
+	    -Denable-portaudio=OFF \
+	    -Denable-pulseaudio=OFF \
+	    -Denable-readline=OFF \
+	    -Denable-sdl2=OFF \
+	    -Denable-systemd=OFF \
+	    -Denable-threads=ON \
+	    -Denable-waveout=OFF \
+	    -Denable-winmidi=OFF \
+	    "$(CURDIR)/deps/fluidsynth" \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+
+$(OBJECTS): $(FLUIDSYNTH) munt_build/libmt32emu.a
+
+$(TARGET): $(FLUIDSYNTH) munt_build/libmt32emu.a $(OBJECTS)
 
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
@@ -305,14 +372,9 @@ else
 	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $^ -o $@
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $^ -o $@
-
 clean:
 	rm -f $(OBJECTS) $(TARGET)
 	rm -rf "$(CORE_DIR)/libretro/munt_build"
+	rm -rf "$(DEPS_BIN_DIR)"
 
-.PHONY: clean install uninstall
+.PHONY: all clean

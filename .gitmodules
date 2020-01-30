@@ -7,3 +7,9 @@
 [submodule "libretro/deps/munt"]
 	path = libretro/deps/munt
 	url = https://github.com/munt/munt.git
+[submodule "libretro/deps/fluidsynth"]
+	path = libretro/deps/fluidsynth
+	url = https://github.com/FluidSynth/fluidsynth.git
+[submodule "libretro/deps/libinstpatch"]
+	path = libretro/deps/libinstpatch
+	url = https://github.com/swami/libinstpatch.git

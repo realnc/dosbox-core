@@ -333,6 +333,10 @@ ifdef TARGET_TRIPLET
 	export PKG_CONFIG_PATH_$(subst .,_,$(subst -,_,$(TARGET_TRIPLET))) = $(PKG_CONFIG_PATH)
 endif
 
+ifeq ($(platform), win)
+	EXTRA_PACKAGES += dlfcn
+endif
+
 include Makefile.common
 
 OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)

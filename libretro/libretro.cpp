@@ -75,7 +75,7 @@ static bool use_spinlock = false;
 
 /* directories */
 std::filesystem::path retro_save_directory;
-static std::filesystem::path retro_system_directory;
+std::filesystem::path retro_system_directory;
 static std::filesystem::path retro_content_directory;
 static const std::string retro_library_name = "DOSBox-core";
 
@@ -691,6 +691,23 @@ static void check_cpu_cycle_variables()
         mode == "auto");
 }
 
+static void update_bassmidi_variables(const bool bassmidi_enabled, const bool show_all)
+{
+    const auto soundfont = retro_system_directory / "soundfonts"
+        / retro::core_options["bassmidi.soundfont"].toString();
+    update_dosbox_variable(false, "bassmidi", "bassmidi.soundfont", soundfont.u8string());
+    retro::core_options.setVisible("bassmidi.soundfont", bassmidi_enabled);
+
+    update_dosbox_variable(
+        false, "bassmidi", "bassmidi.sfvolume",
+        retro::core_options["bassmidi.sfvolume"].toString());
+    retro::core_options.setVisible("bassmidi.sfvolume", bassmidi_enabled);
+
+    update_dosbox_variable(
+        false, "bassmidi", "bassmidi.voices", retro::core_options["bassmidi.voices"].toString());
+    retro::core_options.setVisible("bassmidi.voices", bassmidi_enabled && show_all);
+}
+
 static void update_fsynth_variables(const bool fsynth_enabled, const bool show_all)
 {
     const auto soundfont =
@@ -870,6 +887,7 @@ static void check_variables()
             update_dosbox_variable(
                 false, "midi", "mididevice", use_retro_midi ? "none" : midi_driver);
 
+            update_bassmidi_variables(midi_driver == "bassmidi", adv_core_options);
             update_fsynth_variables(midi_driver == "fluidsynth", adv_core_options);
             update_mt32_variables(midi_driver == "mt32", adv_core_options);
 
@@ -1148,15 +1166,25 @@ void retro_init()
 #endif
 
     {
-        std::vector<retro::CoreOptionValue> values;
+        std::vector<retro::CoreOptionValue> fsynth_values;
+        std::vector<retro::CoreOptionValue> bass_values;
         try {
             namespace fs = std::filesystem;
             for (const auto& file : fs::directory_iterator(retro_system_directory / "soundfonts")) {
                 auto extension = file.path().extension().u8string();
                 lowcase(extension);
-                for (const char* ext : {".sf2", ".sf3", ".dls", ".gig"}) {
+                if (extension == ".sfz") {
+                    bass_values.emplace_back(file.path().filename().u8string());
+                    continue;
+                }
+                if (extension == ".sf2") {
+                    bass_values.emplace_back(file.path().filename().u8string());
+                    fsynth_values.emplace_back(file.path().filename().u8string());
+                    continue;
+                }
+                for (const char* ext : {".sf3", ".dls", ".gig"}) {
                     if (extension == ext) {
-                        values.emplace_back(file.path().filename().u8string());
+                        fsynth_values.emplace_back(file.path().filename().u8string());
                     }
                 }
             }
@@ -1164,10 +1192,16 @@ void retro_init()
         catch (const std::exception& e) {
             log_cb(RETRO_LOG_WARN, "[dosbox] error reading soundfont directory: %s\n", e.what());
         }
-        if (values.empty()) {
-            values.push_back({"none", "(no soundfonts found)"});
+        if (bass_values.empty()) {
+            bass_values.push_back({"none", "(no soundfonts found)"});
         }
-        retro::core_options.option("fluid.soundfont")->setValues(values, values.front());
+        if (fsynth_values.empty()) {
+            fsynth_values.push_back({"none", "(no soundfonts found)"});
+        }
+        retro::core_options.option("bassmidi.soundfont")
+            ->setValues(bass_values, bass_values.front());
+        retro::core_options.option("fluid.soundfont")
+            ->setValues(fsynth_values, fsynth_values.front());
     }
 
     retro::core_options.setEnvironmentCallback(environ_cb);

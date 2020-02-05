@@ -588,9 +588,12 @@ retro::CoreOptions retro::core_options {
         {
             "midi_driver",
             "Sound: MIDI driver",
-            "Driver to use for MIDI playback. The MT-32 emulation driver uses Munt and needs the "
-                "correct ROMs in the frontend's system directory. The libretro driver forwards "
-                "MIDI to the frontend, in which case you need to configure MIDI output there.",
+            "The MT-32 emulation driver uses Munt and needs the correct ROMs in the frontend's "
+                "system directory.\n"
+                "For BASSMIDI, you need to download the BASS and BASSMIDI libraries for your OS "
+                "from https://www.un4seen.com and place them in the frontend's system directory.\n"
+                "The libretro driver forwards MIDI to the frontend, in which case you need to "
+                "configure MIDI output there.",
             {
                 "none",
             #ifdef HAVE_ALSA
@@ -599,6 +602,7 @@ retro::CoreOptions retro::core_options {
             #ifdef __WIN32__
                 { "win32", "Windows MIDI" },
             #endif
+                { "bassmidi", "BASSMIDI" },
                 { "fluidsynth", "FluidSynth" },
                 { "mt32", "MT-32 emulator" },
                 "libretro",
@@ -621,6 +625,86 @@ retro::CoreOptions retro::core_options {
             // No values. We detect and set MIDI ports at runtime.
         },
         #endif
+        {
+            "bassmidi.soundfont",
+            "Sound (BASSMIDI): Soundfont",
+            "Soundfonts are looked for in the \"soundfonts\" directory inside the frontend's "
+                "system directory. Supported formats are SF2 and SFZ.",
+            // No values. We scan for soundfonts at runtime.
+        },
+        {
+            "bassmidi.sfvolume",
+            "Sound (BASSMIDI): Soundfont volume",
+            {
+                "0.0",
+                "0.1",
+                "0.2",
+                "0.3",
+                "0.4",
+                "0.5",
+                "0.6",
+                "0.7",
+                "0.8",
+                "0.9",
+                "1.0",
+                "1.1",
+                "1.2",
+                "1.3",
+                "1.4",
+                "1.5",
+                "1.6",
+                "1.7",
+                "1.8",
+                "1.9",
+                "2.0",
+                "2.5",
+                "3.0",
+                "3.5",
+                "4.0",
+                "4.5",
+                "5.0",
+                "6.0",
+                "7.0",
+                "8.0",
+                "9.0",
+                "10.0",
+            },
+            "0.6",
+        },
+        {
+            "bassmidi.voices",
+            "Sound (BASSMIDI): Voice count",
+            "Maximum number of samples that can play together. This is not the same thing as the "
+                "maximum number of notes; multiple samples may be played for a single note. ",
+            {
+                20,
+                30,
+                40,
+                50,
+                60,
+                70,
+                80,
+                90,
+                100,
+                120,
+                140,
+                160,
+                180,
+                200,
+                250,
+                300,
+                350,
+                400,
+                450,
+                500,
+                600,
+                700,
+                800,
+                900,
+                1000,
+            },
+            100
+        },
         {
             "fluid.soundfont",
             "Sound (FluidSynth): Soundfont",

@@ -3,6 +3,7 @@
 
 #include <chrono>
 
+static const auto zero_point = std::chrono::steady_clock::now().time_since_epoch();
 static std::chrono::milliseconds fake_delay_ticks{};
 
 void fakeDelay(const std::uint32_t ms) noexcept
@@ -13,8 +14,9 @@ void fakeDelay(const std::uint32_t ms) noexcept
 auto fakeGetTicks() noexcept -> std::uint32_t
 {
     using namespace std::chrono;
-    return duration_cast<milliseconds>(steady_clock::now().time_since_epoch() + fake_delay_ticks)
-        .count();
+
+    const auto tick_now = steady_clock::now().time_since_epoch() - zero_point;
+    return duration_cast<milliseconds>(tick_now + fake_delay_ticks).count();
 }
 
 void fakeTimingReset() noexcept

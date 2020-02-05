@@ -812,6 +812,8 @@ static void check_variables()
             svgaCard = SVGA_None;
         }
         update_dosbox_variable(false, "dosbox", "machine", machine_type);
+        update_dosbox_variable(false, "mixer", "blocksize", core_options["blocksize"].toString());
+        update_dosbox_variable(false, "mixer", "prebuffer", core_options["prebuffer"].toString());
 
         mount_overlay = core_options["save_overlay"].toBool();
     } else {

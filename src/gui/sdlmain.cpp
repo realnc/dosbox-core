@@ -900,13 +900,18 @@ dosurface:
 		if (!(flags & GFX_CAN_32) || (flags & GFX_RGBONLY)) goto dosurface;
 		if (!GFX_SetupSurfaceScaled(0,0)) goto dosurface;
 		sdl.overlay = SDL_CreateYUVOverlay(width * 2, height, SDL_UYVY_OVERLAY, sdl.surface);
-
-		if (sdl.overlay && sdl.overlay->pitches[0] < 4 * width) {
-			// We get a distorted image in this case. Cleanup and go to surface.
-			LOG_MSG("SDL: overlay pitch is too small. (%u < %u)", sdl.overlay->pitches[0], width * 4);
-			SDL_FreeYUVOverlay(sdl.overlay);
-			sdl.overlay = 0;
+		
+		if (sdl.overlay && SDL_LockYUVOverlay(sdl.overlay) == 0) {
+			//Need to lock in order to get real pitchdata (at least on windows with dx backend)
+			if (sdl.overlay->pitches[0] < 4 * width) {
+				// We get a distorted image in this case. Cleanup and go to surface.
+				LOG_MSG("SDL: overlay pitch is too small. (%u < %" sBitfs(u) ")", sdl.overlay->pitches[0], width * 4);
+				SDL_UnlockYUVOverlay(sdl.overlay);
+				SDL_FreeYUVOverlay(sdl.overlay);
+				sdl.overlay = 0;
+			} else SDL_UnlockYUVOverlay(sdl.overlay);
 		}
+
 		if (!sdl.overlay) {
 			LOG_MSG("SDL: Failed to create overlay, switching back to surface.");
 			goto dosurface;
@@ -2185,7 +2190,7 @@ void Config_Add_SDL() {
 	Pstring = sdl_sec->Add_string("fullresolution",Property::Changeable::Always,"original");
 	Pstring->Set_help("What resolution to use for fullscreen: original, desktop or a fixed size (e.g. 1024x768).\n"
 	                  "Using your monitor's native resolution with aspect=true might give the best results.\n"
-			  "If you end up with small window on a large screen, try an output different from surface."
+			  "If you end up with small window on a large screen, try an output different from surface.\n"
 	                  "On Windows 10 with display scaling (Scale and layout) set to a value above 100%, it is recommended\n"
 	                  "to use a lower full/windowresolution, in order to avoid window size problems.");
 

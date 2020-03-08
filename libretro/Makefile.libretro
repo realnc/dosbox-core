@@ -6,6 +6,7 @@ UNAME=$(shell uname -s)
 UNAMEM=$(shell uname -m)
 
 CXXFLAGS += -std=c++17 -Dregister=
+COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
 
 # Target triplet for cross compilation. When cross compiling from Linux to
 # Windows 32-bit using MXE for example, you'd set this to something like:
@@ -266,7 +267,7 @@ ifeq ($(DEBUG), 1)
 	COMMONFLAGS += -O0 -g
 	CMAKE_BUILD_TYPE = Debug
 else
-	COMMONFLAGS += -O3 -DNDEBUG -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
+	COMMONFLAGS += -O3 -DNDEBUG
 	CMAKE_BUILD_TYPE = Release
 endif
 

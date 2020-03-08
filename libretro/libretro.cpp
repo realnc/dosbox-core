@@ -43,7 +43,7 @@ extern "C" Jit dynarec_jit;
 
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
 
-#define CORE_VERSION "0.74-SVN"
+#define CORE_VERSION SVN_VERSION GIT_VERSION
 
 #ifdef WITH_FAKE_SDL
 bool startup_state_capslock;
@@ -1055,13 +1055,7 @@ void retro_set_controller_port_device(const unsigned port, const unsigned device
 void retro_get_system_info(retro_system_info* const info)
 {
     info->library_name = retro_library_name.c_str();
-#if defined(GIT_VERSION) && defined(SVN_VERSION)
-    info->library_version = CORE_VERSION SVN_VERSION GIT_VERSION;
-#elif defined(GIT_VERSION)
-    info->library_version = CORE_VERSION GIT_VERSION;
-#else
     info->library_version = CORE_VERSION;
-#endif
     info->valid_extensions = "exe|com|bat|conf|cue|iso|img";
     info->need_fullpath = true;
     info->block_extract = false;

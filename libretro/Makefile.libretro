@@ -283,6 +283,8 @@ SOURCES_C   :=
 SOURCES_CXX :=
 
 DEPS_BIN_DIR = $(CURDIR)/deps_bin
+LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
+LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
 LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
 LIBINSTPATCH = $(DEPS_BIN_DIR)/lib/pkgconfig/libinstpatch-1.0.pc
 FLUIDSYNTH_BUILD_DIR = $(DEPS_BIN_DIR)/fluidsynth_build
@@ -306,6 +308,28 @@ LDFLAGS  += -lm $(fpic) `$(PKGCONFIG) --libs fluidsynth libinstpatch-1.0` -L$(MU
 
 all: $(TARGET)
 
+# libinstpatch fails to build against a static libsndfile due to it not using the correct link
+# flags. We patch the .pc file to get around this.
+$(LIBSNDFILE):
+	mkdir -p "$(LIBSNDFILE_BUILD_DIR)"
+	cd "$(LIBSNDFILE_BUILD_DIR)" \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
+	    -DBUILD_SHARED_LIBS=OFF \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DCMAKE_INSTALL_LIBDIR=lib \
+	    -DBUILD_EXAMPLES=OFF \
+	    -DBUILD_PROGRAMS=OFF \
+	    -DBUILD_REGTEST=OFF \
+	    -DBUILD_TESTING=OFF \
+	    -DENABLE_EXTERNAL_LIBS=ON \
+	    -DENABLE_PACKAGE_CONFIG=ON \
+	    "$(CURDIR)/deps/libsndfile" \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install \
+	&& sed -i'.original' '/^Requires:/d' $(LIBSNDFILE) \
+	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(LIBSNDFILE)
+
 $(MUNT):
 	mkdir -p $(MUNT_BUILD_DIR)
 	cd $(MUNT_BUILD_DIR) \
@@ -322,7 +346,7 @@ $(MUNT):
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE)
 
 # Always a release build because ubsan is forced in debug builds.
-$(LIBINSTPATCH):
+$(LIBINSTPATCH): $(LIBSNDFILE)
 	mkdir -p "$(LIBINSTPATCH_BUILD_DIR)"
 	cd "$(LIBINSTPATCH_BUILD_DIR)" \
 	&& $(CMAKE) \
@@ -335,7 +359,7 @@ $(LIBINSTPATCH):
 	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install
 
 # Always a release build because debug build creates broken .pc file with mingw.
-$(FLUIDSYNTH): $(LIBINSTPATCH)
+$(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH)
 	mkdir -p "$(FLUIDSYNTH_BUILD_DIR)"
 	cd "$(FLUIDSYNTH_BUILD_DIR)" \
 	&& $(CMAKE) \

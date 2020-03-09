@@ -13,3 +13,6 @@
 [submodule "libretro/deps/libinstpatch"]
 	path = libretro/deps/libinstpatch
 	url = https://github.com/swami/libinstpatch.git
+[submodule "libretro/deps/libsndfile"]
+	path = libretro/deps/libsndfile
+	url = https://github.com/erikd/libsndfile.git

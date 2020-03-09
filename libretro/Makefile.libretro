@@ -1,6 +1,6 @@
 DEBUG := 0
-GIT_VERSION := " $(shell git rev-parse --short HEAD)"
-SVN_VERSION := " $(shell cat svn)"
+GIT_VERSION := "$(shell git rev-parse --short HEAD)"
+SVN_VERSION := "$(shell cat svn)"
 
 UNAME=$(shell uname -s)
 UNAMEM=$(shell uname -m)

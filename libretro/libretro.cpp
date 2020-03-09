@@ -43,7 +43,7 @@ extern "C" Jit dynarec_jit;
 
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
 
-#define CORE_VERSION SVN_VERSION GIT_VERSION
+#define CORE_VERSION SVN_VERSION " " GIT_VERSION
 
 #ifdef WITH_FAKE_SDL
 bool startup_state_capslock;

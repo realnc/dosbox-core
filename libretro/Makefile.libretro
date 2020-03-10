@@ -45,6 +45,7 @@ ifeq ($(platform),win)
 	else ifneq ($(findstring MINGW64,$(UNAME)),)
 		WITH_DYNAREC := x86_64
 	endif
+	export CMAKE_GENERATOR = MSYS Makefiles
 else ifeq ($(platform),unix)
 	ifeq ($(target), x86)
 		WITH_DYNAREC := x86

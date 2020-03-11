@@ -35,7 +35,7 @@ else ifneq ($(findstring win,$(UNAME)),)
 endif
 
 LIBRETRO_DIR := libretro
-TARGET_NAME  := dosbox_core
+TARGET_NAME := dosbox_core
 WITH_DYNAREC :=
 
 # try to guess the dynarec based on the host system, unreliable
@@ -278,9 +278,9 @@ ifneq ($(WITH_FAKE_SDL), 1)
 	endif
 endif
 
-CORE_DIR	:= ..
-INCFLAGS	:=
-SOURCES_C   :=
+CORE_DIR := ..
+INCFLAGS :=
+SOURCES_C :=
 SOURCES_CXX :=
 
 DEPS_BIN_DIR = $(CURDIR)/deps_bin
@@ -301,11 +301,11 @@ endif
 
 include Makefile.common
 
-OBJECTS  = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
+OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 COMMONFLAGS += `$(PKGCONFIG) --cflags fluidsynth` -I$(MUNT_BUILD_DIR)/include
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
-CFLAGS   += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
-LDFLAGS  += -lm $(fpic) `$(PKGCONFIG) --libs fluidsynth libinstpatch-1.0` -L$(MUNT_BUILD_DIR) -lmt32emu
+CFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
+LDFLAGS += -lm $(fpic) `$(PKGCONFIG) --libs fluidsynth libinstpatch-1.0` -L$(MUNT_BUILD_DIR) -lmt32emu
 
 all: $(TARGET)
 

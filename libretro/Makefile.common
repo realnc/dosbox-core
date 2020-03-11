@@ -6,7 +6,7 @@ LIBRETRO_SDL_DIR := \
 
 ifeq ($(WITH_FAKE_SDL), 1)
 INCFLAGS += \
-		-I$(CORE_DIR)/libretro/fakesdl
+	-I$(CORE_DIR)/libretro/fakesdl
 SOURCES_CXX += \
 	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_endian.cpp \
 	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_thread.cpp \
@@ -63,7 +63,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/src/dos/drive_iso.cpp \
 	$(CORE_DIR)/src/dos/drive_local.cpp \
 	$(CORE_DIR)/src/dos/drive_virtual.cpp \
-    $(CORE_DIR)/src/dos/drive_overlay.cpp \
+	$(CORE_DIR)/src/dos/drive_overlay.cpp \
 	$(CORE_DIR)/src/dos/drives.cpp \
 	$(CORE_DIR)/src/dosbox.cpp \
 	$(CORE_DIR)/src/fpu/fpu.cpp \

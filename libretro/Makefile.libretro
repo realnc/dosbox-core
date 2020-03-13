@@ -306,6 +306,11 @@ COMMONFLAGS += `$(PKGCONFIG) --cflags fluidsynth` -I$(MUNT_BUILD_DIR)/include
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 LDFLAGS += -lm $(fpic) `$(PKGCONFIG) --libs fluidsynth libinstpatch-1.0` -L$(MUNT_BUILD_DIR) -lmt32emu
+# Most Linux distros don't have GCC 9 yet, so link these statically. We do this here so these flags
+# get appended to the end of LDFLAGS, otherwise they don't work.
+ifeq ($(platform),unix)
+	LDFLAGS += -static-libgcc -static-libstdc++
+endif
 
 all: $(TARGET)
 

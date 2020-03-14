@@ -46,7 +46,6 @@ ifeq ($(platform),win)
 	else ifneq ($(findstring MINGW64,$(UNAME)),)
 		WITH_DYNAREC := x86_64
 	endif
-	export CMAKE_GENERATOR = MSYS Makefiles
 else ifeq ($(platform),unix)
 	ifeq ($(target), x86)
 		WITH_DYNAREC := x86
@@ -307,6 +306,7 @@ COMMONFLAGS += `$(PKGCONFIG) --cflags fluidsynth` -I$(MUNT_BUILD_DIR)/include
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 LDFLAGS += -lm $(fpic) `$(PKGCONFIG) --libs fluidsynth libinstpatch-1.0` -L$(MUNT_BUILD_DIR) -lmt32emu
+export CMAKE_GENERATOR = Ninja
 
 # We append these flags here so they appear after all other flags, otherwise they might not work
 # correctly.

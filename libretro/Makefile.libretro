@@ -314,7 +314,23 @@ ifeq ($(STATIC_LIBCXX), 1)
 	LDFLAGS += -static-libgcc -static-libstdc++
 endif
 
+.PHONY: all
 all: $(TARGET)
+
+.PHONY: libsndfile
+libsndfile: $(LIBSNDFILE)
+
+.PHONY: munt
+munt: $(MUNT)
+
+.PHONY: libinstpatch
+libinstpatch: $(LIBINSTPATCH)
+
+.PHONY: fluidsynth
+fluidsynth: $(FLUIDSYNTH)
+
+.PHONY:
+deps: libsndfile munt libinstpatch fluidsynth
 
 # libinstpatch fails to build against a static libsndfile due to it not using the correct link
 # flags. We patch the .pc file to get around this.
@@ -404,9 +420,9 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH)
 	    "$(CURDIR)/deps/fluidsynth" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 
-$(OBJECTS): $(FLUIDSYNTH) $(MUNT)
+$(OBJECTS): deps
 
-$(TARGET): $(FLUIDSYNTH) $(MUNT) $(OBJECTS)
+$(TARGET): $(OBJECTS)
 
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
@@ -414,8 +430,13 @@ else
 	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
-clean:
+.PHONY: targetclean
+targetclean:
 	rm -f $(OBJECTS) $(TARGET)
+
+.PHONY: depsclean
+depsclean:
 	rm -rf "$(DEPS_BIN_DIR)"
 
-.PHONY: all clean
+.PHONY: clean
+clean: depsclean targetclean

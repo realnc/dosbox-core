@@ -284,6 +284,12 @@ SOURCES_C :=
 SOURCES_CXX :=
 
 DEPS_BIN_DIR = $(CURDIR)/deps_bin
+OGG_BUILD_DIR = $(DEPS_BIN_DIR)/ogg_build
+OGG = $(DEPS_BIN_DIR)/lib/pkgconfig/ogg.pc
+VORBIS_BUILD_DIR = $(DEPS_BIN_DIR)/vorbis_build
+VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
+FLAC_BUILD_DIR = $(DEPS_BIN_DIR)/flac_build
+FLAC = $(DEPS_BIN_DIR)/lib/pkgconfig/flac.pc
 LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
 LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
 LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
@@ -317,6 +323,15 @@ endif
 .PHONY: all
 all: $(TARGET)
 
+.PHONY: ogg
+ogg: $(OGG)
+
+.PHONY: vorbis
+vorbis: $(VORBIS)
+
+.PHONY: flac
+flac: $(FLAC)
+
 .PHONY: libsndfile
 libsndfile: $(LIBSNDFILE)
 
@@ -330,11 +345,57 @@ libinstpatch: $(LIBINSTPATCH)
 fluidsynth: $(FLUIDSYNTH)
 
 .PHONY:
-deps: libsndfile munt libinstpatch fluidsynth
+deps: ogg vorbis flac libsndfile munt libinstpatch fluidsynth
 
-# libinstpatch fails to build against a static libsndfile due to it not using the correct link
-# flags. We patch the .pc file to get around this.
-$(LIBSNDFILE):
+# Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
+# build system doesn't correctly link against static libraries. We simply replace the "Requires:"
+# line with the "Requires.private:" one, which contains the deps needed for static linking.
+
+$(OGG):
+	mkdir -p $(OGG_BUILD_DIR)
+	cd $(OGG_BUILD_DIR) \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DCMAKE_INSTALL_LIBDIR=lib \
+	    -DBUILD_TESTING=OFF \
+	    -DINSTALL_DOCS=OFF \
+	    -DINSTALL_PKG_CONFIG_MODULE=ON \
+	    "$(CURDIR)/deps/ogg" \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+
+$(VORBIS): $(OGG)
+	mkdir -p $(VORBIS_BUILD_DIR)
+	cd $(VORBIS_BUILD_DIR) \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DCMAKE_INSTALL_LIBDIR=lib \
+	    "$(CURDIR)/deps/vorbis" \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install \
+	&& sed -i'.original' '/^Requires:/d' $(VORBIS) \
+	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(VORBIS)
+
+$(FLAC): $(OGG)
+	mkdir -p $(FLAC_BUILD_DIR)
+	cd $(FLAC_BUILD_DIR) \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DCMAKE_INSTALL_LIBDIR=lib \
+	    -DBUILD_CXXLIBS=OFF \
+	    -DBUILD_DOCS=OFF \
+	    -DBUILD_DOXYGEN=OFF \
+	    -DBUILD_EXAMPLES=OFF \
+	    -DBUILD_TESTING=OFF \
+	    -DENABLE_WERROR=OFF \
+	    "$(CURDIR)/deps/flac" \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+
+$(LIBSNDFILE): $(OGG) $(VORBIS) $(FLAC)
 	mkdir -p "$(LIBSNDFILE_BUILD_DIR)"
 	cd "$(LIBSNDFILE_BUILD_DIR)" \
 	&& $(CMAKE) \

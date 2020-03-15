@@ -1,5 +1,7 @@
 DEBUG := 0
 STATIC_LIBCXX := 0
+BUNDLED_AUDIO_CODECS := 1
+BUNDLED_LIBSNDFILE := 1
 GIT_VERSION := "$(shell git rev-parse --short HEAD)"
 SVN_VERSION := "$(shell cat svn)"
 
@@ -284,14 +286,18 @@ SOURCES_C :=
 SOURCES_CXX :=
 
 DEPS_BIN_DIR = $(CURDIR)/deps_bin
-OGG_BUILD_DIR = $(DEPS_BIN_DIR)/ogg_build
-OGG = $(DEPS_BIN_DIR)/lib/pkgconfig/ogg.pc
-VORBIS_BUILD_DIR = $(DEPS_BIN_DIR)/vorbis_build
-VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
-FLAC_BUILD_DIR = $(DEPS_BIN_DIR)/flac_build
-FLAC = $(DEPS_BIN_DIR)/lib/pkgconfig/flac.pc
-LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
-LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
+ifeq ($(BUNDLED_AUDIO_CODECS), 1)
+	OGG_BUILD_DIR = $(DEPS_BIN_DIR)/ogg_build
+	OGG = $(DEPS_BIN_DIR)/lib/pkgconfig/ogg.pc
+	VORBIS_BUILD_DIR = $(DEPS_BIN_DIR)/vorbis_build
+	VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
+	FLAC_BUILD_DIR = $(DEPS_BIN_DIR)/flac_build
+	FLAC = $(DEPS_BIN_DIR)/lib/pkgconfig/flac.pc
+endif
+ifeq ($(BUNDLED_LIBSNDFILE), 1)
+	LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
+	LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
+endif
 LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
 LIBINSTPATCH = $(DEPS_BIN_DIR)/lib/pkgconfig/libinstpatch-1.0.pc
 FLUIDSYNTH_BUILD_DIR = $(DEPS_BIN_DIR)/fluidsynth_build

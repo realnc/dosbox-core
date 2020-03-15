@@ -16,3 +16,12 @@
 [submodule "libretro/deps/libsndfile"]
 	path = libretro/deps/libsndfile
 	url = https://github.com/erikd/libsndfile.git
+[submodule "libretro/deps/ogg"]
+	path = libretro/deps/ogg
+	url = https://github.com/xiph/ogg.git
+[submodule "libretro/deps/vorbis"]
+	path = libretro/deps/vorbis
+	url = https://github.com/xiph/vorbis.git
+[submodule "libretro/deps/flac"]
+	path = libretro/deps/flac
+	url = https://github.com/xiph/flac.git

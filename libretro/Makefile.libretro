@@ -252,6 +252,7 @@ else
 	ifeq ($(UNAME),Linux)
 		WITH_ALSA_MIDI := 1
 		COMMONFLAGS += -DHAVE_ALSA
+		LDFLAGS += `$(PKGCONFIG) --libs alsa`
 	endif
 	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
 	TARGET := $(TARGET_NAME)_libretro.so

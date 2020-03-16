@@ -64,7 +64,6 @@ ForEachMacros:
   - Q_FOREACH
   - BOOST_FOREACH
 IncludeBlocks: Preserve
-IndentCaseBlocks: false
 IndentCaseLabels: false
 IndentGotoLabels: false
 IndentPPDirectives: BeforeHash

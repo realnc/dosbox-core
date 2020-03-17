@@ -292,6 +292,8 @@ ifeq ($(BUNDLED_AUDIO_CODECS), 1)
 	OGG = $(DEPS_BIN_DIR)/lib/pkgconfig/ogg.pc
 	VORBIS_BUILD_DIR = $(DEPS_BIN_DIR)/vorbis_build
 	VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
+	OPUS_BUILD_DIR = $(DEPS_BIN_DIR)/opus_build
+	OPUS = $(DEPS_BIN_DIR)/lib/pkgconfig/opus.pc
 	FLAC_BUILD_DIR = $(DEPS_BIN_DIR)/flac_build
 	FLAC = $(DEPS_BIN_DIR)/lib/pkgconfig/flac.pc
 endif
@@ -336,6 +338,9 @@ ogg: $(OGG)
 .PHONY: vorbis
 vorbis: $(VORBIS)
 
+.PHONY: opus
+opus: $(OPUS)
+
 .PHONY: flac
 flac: $(FLAC)
 
@@ -352,7 +357,7 @@ libinstpatch: $(LIBINSTPATCH)
 fluidsynth: $(FLUIDSYNTH)
 
 .PHONY:
-deps: ogg vorbis flac libsndfile munt libinstpatch fluidsynth
+deps: ogg vorbis opus flac libsndfile munt libinstpatch fluidsynth
 
 # Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
 # build system doesn't correctly link against static libraries. We simply replace the "Requires:"
@@ -385,6 +390,21 @@ $(VORBIS): $(OGG)
 	&& sed -i'.original' '/^Requires:/d' $(VORBIS) \
 	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(VORBIS)
 
+$(OPUS):
+	mkdir -p $(OPUS_BUILD_DIR)
+	cd $(OPUS_BUILD_DIR) \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DCMAKE_INSTALL_LIBDIR=lib \
+	    -DOPUS_BUILD_PROGRAMS=OFF \
+	    -DOPUS_BUILD_SHARED_LIBRARY=OFF \
+	    -DOPUS_INSTALL_PKG_CONFIG_MODULE=ON \
+	    -DOPUS_STACK_PROTECTOR=OFF \
+	    "$(CURDIR)/deps/opus" \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+
 $(FLAC): $(OGG)
 	mkdir -p $(FLAC_BUILD_DIR)
 	cd $(FLAC_BUILD_DIR) \
@@ -402,7 +422,7 @@ $(FLAC): $(OGG)
 	    "$(CURDIR)/deps/flac" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 
-$(LIBSNDFILE): $(OGG) $(VORBIS) $(FLAC)
+$(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	mkdir -p "$(LIBSNDFILE_BUILD_DIR)"
 	cd "$(LIBSNDFILE_BUILD_DIR)" \
 	&& $(CMAKE) \

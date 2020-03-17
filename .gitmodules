@@ -25,3 +25,6 @@
 [submodule "libretro/deps/flac"]
 	path = libretro/deps/flac
 	url = https://github.com/xiph/flac.git
+[submodule "libretro/deps/opus"]
+	path = libretro/deps/opus
+	url = https://github.com/xiph/opus.git

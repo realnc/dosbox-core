@@ -419,6 +419,7 @@ $(FLAC): $(OGG)
 	    -DBUILD_EXAMPLES=OFF \
 	    -DBUILD_TESTING=OFF \
 	    -DENABLE_WERROR=OFF \
+	    -DWITH_STACK_PROTECTOR=OFF \
 	    "$(CURDIR)/deps/flac" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 

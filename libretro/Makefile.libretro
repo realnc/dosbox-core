@@ -261,7 +261,7 @@ else
 		COMMONFLAGS += -DWITH_FAKE_SDL
 		LDFLAGS += -Wl,-Bstatic
 	else
-		LDFLAGS += `$(cross_prefix)sdl-config --libs` -lSDL_net
+		LDFLAGS += `$(PKGCONFIG) --libs SDL_net`
 	endif
 	COMMONFLAGS += -DUNIX_PORTABLE
 	LDFLAGS += -Wl,-Bdynamic

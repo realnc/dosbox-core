@@ -2,6 +2,9 @@ DEBUG := 0
 STATIC_LIBCXX := 0
 BUNDLED_AUDIO_CODECS := 1
 BUNDLED_LIBSNDFILE := 1
+PKG_CONFIG_FLAGS =
+EXTRA_PACKAGES =
+STATIC_PACKAGES = 0
 GIT_VERSION := "$(shell git rev-parse --short HEAD)"
 SVN_VERSION := "$(shell cat svn)"
 
@@ -320,7 +323,12 @@ OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 COMMONFLAGS += `$(PKGCONFIG) --cflags fluidsynth` -I$(MUNT_BUILD_DIR)/include
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
-LDFLAGS += -lm $(fpic) `$(PKGCONFIG) --libs fluidsynth libinstpatch-1.0` -L$(MUNT_BUILD_DIR) -lmt32emu
+LDFLAGS += -lm $(fpic)
+ifeq ($(STATIC_PACKAGES), 1)
+	LDFLAGS += -Wl,-Bstatic
+	PKG_CONFIG_FLAGS += --static
+endif
+LDFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs fluidsynth libinstpatch-1.0 $(EXTRA_PACKAGES)` -L$(MUNT_BUILD_DIR) -lmt32emu
 export CMAKE_GENERATOR = Ninja
 
 # We append these flags here so they appear after all other flags, otherwise they might not work
@@ -512,7 +520,6 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH)
 $(OBJECTS): deps
 
 $(TARGET): $(OBJECTS)
-
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
 else

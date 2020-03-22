@@ -5,6 +5,7 @@ BUNDLED_LIBSNDFILE := 1
 PKG_CONFIG_FLAGS =
 EXTRA_PACKAGES =
 STATIC_PACKAGES = 0
+CMAKE_GENERATOR ?= Ninja
 GIT_VERSION := "$(shell git rev-parse --short HEAD)"
 SVN_VERSION := "$(shell cat svn)"
 
@@ -329,7 +330,7 @@ ifeq ($(STATIC_PACKAGES), 1)
 	PKG_CONFIG_FLAGS += --static
 endif
 LDFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs fluidsynth libinstpatch-1.0 $(EXTRA_PACKAGES)` -L$(MUNT_BUILD_DIR) -lmt32emu
-export CMAKE_GENERATOR = Ninja
+export CMAKE_GENERATOR
 
 # We append these flags here so they appear after all other flags, otherwise they might not work
 # correctly.

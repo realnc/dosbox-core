@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ libretro ]
+
+jobs:
+  build_msys2_64:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Init submodules
+      run: git submodule update --init
+
+    - name: Setup Msys2 environment
+      uses: numworks/setup-msys2@v1
+      with:
+        msystem: MINGW64
+        update: true
+
+    # Update again. Needed to actually get all updates.
+    - name: Update msys2
+      run: msys2do pacman --noconfirm -Syuu
+
+    - name: Install deps
+      run: msys2do pacman --noconfirm -S --needed
+        base-devel
+        git
+        mingw-w64-x86_64-SDL_net
+        mingw-w64-x86_64-cmake
+        mingw-w64-x86_64-glib2
+        mingw-w64-x86_64-libsndfile
+        mingw-w64-x86_64-ninja
+        mingw-w64-x86_64-toolchain
+        zip
+
+    - name: Build
+      run: |
+        cd libretro
+        msys2do ./github_msys2_build.sh
+        msys2do zip -9 windows-x64.zip dosbox_core_libretro.dll
+
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest_build"
+        prerelease: true
+        title: "Latest Build"
+        files: libretro/windows-x64.zip

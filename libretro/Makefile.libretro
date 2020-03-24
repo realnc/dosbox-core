@@ -543,3 +543,9 @@ depsclean:
 
 .PHONY: clean
 clean: depsclean targetclean
+
+.PHONY: download_github_windows_x64
+download_github_windows_x64:
+	rm -f windows-x64.zip
+	wget 'https://github.com/realnc/dosbox-core/releases/download/latest_build/windows-x64.zip'
+	unzip windows-x64.zip

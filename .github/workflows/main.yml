@@ -89,9 +89,36 @@ jobs:
         name: windows-x86.zip
         path: libretro/windows-x86.zip
 
+  build_linux_64:
+    runs-on: ubuntu-16.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Init submodules
+      run: git submodule update --init
+
+    - name: Install deps
+      run: sudo apt-get install
+        libsdl-net1.2-dev
+        ninja-build
+
+    - name: Build
+      run: |
+        cd libretro
+        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 WITH_DYNAREC=x86_64 deps
+        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 WITH_DYNAREC=x86_64 -j`nproc`
+        strip dosbox_core_libretro.so
+        zip -9 linux-x64.zip dosbox_core_libretro.so
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: linux-x64.zip
+        path: libretro/linux-x64.zip
+
   upload_build:
-    runs-on: ubuntu-latest
-    needs: [build_msys2_64, build_msys2_32]
+    runs-on: ubuntu-16.04
+    needs: [build_msys2_64, build_msys2_32, build_linux_64]
 
     steps:
     - uses: actions/download-artifact@v1
@@ -100,6 +127,10 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: windows-x86.zip
+    - uses: actions/download-artifact@v1
+      with:
+        name: linux-x64.zip
+
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -109,3 +140,4 @@ jobs:
         files: |
           windows-x64.zip
           windows-x86.zip
+          linux-x64.zip

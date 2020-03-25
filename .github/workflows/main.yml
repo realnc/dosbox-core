@@ -41,10 +41,71 @@ jobs:
         msys2do ./github_msys2_build.sh
         msys2do zip -9 windows-x64.zip dosbox_core_libretro.dll
 
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: windows-x64.zip
+        path: libretro/windows-x64.zip
+
+  build_msys2_32:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Init submodules
+      run: git submodule update --init
+
+    - name: Setup Msys2 environment
+      uses: numworks/setup-msys2@v1
+      with:
+        msystem: MINGW32
+        update: true
+
+    # Update again. Needed to actually get all updates.
+    - name: Update msys2
+      run: msys2do pacman --noconfirm -Syuu
+
+    - name: Install deps
+      run: msys2do pacman --noconfirm -S --needed
+        base-devel
+        git
+        mingw-w64-i686-SDL_net
+        mingw-w64-i686-cmake
+        mingw-w64-i686-glib2
+        mingw-w64-i686-libsndfile
+        mingw-w64-i686-ninja
+        mingw-w64-i686-toolchain
+        zip
+
+    - name: Build
+      run: |
+        cd libretro
+        msys2do ./github_msys2_build.sh
+        msys2do zip -9 windows-x86.zip dosbox_core_libretro.dll
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: windows-x86.zip
+        path: libretro/windows-x86.zip
+
+  upload_build:
+    runs-on: ubuntu-latest
+    needs: [build_msys2_64, build_msys2_32]
+
+    steps:
+    - uses: actions/download-artifact@v1
+      with:
+        name: windows-x64.zip
+    - uses: actions/download-artifact@v1
+      with:
+        name: windows-x86.zip
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "latest_build"
         prerelease: true
         title: "Latest Build"
-        files: libretro/windows-x64.zip
+        files: |
+          windows-x64.zip
+          windows-x86.zip

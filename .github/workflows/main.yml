@@ -5,89 +5,71 @@ on:
     branches: [ libretro ]
 
 jobs:
-  build_msys2_64:
-    runs-on: windows-latest
+  build_mxe_32:
+    runs-on: ubuntu-16.04
 
     steps:
     - uses: actions/checkout@v2
     - name: Init submodules
       run: git submodule update --init
 
-    - name: Setup Msys2 environment
-      uses: numworks/setup-msys2@v1
-      with:
-        msystem: MINGW64
-        update: true
-
-    # Update again. Needed to actually get all updates.
-    - name: Update msys2
-      run: msys2do pacman --noconfirm -Syuu
-
     - name: Install deps
-      run: msys2do pacman --noconfirm -S --needed
-        base-devel
-        git
-        mingw-w64-x86_64-SDL_net
-        mingw-w64-x86_64-cmake
-        mingw-w64-x86_64-glib2
-        mingw-w64-x86_64-libsndfile
-        mingw-w64-x86_64-ninja
-        mingw-w64-x86_64-toolchain
-        zip
+      run: sudo apt-get install
+        ninja-build
+
+    - name: Set up MXE environment
+      run: |
+        wget 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz'
+        sudo tar xf mxe.tar.gz -C /opt
+        rm mxe.tar.gz
 
     - name: Build
       run: |
+        source /opt/mxe/mxe-env.sh
         cd libretro
-        msys2do ./github_msys2_build.sh
-        msys2do zip -9 windows-x64.zip dosbox_core_libretro.dll
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: windows-x64.zip
-        path: libretro/windows-x64.zip
-
-  build_msys2_32:
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Init submodules
-      run: git submodule update --init
-
-    - name: Setup Msys2 environment
-      uses: numworks/setup-msys2@v1
-      with:
-        msystem: MINGW32
-        update: true
-
-    # Update again. Needed to actually get all updates.
-    - name: Update msys2
-      run: msys2do pacman --noconfirm -Syuu
-
-    - name: Install deps
-      run: msys2do pacman --noconfirm -S --needed
-        base-devel
-        git
-        mingw-w64-i686-SDL_net
-        mingw-w64-i686-cmake
-        mingw-w64-i686-glib2
-        mingw-w64-i686-libsndfile
-        mingw-w64-i686-ninja
-        mingw-w64-i686-toolchain
-        zip
-
-    - name: Build
-      run: |
-        cd libretro
-        msys2do ./github_msys2_build.sh
-        msys2do zip -9 windows-x86.zip dosbox_core_libretro.dll
+        CC=gcc make platform=win TARGET_TRIPLET="i686-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86 deps
+        CC=gcc make platform=win TARGET_TRIPLET="i686-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86 -j`nproc`
+        i686-w64-mingw32.static-strip dosbox_core_libretro.dll
+        zip -9 windows-x86.zip dosbox_core_libretro.dll
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1
       with:
         name: windows-x86.zip
         path: libretro/windows-x86.zip
+
+  build_mxe_64:
+    runs-on: ubuntu-16.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Init submodules
+      run: git submodule update --init
+
+    - name: Install deps
+      run: sudo apt-get install
+        ninja-build
+
+    - name: Set up MXE environment
+      run: |
+        wget 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz'
+        sudo tar xf mxe.tar.gz -C /opt
+        rm mxe.tar.gz
+
+    - name: Build
+      run: |
+        source /opt/mxe/mxe-env.sh
+        cd libretro
+        CC=gcc make platform=win TARGET_TRIPLET="x86_64-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86_64 deps
+        CC=gcc make platform=win TARGET_TRIPLET="x86_64-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86_64 -j`nproc`
+        x86_64-w64-mingw32.static-strip dosbox_core_libretro.dll
+        zip -9 windows-x64.zip dosbox_core_libretro.dll
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: windows-x64.zip
+        path: libretro/windows-x64.zip
 
   build_linux_64:
     runs-on: ubuntu-16.04
@@ -118,7 +100,7 @@ jobs:
 
   upload_build:
     runs-on: ubuntu-16.04
-    needs: [build_msys2_64, build_msys2_32, build_linux_64]
+    needs: [build_mxe_32, build_mxe_64, build_linux_64]
 
     steps:
     - uses: actions/download-artifact@v1

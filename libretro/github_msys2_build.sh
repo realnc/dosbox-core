@@ -1,4 +1,0 @@
-#! /bin/sh
-make platform=win STATIC_LIBCXX=1 BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 STATIC_PACKAGES=1 EXTRA_PACKAGES="ogg iconv" deps
-make platform=win STATIC_LIBCXX=1 BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 STATIC_PACKAGES=1 EXTRA_PACKAGES="ogg iconv" -j`nproc`
-strip dosbox_core_libretro.dll

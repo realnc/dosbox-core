@@ -5,6 +5,8 @@ STATIC_LIBCXX := 0
 BUNDLED_AUDIO_CODECS := 1
 # Build and link our own libsndfile statically.
 BUNDLED_LIBSNDFILE := 1
+# Build and link our own sdl and sdl_net statically.
+BUNDLED_SDL := 0
 # Extra command-line flags to pass to pkg-config.
 PKG_CONFIG_FLAGS =
 # Extra packages to link against with pkg-config.
@@ -311,6 +313,12 @@ ifeq ($(BUNDLED_LIBSNDFILE), 1)
 	LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
 	LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
 endif
+ifeq ($(BUNDLED_SDL), 1)
+	SDL_BUILD_DIR = $(DEPS_BIN_DIR)/sdl_build
+	SDL = $(DEPS_BIN_DIR)/lib/pkgconfig/sdl.pc
+	SDLNET_BUILD_DIR = $(DEPS_BIN_DIR)/sdl_net_build
+	SDLNET = $(DEPS_BIN_DIR)/lib/pkgconfig/SDL_net.pc
+endif
 LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
 LIBINSTPATCH = $(DEPS_BIN_DIR)/lib/pkgconfig/libinstpatch-1.0.pc
 FLUIDSYNTH_BUILD_DIR = $(DEPS_BIN_DIR)/fluidsynth_build
@@ -362,6 +370,12 @@ flac: $(FLAC)
 .PHONY: libsndfile
 libsndfile: $(LIBSNDFILE)
 
+.PHONY: sdl
+sdl: $(SDL)
+
+.PHONY: sdl_net
+sdl_net: $(SDLNET)
+
 .PHONY: munt
 munt: $(MUNT)
 
@@ -372,7 +386,7 @@ libinstpatch: $(LIBINSTPATCH)
 fluidsynth: $(FLUIDSYNTH)
 
 .PHONY:
-deps: ogg vorbis opus flac libsndfile munt libinstpatch fluidsynth
+deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth
 
 # Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
 # build system doesn't correctly link against static libraries. We simply replace the "Requires:"
@@ -457,6 +471,46 @@ $(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install \
 	&& sed -i'.original' '/^Requires:/d' $(LIBSNDFILE) \
 	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(LIBSNDFILE)
+
+$(SDL):
+	mkdir -p "$(SDL_BUILD_DIR)"
+	cd "$(SDL_BUILD_DIR)" \
+	&& "$(CURDIR)/deps/sdl/configure" \
+	    --host=$(TARGET_TRIPLET) \
+	    --prefix="$(DEPS_BIN_DIR)" \
+	    --disable-shared \
+	    --enable-static \
+	    --disable-audio \
+	    --disable-video \
+	    --disable-events \
+	    --disable-joystick \
+	    --enable-cdrom \
+	    --enable-threads \
+	    --enable-timers \
+	    --enable-file \
+	    --disable-loadso \
+	    --enable-cpuinfo \
+	    --enable-assembly \
+	    --disable-nasm \
+	    --disable-altivec \
+	    --disable-stdio-redirect \
+	    --disable-rpath \
+	    --with-pic \
+	    --without-x \
+	&& $(MAKE) -j`nproc` install
+
+$(SDLNET): $(SDL)
+	mkdir -p "$(SDLNET_BUILD_DIR)"
+	cd "$(SDLNET_BUILD_DIR)" \
+	&& "$(CURDIR)/deps/sdl_net/configure" \
+	    --host=$(TARGET_TRIPLET) \
+	    --prefix="$(DEPS_BIN_DIR)" \
+	    --disable-shared \
+	    --enable-static \
+	    --disable-sdltest \
+	    --disable-gui \
+	    --with-pic \
+	&& $(MAKE) -j`nproc` install
 
 $(MUNT):
 	mkdir -p $(MUNT_BUILD_DIR)

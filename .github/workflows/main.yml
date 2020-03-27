@@ -87,8 +87,8 @@ jobs:
     - name: Build
       run: |
         cd libretro
-        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 WITH_DYNAREC=x86_64 deps
-        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 WITH_DYNAREC=x86_64 -j`nproc`
+        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 BUNDLED_SDL=1 WITH_DYNAREC=x86_64 deps
+        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 BUNDLED_SDL=1 WITH_DYNAREC=x86_64 -j`nproc`
         strip dosbox_core_libretro.so
         zip -9 linux-x64.zip dosbox_core_libretro.so
 

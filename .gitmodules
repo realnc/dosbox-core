@@ -1,5 +1,5 @@
-[submodule "libretro/deps/sdl"]
-	path = libretro/deps/sdl
+[submodule "libretro/deps/embedded_sdl"]
+	path = libretro/deps/embedded_sdl
 	url = https://github.com/fr500/sdl1.2.git
 [submodule "libretro/deps/common"]
 	path = libretro/deps/common

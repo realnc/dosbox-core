@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ libretro, ci_testing ]
+    branches: [libretro, ci_testing]
 
 jobs:
   build_mxe:
@@ -14,6 +14,16 @@ jobs:
 
     runs-on: ubuntu-16.04
 
+    env:
+      CC: gcc
+      platform: win
+      TARGET_TRIPLET: ${{ matrix.config.triplet }}
+      STATIC_LIBCXX: 0
+      BUNDLED_AUDIO_CODECS: 0
+      BUNDLED_LIBSNDFILE: 0
+      BUNDLED_SDL: 0
+      WITH_DYNAREC: ${{ matrix.config.dynarec }}
+
     steps:
     - uses: actions/checkout@v2
     - name: Init submodules
@@ -24,14 +34,14 @@ jobs:
         ninja-build
 
     - name: Set up MXE environment
-      run: wget 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz' -O- | sudo tar xz -C /opt
+      run: wget -q 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz' -O- | sudo tar xz -C /opt
 
     - name: Build
       working-directory: ./libretro
       run: |
         source /opt/mxe/mxe-env.sh
-        CC=gcc make platform=win TARGET_TRIPLET=${{ matrix.config.triplet }} BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=${{ matrix.config.dynarec }} deps
-        CC=gcc make platform=win TARGET_TRIPLET=${{ matrix.config.triplet }} BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=${{ matrix.config.dynarec }} -j`nproc`
+        make deps
+        make -j`nproc`
         ${{ matrix.config.triplet }}-strip dosbox_core_libretro.dll
         zip -9 ${{ matrix.config.zip_name }} dosbox_core_libretro.dll
 
@@ -43,6 +53,16 @@ jobs:
 
   build_linux_64:
     runs-on: ubuntu-16.04
+
+    env:
+      CC: gcc-9
+      CXX: g++-9
+      platform: unix
+      STATIC_LIBCXX: 1
+      BUNDLED_AUDIO_CODECS: 1
+      BUNDLED_LIBSNDFILE: 1
+      BUNDLED_SDL: 1
+      WITH_DYNAREC: x86_64
 
     steps:
     - uses: actions/checkout@v2
@@ -57,8 +77,8 @@ jobs:
     - name: Build
       working-directory: ./libretro
       run: |
-        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 BUNDLED_SDL=1 WITH_DYNAREC=x86_64 deps
-        make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 BUNDLED_SDL=1 WITH_DYNAREC=x86_64 -j`nproc`
+        make deps
+        make -j`nproc`
         strip dosbox_core_libretro.so
         zip -9 linux-x64.zip dosbox_core_libretro.so
 

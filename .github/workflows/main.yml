@@ -2,10 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [ libretro ]
+    branches: [ libretro, ci_testing ]
 
 jobs:
-  build_mxe_32:
+  build_mxe:
+    strategy:
+      matrix:
+        config:
+          - {triplet: i686-w64-mingw32.static, dynarec: x86, zip_name: windows-x86.zip}
+          - {triplet: x86_64-w64-mingw32.static, dynarec: x86_64, zip_name: windows-x64.zip}
+
     runs-on: ubuntu-16.04
 
     steps:
@@ -18,58 +24,22 @@ jobs:
         ninja-build
 
     - name: Set up MXE environment
-      run: |
-        wget 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz'
-        sudo tar xf mxe.tar.gz -C /opt
-        rm mxe.tar.gz
+      run: wget 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz' -O- | sudo tar xz -C /opt
 
     - name: Build
+      working-directory: ./libretro
       run: |
         source /opt/mxe/mxe-env.sh
-        cd libretro
-        CC=gcc make platform=win TARGET_TRIPLET="i686-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86 deps
-        CC=gcc make platform=win TARGET_TRIPLET="i686-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86 -j`nproc`
-        i686-w64-mingw32.static-strip dosbox_core_libretro.dll
-        zip -9 windows-x86.zip dosbox_core_libretro.dll
+        CC=gcc make platform=win TARGET_TRIPLET=${{ matrix.config.triplet }} BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=${{ matrix.config.dynarec }} deps
+        CC=gcc make platform=win TARGET_TRIPLET=${{ matrix.config.triplet }} BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=${{ matrix.config.dynarec }} -j`nproc`
+        ${{ matrix.config.triplet }}-strip dosbox_core_libretro.dll
+        zip -9 ${{ matrix.config.zip_name }} dosbox_core_libretro.dll
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1
       with:
-        name: windows-x86.zip
-        path: libretro/windows-x86.zip
-
-  build_mxe_64:
-    runs-on: ubuntu-16.04
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Init submodules
-      run: git submodule update --init
-
-    - name: Install deps
-      run: sudo apt-get install
-        ninja-build
-
-    - name: Set up MXE environment
-      run: |
-        wget 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz'
-        sudo tar xf mxe.tar.gz -C /opt
-        rm mxe.tar.gz
-
-    - name: Build
-      run: |
-        source /opt/mxe/mxe-env.sh
-        cd libretro
-        CC=gcc make platform=win TARGET_TRIPLET="x86_64-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86_64 deps
-        CC=gcc make platform=win TARGET_TRIPLET="x86_64-w64-mingw32.static" BUNDLED_AUDIO_CODECS=0 BUNDLED_LIBSNDFILE=0 WITH_DYNAREC=x86_64 -j`nproc`
-        x86_64-w64-mingw32.static-strip dosbox_core_libretro.dll
-        zip -9 windows-x64.zip dosbox_core_libretro.dll
-
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1
-      with:
-        name: windows-x64.zip
-        path: libretro/windows-x64.zip
+        name: ${{ matrix.config.zip_name }}
+        path: libretro/${{ matrix.config.zip_name }}
 
   build_linux_64:
     runs-on: ubuntu-16.04
@@ -85,8 +55,8 @@ jobs:
         ninja-build
 
     - name: Build
+      working-directory: ./libretro
       run: |
-        cd libretro
         make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 BUNDLED_SDL=1 WITH_DYNAREC=x86_64 deps
         make CC=gcc-9 CXX=g++-9 STATIC_LIBCXX=1 BUNDLED_SDL=1 WITH_DYNAREC=x86_64 -j`nproc`
         strip dosbox_core_libretro.so
@@ -99,8 +69,9 @@ jobs:
         path: libretro/linux-x64.zip
 
   upload_build:
+    if: github.ref == 'refs/heads/libretro'
     runs-on: ubuntu-16.04
-    needs: [build_mxe_32, build_mxe_64, build_linux_64]
+    needs: [build_mxe, build_linux_64]
 
     steps:
     - uses: actions/download-artifact@v1

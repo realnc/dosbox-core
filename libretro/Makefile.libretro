@@ -1,18 +1,18 @@
 DEBUG := 0
 # Link statically against libgcc_s and libstdc++.
-STATIC_LIBCXX := 0
+STATIC_LIBCXX ?= 0
 # Build and link our own bundled ogg, flac, etc. statically.
-BUNDLED_AUDIO_CODECS := 1
+BUNDLED_AUDIO_CODECS ?= 1
 # Build and link our own libsndfile statically.
-BUNDLED_LIBSNDFILE := 1
+BUNDLED_LIBSNDFILE ?= 1
 # Build and link our own sdl and sdl_net statically.
-BUNDLED_SDL := 0
+BUNDLED_SDL ?= 0
 # Extra command-line flags to pass to pkg-config.
-PKG_CONFIG_FLAGS =
+PKG_CONFIG_FLAGS ?=
 # Extra packages to link against with pkg-config.
-EXTRA_PACKAGES =
+EXTRA_PACKAGES ?=
 # Link statically against some system-installed libraries (audio codecs and libsndfile.)
-STATIC_PACKAGES = 0
+STATIC_PACKAGES ?= 0
 CMAKE_GENERATOR ?= Ninja
 GIT_VERSION := "$(shell git rev-parse --short HEAD)"
 SVN_VERSION := "$(shell cat svn)"

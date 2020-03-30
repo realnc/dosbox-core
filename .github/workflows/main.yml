@@ -89,10 +89,60 @@ jobs:
         name: linux-x64.zip
         path: libretro/linux-x64.zip
 
+  build_macos:
+    runs-on: macos-10.15
+
+    env:
+      platform: osx
+      WITH_DYNAREC: x86_64
+      STATIC_LIBCXX: 0
+      BUNDLED_AUDIO_CODECS: 0
+      BUNDLED_LIBSNDFILE: 0
+      BUNDLED_SDL: 0
+      PKG_CONFIG_FLAGS: --static
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Init submodules
+      run: git submodule update --depth 1 --init
+
+    - name: Build glib
+      run: brew reinstall --build-from-source ./libretro/deps/glib.rb
+
+    - name: Install deps
+      run: brew install
+        libsndfile
+        ninja
+        pkg-config
+        sdl_net
+
+    # Since macOS is developed by monkeys, we have to do this shit to get static linking against
+    # homebrew-installed libraries.
+    - name: Symlink static homebrew libs
+      working-directory: ./libretro
+      run: |
+        mkdir static_libs
+        ln -s /usr/local/{lib,opt/gettext/lib,opt/libffi/lib}/*.a static_libs/
+
+    - name: Build
+      working-directory: ./libretro
+      run: |
+        make deps
+        export LDFLAGS="-L $PWD/static_libs"
+        make -j`sysctl -n hw.ncpu`
+        strip -u -r -S dosbox_core_libretro.dylib
+        zip -9 macOS-x64.zip dosbox_core_libretro.dylib
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: macOS-x64.zip
+        path: libretro/macOS-x64.zip
+
   upload_build:
     if: github.ref == 'refs/heads/libretro'
     runs-on: ubuntu-16.04
-    needs: [build_mxe, build_linux_64]
+    needs: [build_mxe, build_linux_64, build_macos]
 
     steps:
     - uses: actions/download-artifact@v1
@@ -104,6 +154,9 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: linux-x64.zip
+    - uses: actions/download-artifact@v1
+      with:
+        name: macOS-x64.zip
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -115,3 +168,4 @@ jobs:
           windows-x64.zip
           windows-x86.zip
           linux-x64.zip
+          macOS-x64.zip

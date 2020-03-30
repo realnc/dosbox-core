@@ -14,6 +14,7 @@ EXTRA_PACKAGES ?=
 # Link statically against some system-installed libraries (audio codecs and libsndfile.)
 STATIC_PACKAGES ?= 0
 CMAKE_GENERATOR ?= Ninja
+
 GIT_VERSION := "$(shell git rev-parse --short HEAD)"
 SVN_VERSION := "$(shell cat svn)"
 
@@ -51,7 +52,7 @@ endif
 
 LIBRETRO_DIR := libretro
 TARGET_NAME := dosbox_core
-WITH_DYNAREC :=
+WITH_DYNAREC ?=
 
 # try to guess the dynarec based on the host system, unreliable
 ifeq ($(platform),win)

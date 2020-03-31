@@ -27,14 +27,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Init submodules
-      run: git submodule update --init
+      run: git submodule update --depth 1 --init
 
     - name: Install deps
       run: sudo apt-get install
         ninja-build
 
     - name: Set up MXE environment
-      run: wget -q 'https://github.com/realnc/mxe/releases/download/binary/mxe.tar.gz' -O- | sudo tar xz -C /opt
+      run: wget -q 'https://github.com/realnc/stuff/releases/download/stuff/mxe.tar.xz' -O- | sudo tar xJ -C /opt
 
     - name: Build
       working-directory: ./libretro
@@ -67,11 +67,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Init submodules
-      run: git submodule update --init
+      run: git submodule update --depth 1 --init
 
     - name: Install deps
       run: sudo apt-get install
-        libsdl-net1.2-dev
+        libasound2-dev
+        libglib2.0-dev
         ninja-build
 
     - name: Build

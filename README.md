@@ -28,6 +28,17 @@ DOSBox-core was originally based on the https://github.com/libretro/dosbox-svn
 libretro core, developed mainly by [Radius](https://github.com/fr500) as well
 as other contributors (the full commit history has been preserved.)
 
+## Supported Platforms
+
+Currently, the following platforms are supported:
+
+* Linux (x86-64)
+* Windows 7 or later
+* macOS 10.15 (Catalina) or later
+
+Binaries are provided for these platforms. It may work on other platforms if you compile from
+source.
+
 ## Usage
 
 You can load `.exe`, `.bat`, `.iso`, `.cue`, and `.conf` files directly. Note

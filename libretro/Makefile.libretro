@@ -619,5 +619,5 @@ download_github_windows_x86:
 .PHONY: download_github_macos
 download_github_macos:
 	rm -f macOS-x64.zip
-	wget 'https://github.com/realnc/dosbox-core/releases/download/latest_build/macOS-x64.zip'
+	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/macOS-x64.zip'
 	unzip macOS-x64.zip

@@ -218,13 +218,14 @@ retro::CoreOptions retro::core_options {
                 "maximum CPU load percentage as well as a cycle amount as limits. \"Auto\" will "
                 "emulate the fixed cycle amount set in the \"real mode\" cycles options when "
                 "running real mode games, while for protected mode games it will switch to \"max\" "
-                "mode.",
+                "mode. \"Fixed\" mode in combination with an appropriate cycle amount is the most "
+                "compatible setting, as \"auto\" and \"max\" have issues on many systems.",
             {
                 "auto",
                 "fixed",
                 "max",
             },
-            "auto"
+            "fixed"
         },
         {
             "cpu_cycles_multiplier_realmode",
@@ -283,7 +284,7 @@ retro::CoreOptions retro::core_options {
             "System: Coarse CPU cycles multiplier",
             "Multiplier for coarse CPU cycles tuning.",
             { CYCLES_COARSE_MULTIPLIERS },
-            1000
+            10000
         },
         {
             "cpu_cycles",
@@ -297,7 +298,7 @@ retro::CoreOptions retro::core_options {
             "System: Fine CPU cycles multiplier",
             "Multiplier for fine CPU cycles tuning.",
             { CYCLES_FINE_MULTIPLIERS },
-            100
+            1000
         },
         {
             "cpu_cycles_fine",

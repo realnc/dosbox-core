@@ -19,8 +19,10 @@ The core provides some improvements over the DOSBox-SVN core:
   Using [Munt](https://github.com/munt/munt).
 
 * Soundfont-based MIDI synthesizer.  
-  Using [FluidSynth](http://www.fluidsynth.org), a MIDI software synthesizer
-  that supports SF2/SF3/DLS/GIG soundfonts.
+  - Using [FluidSynth](http://www.fluidsynth.org), a MIDI software synthesizer
+    that supports SF2/SF3/DLS/GIG soundfonts.
+  - Using [BASSMIDI](https://www.un4seen.com), a MIDI software synthesizer that
+    supports SF2/SFZ soundfonts.
 
 * Other general, under-the-hood improvements and bugfixes.
 
@@ -36,8 +38,8 @@ Currently, the following platforms are supported:
 * Windows 7 or later
 * macOS 10.15 (Catalina) or later
 
-Binaries are provided for these platforms. It may work on other platforms if you compile from
-source.
+Binaries are provided for these platforms. It may work on other platforms if
+you compile from source.
 
 ## Usage
 
@@ -46,9 +48,23 @@ that when loading content, the current directory is set to the content's
 directory. This means it is possible to use relative paths in your `mount` and
 `imgmount` commands.
 
+### MT-32
+
 For MT-32 emulation, make sure you have the correct MT-32 ROMs in your
 frontend's system directory. See the `dosbox_core_libretro.info` file for the
 ROM filenames and MD5 checksums.
+
+### BASSMIDI
+
+To use BASSMIDI for MIDI output, you need to download the BASS and BASSMIDI
+dynamic libraries for your OS from https://www.un4seen.com and place them in
+the system folder of your frontend. These files are not included with
+DOSBox-core due to licensing issues.
+
+On Linux you need `libbass.so` and `libbassmidi.so`, on Windows `bass.dll` and
+`bassmidi.dll`, and on macOS `libbass.dylib` and `libbassmidi.dylib`. Make sure
+to use the 32-bit or 64-bit versions of these files depending on whether your
+frontend is 32-bit or 64-bit.
 
 ## Compilation
 

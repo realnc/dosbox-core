@@ -5,6 +5,11 @@
 #include "libretro_dosbox.h"
 #include <dlfcn.h>
 #include <tuple>
+#ifdef _WIN32
+    #include <windef.h>
+#else
+    #define WINAPI
+#endif
 
 /* We don't link against the BASS/BASSMIDI libraries. We dlopen() them so that the core can be
  * distributed without those libs in a GPL-compliant way.
@@ -29,18 +34,22 @@ struct BASS_MIDI_FONT final
     int bank;
 };
 
-static auto (*BASS_ChannelGetData)(uint32_t handle, void* buffer, uint32_t length) -> uint32_t;
-static auto (*BASS_ErrorGetCode)() -> int;
-static auto (*BASS_Init)(int device, uint32_t freq, uint32_t flags, void* win, void* dsguid) -> int;
-static auto (*BASS_SetConfig)(uint32_t option, uint32_t value) -> int;
-static auto (*BASS_SetConfigPtr)(uint32_t option, const void* value) -> int;
-static auto (*BASS_StreamFree)(HSTREAM handle) -> int;
+static WINAPI auto (*BASS_ChannelGetData)(uint32_t handle, void* buffer, uint32_t length)
+    -> uint32_t;
+static WINAPI auto (*BASS_ErrorGetCode)() -> int;
+static WINAPI auto (*BASS_Init)(int device, uint32_t freq, uint32_t flags, void* win, void* dsguid)
+    -> int;
+static WINAPI auto (*BASS_SetConfig)(uint32_t option, uint32_t value) -> int;
+static WINAPI auto (*BASS_SetConfigPtr)(uint32_t option, const void* value) -> int;
+static WINAPI auto (*BASS_StreamFree)(HSTREAM handle) -> int;
 
-static auto (*BASS_MIDI_FontSetVolume)(HSOUNDFONT handle, float volume) -> int;
-static auto (*BASS_MIDI_StreamCreate)(uint32_t channels, uint32_t flags, uint32_t freq) -> HSTREAM;
-static auto (*BASS_MIDI_StreamEvents)(
+static WINAPI auto (*BASS_MIDI_FontSetVolume)(HSOUNDFONT handle, float volume) -> int;
+static WINAPI auto (*BASS_MIDI_StreamCreate)(uint32_t channels, uint32_t flags, uint32_t freq)
+    -> HSTREAM;
+static WINAPI auto (*BASS_MIDI_StreamEvents)(
     HSTREAM handle, uint32_t mode, const void* events, uint32_t length) -> uint32_t;
-static auto (*BASS_MIDI_StreamGetFonts)(HSTREAM handle, void* fonts, uint32_t count) -> uint32_t;
+static WINAPI auto (*BASS_MIDI_StreamGetFonts)(HSTREAM handle, void* fonts, uint32_t count)
+    -> uint32_t;
 }
 
 MidiHandlerBassmidi MidiHandlerBassmidi::instance_;

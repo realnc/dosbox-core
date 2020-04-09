@@ -62,14 +62,18 @@ ifeq ($(platform),win)
 		WITH_DYNAREC := x86_64
 	endif
 else ifeq ($(platform),unix)
-	ifeq ($(target), x86)
-		WITH_DYNAREC := x86
-	else ifeq ($(target),x86_64)
+	ifneq ($(findstring x86_64,$(UNAMEM)),)
 		WITH_DYNAREC := x86_64
-	else ifeq ($(target),arm)
-		WITH_DYNAREC := arm
-	else ifeq ($(target),arm64)
+	else ifneq ($(findstring amd64,$(UNAMEM)),)
+		WITH_DYNAREC := x86_64
+	else ifneq ($(findstring 86,$(UNAMEM)),)
+		WITH_DYNAREC := x86
+	else ifneq ($(findstring aarch64,$(UNAMEM)),)
 		WITH_DYNAREC := arm64
+	else ifneq ($(findstring arm64,$(UNAMEM)),)
+		WITH_DYNAREC := arm64
+	else ifneq ($(findstring arm,$(UNAMEM)),)
+		WITH_DYNAREC := arm
 	endif
 else ifeq ($(platform),osx)
 	ifeq ($(target), x86)

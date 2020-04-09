@@ -4,6 +4,8 @@ on:
   push:
     branches: [libretro, ci_testing]
 
+  pull_request:
+
 jobs:
   build_mxe:
     strategy:
@@ -46,6 +48,7 @@ jobs:
         zip -9 ${{ matrix.config.zip_name }} dosbox_core_libretro.dll
 
     - name: Upload artifact
+      if: github.event_name != 'pull_request'
       uses: actions/upload-artifact@v1
       with:
         name: ${{ matrix.config.zip_name }}
@@ -84,6 +87,7 @@ jobs:
         zip -9 linux-x64.zip dosbox_core_libretro.so
 
     - name: Upload artifact
+      if: github.event_name != 'pull_request'
       uses: actions/upload-artifact@v1
       with:
         name: linux-x64.zip
@@ -134,13 +138,14 @@ jobs:
         zip -9 macOS-x64.zip dosbox_core_libretro.dylib
 
     - name: Upload artifact
+      if: github.event_name != 'pull_request'
       uses: actions/upload-artifact@v1
       with:
         name: macOS-x64.zip
         path: libretro/macOS-x64.zip
 
   upload_build:
-    if: github.ref == 'refs/heads/libretro'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/libretro'
     runs-on: ubuntu-16.04
     needs: [build_mxe, build_linux_64, build_macos]
 

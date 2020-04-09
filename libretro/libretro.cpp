@@ -88,7 +88,6 @@ retro_environment_t environ_cb;
 retro_log_printf_t log_cb;
 
 /* DOSBox state */
-static std::filesystem::path load_path;
 static std::filesystem::path game_path;
 static std::filesystem::path config_path;
 bool dosbox_exit;
@@ -954,10 +953,10 @@ static void check_variables()
         {"thread_sync", "cpu_type", "scaler", "mpu_type", "tandy", "disney"}, adv_core_options);
 }
 
-static void start_dosbox()
+static void start_dosbox(const std::string cmd_line)
 {
-    const char* const argv[2] = {"dosbox", load_path.u8string().c_str()};
-    CommandLine com_line(load_path.empty() ? 1 : 2, argv);
+    const char* const argv[2] = {"dosbox", cmd_line.c_str()};
+    CommandLine com_line(cmd_line.empty() ? 1 : 2, argv);
     Config myconf(&com_line);
     control = &myconf;
     dosbox_initialiazed = false;
@@ -1225,6 +1224,8 @@ void retro_deinit()
 
 auto retro_load_game(const retro_game_info* const game) -> bool
 {
+    std::filesystem::path load_path;
+
     if (game && game->path) {
         load_path = std::filesystem::path(game->path).make_preferred();
         game_path = load_path;
@@ -1259,7 +1260,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
             game_path.u8string().c_str(), e.what());
     }
 
-    emu_thread = std::thread(start_dosbox);
+    emu_thread = std::thread(start_dosbox, load_path.u8string());
     switchThread();
     samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
     return true;

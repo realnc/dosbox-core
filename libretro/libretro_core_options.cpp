@@ -327,7 +327,6 @@ retro::CoreOptions retro::core_options {
                 "You should generally set this to \"none\" and instead use the scaling options and "
                 "shaders that are provided by your frontend.",
             {
-                "none",
                 "normal2x",
                 "normal3x",
                 "advmame2x",
@@ -345,6 +344,7 @@ retro::CoreOptions retro::core_options {
                 "rgb3x",
                 "scan2x",
                 "scan3x",
+                "none",
             },
             "none"
         },
@@ -354,8 +354,8 @@ retro::CoreOptions retro::core_options {
             "Enable timed intervals for joystick axes. Experiment with this option if your "
                 "joystick drifts.",
             {
-                false,
                 true,
+                false,
             },
             false
         },
@@ -364,8 +364,8 @@ retro::CoreOptions retro::core_options {
             "Input: Enable gamepad emulated mouse",
             "Enable mouse emulation via the right stick on your gamepad.",
             {
-                false,
                 true,
+                false,
             },
             false
         },
@@ -508,8 +508,8 @@ retro::CoreOptions retro::core_options {
             "Enables Gravis Ultrasound emulation. The ULTRADIR directory is not configurable. It "
                 "is always set to C:\\ULTRASND.",
             {
-                false,
                 true,
+                false,
             },
             false
         },
@@ -595,7 +595,6 @@ retro::CoreOptions retro::core_options {
                 "The libretro driver forwards MIDI to the frontend, in which case you need to "
                 "configure MIDI output there.",
             {
-                "none",
             #ifdef HAVE_ALSA
                 { "alsa", "ALSA" },
             #endif
@@ -606,6 +605,7 @@ retro::CoreOptions retro::core_options {
                 { "fluidsynth", "FluidSynth" },
                 { "mt32", "MT-32 emulator" },
                 "libretro",
+                "none",
             },
             "none"
         },
@@ -1133,8 +1133,8 @@ retro::CoreOptions retro::core_options {
             "mt32.reverse.stereo",
             "Sound (MT-32): Reverse stereo channels",
             {
-                false,
                 true,
+                false,
             },
             false
         },
@@ -1143,8 +1143,8 @@ retro::CoreOptions retro::core_options {
             "Sound (MT-32): Threaded emulation",
             "Run MT-32 emulation in its own thread. Improves performance on multi-core CPUs.",
             {
-                false,
                 true,
+                false,
             },
             false
         },
@@ -1293,11 +1293,11 @@ retro::CoreOptions retro::core_options {
             "Reverb emulation mode. \"Auto\" will automatically adjust reverb parameters to match "
                 "the loaded control ROM version.",
             {
+                { "auto" },
                 { 0, "room" },
                 { 1, "hall" },
                 { 2, "plate" },
                 { 3, "tap delay" },
-                { "auto" },
             },
             "auto"
         },
@@ -1375,8 +1375,8 @@ retro::CoreOptions retro::core_options {
             "Sound: Enable PC speaker",
             "Enable PC speaker emulation.",
             {
-                false,
                 true,
+                false,
             },
             true
         },
@@ -1396,8 +1396,8 @@ retro::CoreOptions retro::core_options {
             "Sound: Enable Disney Sound Source",
             "Enable Disney Sound Source Emulation.",
             {
-                { "off", "false" },
                 { "on", "true" },
+                { "off", "false" },
             },
             "off"
         },
@@ -1430,8 +1430,8 @@ retro::CoreOptions retro::core_options {
             "Network: Enable IPX",
             "Enable IPX over UDP tunneling.",
             {
-                false,
                 true,
+                false,
             },
             false
         },

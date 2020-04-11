@@ -1378,7 +1378,7 @@ retro::CoreOptions retro::core_options {
                 false,
                 true,
             },
-            false
+            true
         },
         {
             "tandy",

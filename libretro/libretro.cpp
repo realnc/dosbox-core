@@ -456,7 +456,6 @@ static auto compare_dosbox_variable(
     return ret;
 }
 
-// TODO: this should have std::string_view params
 auto update_dosbox_variable(
     const bool autoexec, const std::string& section_string, const std::string& var_string,
     const std::string& val_string) -> bool

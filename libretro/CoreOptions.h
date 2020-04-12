@@ -138,7 +138,8 @@ public:
     /* Show/hide the specified option(s).
      */
     void setVisible(std::string_view key, bool visible) const noexcept;
-    void setVisible(std::initializer_list<std::string_view> keys, bool visible) const noexcept;
+    void setVisible(
+        std::initializer_list<const std::string_view> keys, bool visible) const noexcept;
 
 private:
     std::vector<CoreOptionDefinition> options_;
@@ -168,13 +169,13 @@ inline void CoreOptions::setEnvironmentCallback(const retro_environment_t cb)
     env_cb_ = cb;
 }
 
-inline auto CoreOptions::option(std::string_view key) -> CoreOptionDefinition*
+inline auto CoreOptions::option(const std::string_view key) -> CoreOptionDefinition*
 {
     auto it = options_map_.find(key);
     return it != options_map_.end() ? it->second : nullptr;
 }
 
-inline auto CoreOptions::option(std::string_view key) const -> const CoreOptionDefinition*
+inline auto CoreOptions::option(const std::string_view key) const -> const CoreOptionDefinition*
 {
     auto it = options_map_.find(key);
     return it != options_map_.end() ? it->second : nullptr;

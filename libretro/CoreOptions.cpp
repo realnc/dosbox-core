@@ -5,7 +5,7 @@
 
 namespace retro {
 
-auto CoreOptions::operator[](std::string_view key) const -> const CoreOptionValue&
+auto CoreOptions::operator[](const std::string_view key) const -> const CoreOptionValue&
 {
     const auto* option = this->option(key);
     if (!option) {
@@ -54,7 +54,7 @@ void CoreOptions::updateFrontend()
     }
 }
 
-void CoreOptions::setVisible(std::string_view key, bool visible) const noexcept
+void CoreOptions::setVisible(const std::string_view key, const bool visible) const noexcept
 {
     const auto* opt = option(key);
     if (!opt) {
@@ -66,7 +66,7 @@ void CoreOptions::setVisible(std::string_view key, bool visible) const noexcept
 }
 
 void CoreOptions::setVisible(
-    const std::initializer_list<std::string_view> keys, const bool visible) const noexcept
+    const std::initializer_list<const std::string_view> keys, const bool visible) const noexcept
 {
     for (const auto key : keys) {
         setVisible(key, visible);

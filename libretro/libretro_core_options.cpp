@@ -56,6 +56,21 @@ retro::CoreOptions retro::core_options {
             false
         },
         {
+            "mount_c_as",
+            "Core: Mount drive C as",
+            "When directly loading a DOS executable rather than a .conf file, the C drive can be "
+                "mounted to be either the executable's directory, or its parent directory. For "
+                "example, when loading DUKE3D.EXE that is located in a directory called DUKE3D, "
+                "setting this option to \"content\" will result in DOS finding the file in "
+                "C:\\DUKE3D.EXE. If this option is set to \"parent\", the file will be found in "
+                "C:\\DUKE3D\\DUKE3D.EXE instead.",
+            {
+                { "content", "content directory" },
+                { "parent", "parent directory of content" },
+            },
+            "content"
+        },
+        {
             "save_overlay",
             "Core: Enable overlay file system (restart)",
             "Enable overlay file system to redirect filesystem changes to the save directory. "

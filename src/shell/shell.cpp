@@ -26,6 +26,11 @@
 #include "shell.h"
 #include "callback.h"
 #include "support.h"
+#ifdef __LIBRETRO__
+	#include "CoreOptions.h"
+	#include "libretro_dosbox.h"
+	#include <filesystem>
+#endif
 
 
 Bitu call_shellstop;
@@ -458,8 +463,19 @@ public:
 				}
 				*name++ = 0;
 				if (access(buffer,F_OK)) continue;
+#ifdef __LIBRETRO__
+				if (retro::core_options["mount_c_as"].toString() == "parent") {
+					std::filesystem::path fs_dir = buffer;
+					autoexec[12].Install(std::string("MOUNT C \"") + fs_dir.parent_path().u8string() + "\"");
+					autoexec[13].Install("C:\nCD " + fs_dir.filename().u8string());
+				} else {
+					autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\"");
+					autoexec[13].Install("C:");
+				}
+#else
 				autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\"");
 				autoexec[13].Install("C:");
+#endif
 				/* Save the non-modified filename (so boot and imgmount can use it (long filenames, case sensivitive)) */
 				strcpy(orig,name);
 				upcase(name);

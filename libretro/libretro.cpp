@@ -178,11 +178,19 @@ static void write_out(const char* const format, ...)
     write_out_buffer(format);
 }
 
-static void mount_overlay_filesystem(const char drive, const std::filesystem::path& path)
+static void mount_overlay_filesystem(const char drive, std::filesystem::path path)
 {
+    // Make sure the path ends with a dir separator, otherwise dosbox will glitch out when writing
+    // to the overlay.
+    path.make_preferred();
+    auto path_str = path.u8string();
+    if (path_str.back() != std::filesystem::path::preferred_separator) {
+        path_str += std::filesystem::path::preferred_separator;
+    }
+
     if (log_cb) {
         log_cb(
-            RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path.u8string().c_str(),
+            RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path_str.c_str(),
             drive);
     }
 
@@ -205,7 +213,7 @@ static void mount_overlay_filesystem(const char drive, const std::filesystem::pa
     }
 
     if (log_cb) {
-        log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path.u8string().c_str());
+        log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path_str.c_str());
     }
     try {
         std::filesystem::create_directories(path);
@@ -214,7 +222,7 @@ static void mount_overlay_filesystem(const char drive, const std::filesystem::pa
         if (log_cb) {
             log_cb(
                 RETRO_LOG_ERROR, "[dosbox] error creating overlay directory %s: %s\n",
-                path.u8string().c_str(), e.what());
+                path_str.c_str(), e.what());
         }
         return;
     }
@@ -228,7 +236,7 @@ static void mount_overlay_filesystem(const char drive, const std::filesystem::pa
         &bytes_per_sector, &sectors_per_cluster, &total_clusters, &free_clusters);
     Bit8u o_error = 0;
     auto overlay = std::make_unique<Overlay_Drive>(
-        base_drive->getBasedir(), path.u8string().c_str(), bytes_per_sector, sectors_per_cluster,
+        base_drive->getBasedir(), path_str.c_str(), bytes_per_sector, sectors_per_cluster,
         total_clusters, free_clusters, 0xF8, o_error);
     if (o_error) {
         if (o_error == 1 && log_cb) {
@@ -1311,7 +1319,7 @@ void retro_run()
     if (Drives['C' - 'A'] && mount_overlay) {
         auto overlay_directory =
             retro_save_directory / retro_library_name / game_path.parent_path().filename();
-        mount_overlay_filesystem('C', overlay_directory.make_preferred());
+        mount_overlay_filesystem('C', std::move(overlay_directory));
         mount_overlay = false;
     }
 

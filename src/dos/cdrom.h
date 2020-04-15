@@ -31,12 +31,8 @@
 #include "dosbox.h"
 #include "mem.h"
 #include "mixer.h"
-#ifdef WITH_FAKE_SDL
-#include "SDL/SDL.h"
-#else
-#include <SDL/SDL.h>
-#include <SDL/SDL_thread.h>
-#endif
+#include "SDL.h"
+#include "SDL_thread.h"
 
 #if defined(C_SDL_SOUND)
 #include "SDL_sound.h"

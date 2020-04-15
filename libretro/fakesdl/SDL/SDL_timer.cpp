@@ -1,5 +1,5 @@
 // This is copyrighted software. More information is at the end of this file.
-#include "fakesdl/SDL/SDL_timer.h"
+#include "SDL_timer.h"
 
 static const auto zero_point = std::chrono::steady_clock::now().time_since_epoch();
 

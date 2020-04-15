@@ -4,11 +4,7 @@
 
 #include "dosbox.h"
 #if defined(_MSC_VER) && (_MSC_VER  <= 1500) 
-#ifdef WITH_FAKE_SDL
-#include "SDL/SDL.h"
-#else
-#include <SDL/SDL.h>
-#endif
+#include <SDL.h>
 #else
 #include <stdint.h>
 #endif

@@ -26,11 +26,7 @@
 #include <unistd.h>
 
 #include "dosbox.h"
-#ifdef WITH_FAKE_SDL
-#include "SDL/SDL.h"
-#else
-#include <SDL/SDL.h>
-#endif
+#include "SDL.h"
 #include "support.h"
 #include "cdrom.h"
 

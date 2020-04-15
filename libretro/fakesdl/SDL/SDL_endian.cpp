@@ -1,5 +1,5 @@
 // This is copyrighted software. More information is at the end of this file.
-#include "fakesdl/SDL/SDL_endian.h"
+#include "SDL_endian.h"
 
 /*
 

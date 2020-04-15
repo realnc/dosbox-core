@@ -1,5 +1,5 @@
 // This is copyrighted software. More information is at the end of this file.
-#include "fakesdl/SDL/SDL_thread.h"
+#include "SDL_thread.h"
 
 #include <thread>
 

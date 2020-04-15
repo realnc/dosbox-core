@@ -1,10 +1,5 @@
-#ifdef WITH_FAKE_SDL
-#include "SDL/SDL_thread.h"
-#include "SDL/SDL_endian.h"
-#else
-#include <SDL/SDL_thread.h>
-#include <SDL/SDL_endian.h>
-#endif
+#include <SDL_thread.h>
+#include <SDL_endian.h>
 #include "control.h"
 
 #ifndef DOSBOX_MIDI_H

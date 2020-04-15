@@ -20,7 +20,7 @@ inline constexpr auto SDL_CDNumDrives() noexcept -> int
     return 0;
 }
 
-inline constexpr const char* SDL_CDName(const int /*drive*/)
+inline constexpr auto SDL_CDName(const int /*drive*/) noexcept -> const char*
 {
     return "NONE";
 }

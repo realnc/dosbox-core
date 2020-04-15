@@ -445,7 +445,11 @@ public:
 				if (stat(buffer,&test)) continue;
 			}
 			if (test.st_mode & S_IFDIR) {
+#ifdef __LIBRETRO__
+				autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\" -freesize " + retro::core_options["default_mount_freesize"].toString());
+#else
 				autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\"");
+#endif
 				autoexec[13].Install("C:");
 				if(secure) autoexec[14].Install("z:\\config.com -securemode");
 				command_found = true;
@@ -466,10 +470,10 @@ public:
 #ifdef __LIBRETRO__
 				if (retro::core_options["mount_c_as"].toString() == "parent") {
 					std::filesystem::path fs_dir = buffer;
-					autoexec[12].Install(std::string("MOUNT C \"") + fs_dir.parent_path().u8string() + "\"");
+					autoexec[12].Install(std::string("MOUNT C \"") + fs_dir.parent_path().u8string() + "\" -freesize " + retro::core_options["default_mount_freesize"].toString());
 					autoexec[13].Install("C:\nCD " + fs_dir.filename().u8string());
 				} else {
-					autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\"");
+					autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\" -freesize " + retro::core_options["default_mount_freesize"].toString());
 					autoexec[13].Install("C:");
 				}
 #else

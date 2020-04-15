@@ -71,6 +71,23 @@ retro::CoreOptions retro::core_options {
             "content"
         },
         {
+            "default_mount_freesize",
+            "Core: Free space for default-mounted drive C",
+            "This is the \"-freesize\" value to use for drive C when loading a DOS executable "
+                "instead of a .conf file that contains its own MOUNT command.",
+            {
+                { 256, "256MB" },
+                { 384, "384MB" },
+                { 512, "512MB" },
+                { 768, "768MB" },
+                { 1024, "1GB" },
+                { 1280, "1.25GB" },
+                { 1536, "1.5GB" },
+                { 1792, "1.75GB" },
+            },
+            1024
+        },
+        {
             "save_overlay",
             "Core: Enable overlay file system (restart)",
             "Enable overlay file system to redirect filesystem changes to the save directory. "

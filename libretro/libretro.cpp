@@ -955,7 +955,9 @@ static void check_variables()
 
     /* show these only if advanced options is enabled */
     core_options.setVisible(
-        {"thread_sync", "cpu_type", "scaler", "mpu_type", "tandy", "disney"}, adv_core_options);
+        {"default_mount_freesize", "thread_sync", "cpu_type", "scaler", "mpu_type", "tandy",
+         "disney"},
+        adv_core_options);
 }
 
 static void start_dosbox(const std::string cmd_line)

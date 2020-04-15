@@ -189,9 +189,7 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
     }
 
     if (log_cb) {
-        log_cb(
-            RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path_str.c_str(),
-            drive);
+        log_cb(RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path_str.c_str(), drive);
     }
 
     if (!Drives[drive - 'A']) {

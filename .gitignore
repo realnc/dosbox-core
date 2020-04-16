@@ -2,3 +2,4 @@
 *.so
 *.dll
 /libretro/munt_build
+/libretro/deps_bin

@@ -554,9 +554,25 @@ static auto disk_replace_image_index(const unsigned index, const retro_game_info
     return true;
 }
 
+static bool get_image_label(const unsigned index, char* const label, const size_t len)
+{
+    if (index > disk_get_num_images()) {
+        return false;
+    }
+    strncpy(label, disk_array[index].filename().u8string().c_str(), len);
+    label[len - 1] = '\0';
+    return true;
+}
+
 static retro_disk_control_callback disk_interface{
     disk_set_eject_state, disk_get_eject_state,     disk_get_image_index, disk_set_image_index,
     disk_get_num_images,  disk_replace_image_index, disk_add_image_index,
+};
+
+static retro_disk_control_ext_callback disk_interface_ext{
+    disk_set_eject_state, disk_get_eject_state,     disk_get_image_index, disk_set_image_index,
+    disk_get_num_images,  disk_replace_image_index, disk_add_image_index, nullptr,
+    nullptr,              get_image_label,
 };
 
 static void leave_thread(const Bitu /*val*/)
@@ -1025,9 +1041,11 @@ void retro_set_environment(const retro_environment_t cb)
     environ_cb = cb;
 
     bool allow_no_game = true;
-
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allow_no_game);
-    cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
+
+    if (!cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT_INTERFACE, &disk_interface_ext)) {
+        cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE, &disk_interface);
+    }
 
     static const retro_controller_description ports_default[]{
         {"Keyboard + Mouse", RETRO_DEVICE_KEYBOARD},

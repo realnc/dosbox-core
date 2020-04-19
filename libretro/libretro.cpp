@@ -1204,8 +1204,7 @@ void retro_init()
         try {
             namespace fs = std::filesystem;
             for (const auto& file : fs::directory_iterator(retro_system_directory / "soundfonts")) {
-                auto extension = file.path().extension().u8string();
-                lowcase(extension);
+                const auto extension = lower_case(file.path().extension().string());
                 if (extension == ".sfz") {
                     bass_values.emplace_back(file.path().filename().u8string());
                     continue;

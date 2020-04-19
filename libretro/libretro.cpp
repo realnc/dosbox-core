@@ -19,6 +19,7 @@
 #include "programs.h"
 #include "render.h"
 #include "setup.h"
+#include "util.h"
 #ifdef ANDROID
     #include "nonlibc.h"
 #endif
@@ -259,6 +260,7 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
 
 static auto mount_disk_image(const std::filesystem::path& path, const bool silent) -> bool
 {
+    const auto extension = lower_case(path.extension().string());
     char msg[256];
 
     if (control->SecureMode()) {
@@ -268,9 +270,9 @@ static auto mount_disk_image(const std::filesystem::path& path, const bool silen
         return false;
     }
 
-    if (path.extension() == ".img") {
+    if (extension == ".img") {
         log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as floppy %s\n", path.u8string().c_str());
-    } else if (path.extension() == ".iso" || path.extension() == ".cue") {
+    } else if (extension == ".iso" || extension == ".cue") {
         log_cb(RETRO_LOG_INFO, "[dosbox] mounting disk as cdrom %s\n", path.u8string().c_str());
     } else {
         log_cb(
@@ -286,7 +288,7 @@ static auto mount_disk_image(const std::filesystem::path& path, const bool silen
         return false;
     }
 
-    if (path.extension() == ".img") {
+    if (extension == ".img") {
         char drive = 'A';
 
         Bit8u mediaid = 0xF0;
@@ -325,7 +327,7 @@ static auto mount_disk_image(const std::filesystem::path& path, const bool silen
             write_out(msg);
         }
         return true;
-    } else if (path.extension() == ".iso" || path.extension() == ".cue") {
+    } else if (extension == ".iso" || extension == ".cue") {
         int error = -1;
         char drive = 'D';
 
@@ -429,10 +431,10 @@ static auto unmount_disk_image(const std::filesystem::path& path) -> bool
         return false;
     }
 
-    if (path.extension() == ".img") {
+    if (const auto extension = lower_case(path.extension().string()); extension == ".img") {
         log_cb(RETRO_LOG_INFO, "[dosbox] unmounting floppy %s\n", path.u8string().c_str());
         drive = 'A';
-    } else if (path.extension() == ".iso" || path.extension() == ".cue") {
+    } else if (extension == ".iso" || extension == ".cue") {
         log_cb(RETRO_LOG_INFO, "[dosbox] umounting cdrom %s\n", path.u8string().c_str());
         drive = 'D';
     } else {
@@ -1263,7 +1265,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
         game_path = load_path;
     }
 
-    if (load_path.extension() == ".conf") {
+    if (const auto extension = lower_case(load_path.extension().string()); extension == ".conf") {
         config_path = load_path;
         load_path.clear();
     } else {
@@ -1273,7 +1275,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
                 config_path.u8string().c_str());
         }
         config_path = retro_save_directory / (retro_library_name + ".conf");
-        if (load_path.extension() == ".iso" || load_path.extension() == ".cue") {
+        if (extension == ".iso" || extension == ".cue") {
             disk_add_image_index();
             disk_load_image = load_path;
             load_path.clear();

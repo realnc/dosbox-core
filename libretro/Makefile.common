@@ -34,6 +34,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/libretro/libretro.cpp \
 	$(CORE_DIR)/libretro/midi_bassmidi.cpp \
 	$(CORE_DIR)/libretro/midi_fluidsynth.cpp \
+	$(CORE_DIR)/libretro/util.cpp \
 	$(CORE_DIR)/src/cpu/callback.cpp \
 	$(CORE_DIR)/src/cpu/core_dyn_x86.cpp \
 	$(CORE_DIR)/src/cpu/core_dynrec.cpp \

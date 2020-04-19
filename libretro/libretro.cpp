@@ -551,7 +551,7 @@ static auto disk_replace_image_index(const unsigned index, const retro_game_info
     } else {
         disk_count--;
     }
-    return false;
+    return true;
 }
 
 static retro_disk_control_callback disk_interface{

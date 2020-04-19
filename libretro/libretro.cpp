@@ -570,9 +570,16 @@ static retro_disk_control_callback disk_interface{
 };
 
 static retro_disk_control_ext_callback disk_interface_ext{
-    disk_set_eject_state, disk_get_eject_state,     disk_get_image_index, disk_set_image_index,
-    disk_get_num_images,  disk_replace_image_index, disk_add_image_index, nullptr,
-    nullptr,              get_image_label,
+    disk_set_eject_state,
+    disk_get_eject_state,
+    disk_get_image_index,
+    disk_set_image_index,
+    disk_get_num_images,
+    disk_replace_image_index,
+    disk_add_image_index,
+    nullptr,
+    nullptr,
+    get_image_label,
 };
 
 static void leave_thread(const Bitu /*val*/)

@@ -26,6 +26,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/libretro/CoreOptionDefinition.cpp \
 	$(CORE_DIR)/libretro/CoreOptionValue.cpp \
 	$(CORE_DIR)/libretro/CoreOptions.cpp \
+	$(CORE_DIR)/libretro/disk_control.cpp \
 	$(CORE_DIR)/libretro/emu_thread.cpp \
 	$(CORE_DIR)/libretro/fake_timing.cpp \
 	$(CORE_DIR)/libretro/libretro_core_options.cpp \

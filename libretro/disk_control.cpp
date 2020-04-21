@@ -133,7 +133,7 @@ static auto mount_floppy_image(const char drive_letter, const std::filesystem::p
     constexpr Bit8u media_id = 0xF0;
 
     try {
-        if (std::filesystem::file_size(path) > 2880) {
+        if (std::filesystem::file_size(path) > 2880 * 1024) {
             log_cb(RETRO_LOG_WARN, "[dosbox] Mounting HDD images is currently not supported.\n");
             return false;
         }

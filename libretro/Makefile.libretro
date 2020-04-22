@@ -13,6 +13,11 @@ PKG_CONFIG_FLAGS ?=
 EXTRA_PACKAGES ?=
 # Link statically against some system-installed libraries (audio codecs and libsndfile.)
 STATIC_PACKAGES ?= 0
+# Path to macOS SDK. Leave undefined to use the system default.
+#MACOS_SDK_PATH =
+# macOS deployment target.
+MACOS_DEPLOYMENT_TARGET ?= 10.15
+# CMake generator.
 CMAKE_GENERATOR ?= Ninja
 
 GIT_VERSION := "$(shell git rev-parse --short HEAD)"
@@ -23,6 +28,7 @@ UNAMEM=$(shell uname -m)
 
 CXXFLAGS += -std=c++17 -Dregister=
 COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
+EXTRA_CMAKE_FLAGS :=
 
 # Target triplet for cross compilation. When cross compiling from Linux to
 # Windows 32-bit using MXE for example, you'd set this to something like:
@@ -115,7 +121,13 @@ ifeq ($(platform), osx)
 	endif
 	OSXVER = `sw_vers -productVersion | cut -d. -f 2`
 	OSX_LT_MAVERICKS = `(( $(OSXVER) <= 9)) && echo "YES"`
-	fpic += -mmacosx-version-min=10.15
+	fpic += -mmacosx-version-min=$(MACOS_DEPLOYMENT_TARGET)
+	EXTRA_CMAKE_FLAGS := -DCMAKE_OSX_DEPLOYMENT_TARGET=$(MACOS_DEPLOYMENT_TARGET)
+	ifdef MACOS_SDK_PATH
+		COMMONFLAGS += -isysroot $(MACOS_SDK_PATH)
+		EXTRA_CMAKE_FLAGS += -DCMAKE_OSX_SYSROOT=$(MACOS_SDK_PATH)
+		LDFLAGS += -isysroot $(MACOS_SDK_PATH)
+	endif
 	ifndef ($(UNIVERSAL))
 		CFLAGS += $(ARCHFLAGS)
 		CXXFLAGS += $(ARCHFLAGS)
@@ -412,6 +424,7 @@ $(OGG):
 	    -DINSTALL_DOCS=OFF \
 	    -DINSTALL_PKG_CONFIG_MODULE=ON \
 	    -DBUILD_FRAMEWORK=OFF \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/ogg" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 
@@ -424,6 +437,7 @@ $(VORBIS): $(OGG)
 	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
 	    -DCMAKE_INSTALL_LIBDIR=lib \
 	    -DBUILD_FRAMEWORK=OFF \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/vorbis" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install \
 	&& sed -i'.original' '/^Requires:/d' $(VORBIS) \
@@ -441,6 +455,7 @@ $(OPUS):
 	    -DOPUS_BUILD_SHARED_LIBRARY=OFF \
 	    -DOPUS_INSTALL_PKG_CONFIG_MODULE=ON \
 	    -DOPUS_STACK_PROTECTOR=OFF \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/opus" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 
@@ -460,6 +475,7 @@ $(FLAC): $(OGG)
 	    -DBUILD_TESTING=OFF \
 	    -DENABLE_WERROR=OFF \
 	    -DWITH_STACK_PROTECTOR=OFF \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/flac" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 
@@ -478,6 +494,7 @@ $(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	    -DBUILD_TESTING=OFF \
 	    -DENABLE_EXTERNAL_LIBS=ON \
 	    -DENABLE_PACKAGE_CONFIG=ON \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/libsndfile" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install \
 	&& sed -i'.original' '/^Requires:/d' $(LIBSNDFILE) \
@@ -535,6 +552,7 @@ $(MUNT):
 	    -Dlibmt32emu_C_INTERFACE=ON \
 	    -Dlibmt32emu_SHARED=OFF \
 	    -Dlibmt32emu_WITH_INTERNAL_RESAMPLER=ON \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/munt/mt32emu" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE)
 
@@ -548,6 +566,7 @@ $(LIBINSTPATCH): $(LIBSNDFILE)
 	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
 	    -DLIB_INSTALL_DIR=lib \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/libinstpatch" \
 	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install
 
@@ -589,6 +608,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH)
 	    -Denable-coreaudio=OFF \
 	    -Denable-coremidi=OFF \
 	    -Denable-framework=OFF \
+	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/fluidsynth" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 

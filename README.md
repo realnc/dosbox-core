@@ -32,14 +32,13 @@ as other contributors (the full commit history has been preserved.)
 
 ## Supported Platforms
 
-Currently, the following platforms are supported:
+Currently, binaries are provided for the following platforms:
 
 * Linux (x86-64)
 * Windows 7 or later
-* macOS 10.15 (Catalina) or later
+* macOS 10.13 (High Sierra) or later
 
-Binaries are provided for these platforms. It may work on other platforms if
-you compile from source.
+It may work on other platforms as well if you build from source.
 
 ## Usage
 
@@ -68,7 +67,9 @@ frontend is 32-bit or 64-bit.
 
 ## Compilation
 
-Building the core requires a C++17 compiler. GCC 9 or newer is known to work.
+Building the core requires a C++17 compiler. GCC 9 and Clang 9 are known to
+work. When building on macOS with XCode Clang, macOS 10.15 and XCode 11.1 are
+required. Using GCC instead will allow building for older macOS versions.
 
 CMake and Ninja are also assumed to be installed in order to build the bundled
 dependencies.

@@ -629,7 +629,7 @@ static void cache_init(bool enable) {
   			if (sceBlock >= 0) {
     				int ret = sceKernelGetMemBlockBase(sceBlock, (void **)&cache_code_start_ptr);
 				if(ret < 0) {
-					cache_code_start_ptr = null;
+					cache_code_start_ptr = NULL;
 				}
 			}
 #else

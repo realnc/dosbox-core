@@ -70,7 +70,7 @@
 #endif
 
 // ----- STANDARD LIBRARY FEATURES
-#ifndef __QNX__
+#if !defined (__QNX__) && !defined(VITA)
 #define DIRENT_HAS_D_TYPE 1 /* struct dirent has d_type */
 #endif
 /* #undef DB_HAVE_NO_POWF */ /* libm doesn't include powf */

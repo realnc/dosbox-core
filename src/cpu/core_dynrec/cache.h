@@ -23,6 +23,12 @@
 #ifdef VITA
 #include <psp2/kernel/sysmem.h>
 static int sceBlock;
+/* Allocation size must be a power of 2.
+   Right now 16 MiB. It must be more than
+   CACHE_TOTAL+CACHE_MAXSIZE+PAGESIZE_TEMP-1
+   +PAGESIZE_TEMP which is currently 8.1MiB.  */
+int _newlib_vm_size_user = 0x1000000;
+extern "C" int getVMBlock();
 #endif
 
 class CodePageHandlerDynRec;	// forward
@@ -625,11 +631,16 @@ static void cache_init(bool enable) {
 #elif defined (HAVE_LIBNX)
 			cache_code_start_ptr=(Bit8u*)mmap(NULL, CACHE_TOTAL+CACHE_MAXSIZE+PAGESIZE_TEMP-1+PAGESIZE_TEMP, 0, 0, 0, 0);
 #elif defined (VITA)
-			sceBlock = sceKernelAllocMemBlockForVM("code", CACHE_TOTAL+CACHE_MAXSIZE+PAGESIZE_TEMP-1+PAGESIZE_TEMP);
+			sceBlock = getVMBlock();
   			if (sceBlock >= 0) {
     				int ret = sceKernelGetMemBlockBase(sceBlock, (void **)&cache_code_start_ptr);
 				if(ret < 0) {
 					cache_code_start_ptr = NULL;
+				}
+
+				ret = sceKernelOpenVMDomain();
+				if (ret < 0) {
+				        cache_code_start_ptr = NULL;
 				}
 			}
 #else

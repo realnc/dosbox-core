@@ -54,7 +54,7 @@ jobs:
         name: ${{ matrix.config.zip_name }}
         path: libretro/${{ matrix.config.zip_name }}
 
-  build_linux_64:
+  build_linux_x64:
     runs-on: ubuntu-16.04
 
     env:
@@ -92,6 +92,54 @@ jobs:
       with:
         name: linux-x64.zip
         path: libretro/linux-x64.zip
+
+  build_linux_arm:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Init submodules
+      run: git submodule update --depth 1 --init
+
+    - name: Install QEMU
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y qemu-user-static
+
+    - name: Build
+      run: |
+        docker run \
+          -v /usr/bin/qemu-arm-static:/usr/bin/qemu-arm-static \
+          -v "$PWD":/build \
+          -w /build/libretro \
+          arm32v7/ubuntu:16.04 \
+          bash -c '(
+            set -eux
+            apt-get update
+            apt-get install -y software-properties-common wget
+            add-apt-repository ppa:ubuntu-toolchain-r/test
+            add-apt-repository ppa:janisozaur/cmake-update
+            apt-get update
+            apt-get install -y build-essential gcc-9 g++-9 cmake ninja-build git libasound2-dev libglib2.0-dev
+            export CC=gcc-9
+            export CXX=g++-9
+            export platform=unix
+            export STATIC_LIBCXX=1
+            export BUNDLED_AUDIO_CODECS=1
+            export BUNDLED_LIBSNDFILE=1
+            export BUNDLED_SDL=1
+            make -j1
+            strip dosbox_core_libretro.so
+          )'
+        cd libretro
+        zip -9 linux-armhf.zip dosbox_core_libretro.so
+
+    - name: Upload artifact
+      if: github.event_name != 'pull_request'
+      uses: actions/upload-artifact@v1
+      with:
+        name: linux-armhf.zip
+        path: libretro/linux-armhf.zip
 
   build_macos:
     runs-on: macos-10.15
@@ -155,7 +203,7 @@ jobs:
   upload_build:
     if: github.event_name == 'push' && github.ref == 'refs/heads/libretro'
     runs-on: ubuntu-16.04
-    needs: [build_mxe, build_linux_64, build_macos]
+    needs: [build_mxe, build_linux_x64, build_macos, build_linux_arm]
 
     steps:
     - uses: actions/download-artifact@v1
@@ -170,6 +218,9 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: macOS-x64.zip
+    - uses: actions/download-artifact@v1
+      with:
+        name: linux-armhf.zip
 
     - uses: marvinpinto/action-automatic-releases@latest
       with:
@@ -182,3 +233,4 @@ jobs:
           windows-x86.zip
           linux-x64.zip
           macOS-x64.zip
+          linux-armhf.zip

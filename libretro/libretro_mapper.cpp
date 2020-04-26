@@ -394,7 +394,7 @@ private:
     InputItem<JoystickHat> item_;
 };
 
-void keyboard_event(
+static RETRO_CALLCONV void keyboardEventCb(
     const bool down, const unsigned keycode, const uint32_t /*character*/,
     const uint16_t /*key_modifiers*/)
 {
@@ -409,98 +409,140 @@ void keyboard_event(
     }
 }
 
+static constexpr auto make2buttonGamepadDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 6>
+{
+    return {{
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "D-Pad Left"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "D-Pad Up"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "D-Pad Down"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 1"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 2"},
+    }};
+}
+
+static constexpr auto make2buttonJoystickDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 4>
+{
+    return {{
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
+         "Left Analog X"},
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
+         "Left Analog Y"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 1"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 2"},
+    }};
+}
+
+static constexpr auto make4buttonGamepadDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 8>
+{
+    return {{
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "D-Pad Left"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "D-Pad Up"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "D-Pad Down"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 1"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 2"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 3"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Button 4"},
+    }};
+}
+
+static constexpr auto make4buttonJoystickDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 8>
+{
+    return {{
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
+         "Left Analog X"},
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
+         "Left Analog Y"},
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X,
+         "Right Analog X"},
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y,
+         "Right Analog Y"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 1"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 2"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 3"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Button 4"},
+    }};
+}
+
+static constexpr auto makeEmulatedMouseDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 6>
+{
+    return {{
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X,
+         "Emulated Mouse X Axis"},
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y,
+         "Emulated Mouse Y Axis"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Emulated Mouse Left Click"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Emulated Mouse Right Click"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Emulated Mouse Slow Down"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Emulated Mouse Speed Up"},
+    }};
+}
+
+static void addDpad(const unsigned int port)
+{
+    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_LEFT), port, 0));
+    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_RIGHT), port, 0));
+    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_UP), port, 1));
+    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_DOWN), port, 1));
+};
+
+static void add2Buttons(const unsigned int port)
+{
+    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_B), port, 0));
+    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_A), port, 1));
+};
+
+static void add4Buttons(const unsigned int port)
+{
+    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_B), 0, 0));
+    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_A), 0, 1));
+    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_Y), 1, 0));
+    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_X), 1, 1));
+};
+
+static void add2Axes(const unsigned int port)
+{
+    input_list.push_back(
+        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), port, 0));
+    input_list.push_back(
+        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), port, 1));
+};
+
+static void add4Axes(const unsigned int port)
+{
+    input_list.push_back(
+        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
+    input_list.push_back(
+        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
+    input_list.push_back(
+        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_RIGHT), RDID(ANALOG_X), 1, 0));
+    input_list.push_back(
+        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_RIGHT), RDID(ANALOG_Y), 1, 1));
+};
+
+static void addMouseEmulationButtons(const unsigned int port)
+{
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_R), 0));
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_L), 1));
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_R2), 2));
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_L2), 3));
+}
+
 void MAPPER_Init()
 {
-    retro_keyboard_callback callback{keyboard_event};
+    retro_keyboard_callback callback{keyboardEventCb};
     environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &callback);
 
     input_list.clear();
     input_list.push_back(std::make_unique<MouseButton>(RDID(MOUSE_LEFT), 0));
     input_list.push_back(std::make_unique<MouseButton>(RDID(MOUSE_RIGHT), 1));
     input_list.push_back(std::make_unique<MouseButton>(RDID(MOUSE_MIDDLE), 2));
-
-    if (emulated_mouse) {
-        input_list.push_back(std::make_unique<EmulatedMouseButton>(0, RDID(JOYPAD_R2), 0));
-        input_list.push_back(std::make_unique<EmulatedMouseButton>(0, RDID(JOYPAD_L2), 1));
-        input_list.push_back(std::make_unique<EmulatedMouseButton>(0, RDID(JOYPAD_R), 2));
-        input_list.push_back(std::make_unique<EmulatedMouseButton>(0, RDID(JOYPAD_L), 3));
-    }
-
-    retro_input_descriptor retro_desc[64]{};
-    int desc_count = 0;
-
-    constexpr retro_input_descriptor desc_emulated_mouse[]{
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X,
-         "Emulated Mouse X Axis"},
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y,
-         "Emulated Mouse Y Axis"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Emulated Mouse Left Click"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Emulated Mouse Right Click"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "Emulated Mouse Slow Down"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Emulated Mouse Speed Up"},
-    };
-
-    constexpr retro_input_descriptor desc_gamepad_4button[]{
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "D-Pad Left"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "D-Pad Up"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "D-Pad Down"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 1"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Button 2"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 3"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 4"},
-    };
-
-    constexpr retro_input_descriptor desc_joystick_4button[]{
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
-         "Left Analog X"},
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
-         "Left Analog Y"},
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X,
-         "Right Analog X"},
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y,
-         "Right Analog Y"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 1"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Button 2"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 3"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 4"},
-    };
-
-    constexpr retro_input_descriptor desc_gamepad_2button_p1[]{
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "D-Pad Left"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "D-Pad Up"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "D-Pad Down"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 1"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 2"},
-    };
-
-    constexpr retro_input_descriptor desc_joystick_2button_p1[]{
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
-         "Left Analog X"},
-        {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
-         "Left Analog Y"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 1"},
-        {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 2"},
-    };
-
-    constexpr retro_input_descriptor desc_gamepad_2button_p2[]{
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "D-Pad Left"},
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "D-Pad Up"},
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "D-Pad Down"},
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "D-Pad Right"},
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 1"},
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 2"},
-    };
-
-    constexpr retro_input_descriptor desc_joystick_2button_p2[]{
-        {1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
-         "Left Analog X"},
-        {1, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
-         "Left Analog Y"},
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 1"},
-        {1, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 2"},
-    };
 
     // Currently unused.
 #if 0
@@ -514,176 +556,67 @@ void MAPPER_Init()
     };
 #endif
 
-    JOYSTICK_Enable(0, false);
-    JOYSTICK_Enable(1, false);
+    std::vector<retro_input_descriptor> retro_desc;
+
+    auto addToRetroDesc = [&](const auto& input_desc_list) {
+        for (const auto& desc : input_desc_list) {
+            retro_desc.push_back(desc);
+            log_cb(RETRO_LOG_INFO, "Map: %s.\n", desc.description);
+        }
+    };
+
+    JOYSTICK_Enable(0, true);
+    JOYSTICK_Enable(1, true);
 
     if (connected[0] && connected[1]) {
+        log_cb(RETRO_LOG_INFO, "Both ports connected, deferring to two axis, two button pads.\n");
         update_dosbox_variable(false, "joystick", "joysticktype", "2axis");
-        log_cb(RETRO_LOG_INFO, "Both ports connected, deferring to two axis, two button pads\n");
         joytype = JOY_2AXIS;
-        JOYSTICK_Enable(0, true);
-        JOYSTICK_Enable(1, true);
-
-        log_cb(RETRO_LOG_INFO, "Port 0 connected\n");
-
-        // Buttons.
-        input_list.push_back(std::make_unique<JoystickButton>(0, RDID(JOYPAD_Y), 0, 0));
-        input_list.push_back(std::make_unique<JoystickButton>(0, RDID(JOYPAD_B), 0, 1));
-        if (gamepad[0]) {
-            log_cb(RETRO_LOG_INFO, "Port 0 gamepad\n");
-            // D-pad.
-            input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_LEFT), 0, 0));
-            input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_RIGHT), 0, 1));
-            input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_UP), 1, 0));
-            input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_DOWN), 1, 1));
-            for (const auto& gamepad_desc : desc_gamepad_2button_p1) {
-                retro_desc[desc_count] = gamepad_desc;
-                log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                ++desc_count;
+        for (int port = 0; port < 2; ++port) {
+            log_cb(RETRO_LOG_INFO, "Port %i connected.\n", port);
+            if (gamepad[port]) {
+                log_cb(RETRO_LOG_INFO, "Port %i gamepad.\n", port);
+                addDpad(port);
+                addToRetroDesc(make2buttonGamepadDescArray(port));
+            } else {
+                log_cb(RETRO_LOG_INFO, "Port %i joystick.\n", port);
+                add2Axes(port);
+                addToRetroDesc(make2buttonJoystickDescArray(port));
             }
-        } else {
-            log_cb(RETRO_LOG_INFO, "Port 0 joystick\n");
-            // Analogs.
-            input_list.push_back(
-                std::make_unique<JoystickAxis>(0, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
-            input_list.push_back(
-                std::make_unique<JoystickAxis>(0, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
-            for (const auto& joystick_desc : desc_joystick_2button_p1) {
-                retro_desc[desc_count] = joystick_desc;
-                log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                ++desc_count;
-            }
-        }
-
-        log_cb(RETRO_LOG_INFO, "Port 1 connected\n");
-
-        // Buttons.
-        input_list.push_back(std::make_unique<JoystickButton>(1, RDID(JOYPAD_Y), 0, 0));
-        input_list.push_back(std::make_unique<JoystickButton>(1, RDID(JOYPAD_B), 0, 1));
-        if (gamepad[1]) {
-            log_cb(RETRO_LOG_INFO, "Port 1 gamepad\n");
-            // D-pad.
-            input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_LEFT), 0, 0));
-            input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_RIGHT), 0, 0));
-            input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_UP), 0, 1));
-            input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_DOWN), 0, 1));
-            for (const auto& gamepad_desc : desc_gamepad_2button_p2) {
-                retro_desc[desc_count] = gamepad_desc;
-                log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                ++desc_count;
-            }
-            log_cb(RETRO_LOG_INFO, "Map: %d\n", retro_desc[desc_count].port);
-            ++desc_count;
-        } else {
-            log_cb(RETRO_LOG_INFO, "Port 1 joystick\n");
-            // Analogs.
-            input_list.push_back(
-                std::make_unique<JoystickAxis>(1, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
-            input_list.push_back(
-                std::make_unique<JoystickAxis>(1, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
-            for (const auto& joystick_desc : desc_joystick_2button_p2) {
-                retro_desc[desc_count] = joystick_desc;
-                log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                ++desc_count;
+            add2Buttons(port);
+            if (emulated_mouse) {
+                addMouseEmulationButtons(port);
+                addToRetroDesc(makeEmulatedMouseDescArray(port));
             }
         }
     } else if (connected[0] || connected[1]) {
-        log_cb(RETRO_LOG_INFO, "One port connected, enabling gravis gamepad in connected port\n");
-        // Gravis gamepad was a hack that needs both joysticks to be enabled to function.
-        JOYSTICK_Enable(0, true);
-        JOYSTICK_Enable(1, true);
-
-        if (connected[0]) {
-            update_dosbox_variable(false, "joystick", "joysticktype", "4axis");
-            log_cb(RETRO_LOG_INFO, "Port 0 connected\n");
-            joytype = JOY_4AXIS;
-
-            // Buttons.
-            input_list.push_back(std::make_unique<JoystickButton>(0, RDID(JOYPAD_Y), 0, 0));
-            input_list.push_back(std::make_unique<JoystickButton>(0, RDID(JOYPAD_X), 0, 1));
-            input_list.push_back(std::make_unique<JoystickButton>(0, RDID(JOYPAD_B), 1, 0));
-            input_list.push_back(std::make_unique<JoystickButton>(0, RDID(JOYPAD_A), 1, 1));
-
-            if (gamepad[0]) {
-                log_cb(RETRO_LOG_INFO, "Port 0 gamepad\n");
-                // D-pad.
-                input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_LEFT), 0, 0));
-                input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_RIGHT), 0, 0));
-                input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_UP), 0, 1));
-                input_list.push_back(std::make_unique<JoystickHat>(0, RDID(JOYPAD_DOWN), 0, 1));
-                for (const auto& gamepad_desc : desc_gamepad_4button) {
-                    retro_desc[desc_count] = gamepad_desc;
-                    log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                    ++desc_count;
-                }
-            } else {
-                log_cb(RETRO_LOG_INFO, "Port 0 joystick\n");
-                // Analogs.
-                input_list.push_back(
-                    std::make_unique<JoystickAxis>(0, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
-                input_list.push_back(
-                    std::make_unique<JoystickAxis>(0, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
-                input_list.push_back(
-                    std::make_unique<JoystickAxis>(0, RDIX(ANALOG_RIGHT), RDID(ANALOG_X), 1, 0));
-                input_list.push_back(
-                    std::make_unique<JoystickAxis>(0, RDIX(ANALOG_RIGHT), RDID(ANALOG_Y), 1, 1));
-                for (const auto& joystick_desc : desc_joystick_4button) {
-                    retro_desc[desc_count] = joystick_desc;
-                    log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                    ++desc_count;
-                }
-            }
+        log_cb(RETRO_LOG_INFO, "One port connected, enabling 4 buttons in connected port.\n");
+        const int port = connected[0] ? 0 : 1;
+        joytype = port == 0 ? JOY_4AXIS : JOY_4AXIS_2;
+        update_dosbox_variable(false, "joystick", "joysticktype", port == 0 ? "4axis" : "4axis_2");
+        log_cb(RETRO_LOG_INFO, "Port %i connected.\n", port);
+        if (gamepad[port]) {
+            log_cb(RETRO_LOG_INFO, "Port %i gamepad.\n", port);
+            addDpad(port);
+            addToRetroDesc(make4buttonGamepadDescArray(port));
+        } else {
+            log_cb(RETRO_LOG_INFO, "Port %i joystick.\n", port);
+            add4Axes(port);
+            addToRetroDesc(make4buttonJoystickDescArray(port));
         }
-
-        if (connected[1]) {
-            update_dosbox_variable(false, "joystick", "joysticktype", "4axis_2");
-            log_cb(RETRO_LOG_INFO, "Port 1 connected\n");
-            joytype = JOY_4AXIS_2;
-
-            // Buttons.
-            input_list.push_back(std::make_unique<JoystickButton>(1, RDID(JOYPAD_Y), 0, 0));
-            input_list.push_back(std::make_unique<JoystickButton>(1, RDID(JOYPAD_B), 0, 1));
-
-            if (gamepad[1]) {
-                log_cb(RETRO_LOG_INFO, "Port 1 gamepad\n");
-                // D-pad.
-                input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_LEFT), 0, 0));
-                input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_RIGHT), 0, 0));
-                input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_UP), 0, 1));
-                input_list.push_back(std::make_unique<JoystickHat>(1, RDID(JOYPAD_DOWN), 0, 1));
-                for (const auto& gamepad_desc : desc_gamepad_2button_p2) {
-                    retro_desc[desc_count] = gamepad_desc;
-                    log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                    ++desc_count;
-                }
-                log_cb(RETRO_LOG_INFO, "Map: %d\n", retro_desc[desc_count].port);
-                ++desc_count;
-            } else {
-                log_cb(RETRO_LOG_INFO, "Port 1 joystick\n");
-                // Analogs.
-                input_list.push_back(
-                    std::make_unique<JoystickAxis>(1, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
-                input_list.push_back(
-                    std::make_unique<JoystickAxis>(1, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
-                for (const auto& joystick_desc : desc_joystick_2button_p2) {
-                    retro_desc[desc_count] = joystick_desc;
-                    log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-                    ++desc_count;
-                }
-            }
+        add4Buttons(port);
+        if (emulated_mouse) {
+            addMouseEmulationButtons(port);
+            addToRetroDesc(makeEmulatedMouseDescArray(port));
         }
     } else {
         update_dosbox_variable(false, "joystick", "joysticktype", "none");
+        JOYSTICK_Enable(0, false);
+        JOYSTICK_Enable(1, false);
     }
 
-    if (emulated_mouse) {
-        for (const auto& emu_mouse_desc : desc_emulated_mouse) {
-            retro_desc[desc_count] = emu_mouse_desc;
-            log_cb(RETRO_LOG_INFO, "Map: %s\n", retro_desc[desc_count].description);
-            ++desc_count;
-        }
-    }
-    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, retro_desc);
+    retro_desc.push_back({}); // null terminator
+    environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, retro_desc.data());
 }
 
 void MAPPER_AddHandler(
@@ -693,37 +626,46 @@ void MAPPER_AddHandler(
     input_list.push_back(std::make_unique<EventHandler>(handler, key, mods));
 }
 
+static void runMouseEmulation(const unsigned int port)
+{
+    int16_t emulated_mouse_x = input_cb(
+        port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
+    int16_t emulated_mouse_y = input_cb(
+        port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
+
+    if (abs(emulated_mouse_x) <= mouse_emu_deadzone * 32768 / 100) {
+        emulated_mouse_x = 0;
+    }
+    if (abs(emulated_mouse_y) <= mouse_emu_deadzone * 32768 / 100) {
+        emulated_mouse_y = 0;
+    }
+
+    float slowdown = 32768.0;
+    if (use_fast_mouse) {
+        slowdown /= 3.0f;
+    }
+    if (use_slow_mouse) {
+        slowdown *= 8.0f;
+    }
+
+    const float adjusted_x = emulated_mouse_x * mouse_speed_factor_x * 8.0f / slowdown;
+    const float adjusted_y = emulated_mouse_y * mouse_speed_factor_y * 8.0f / slowdown;
+    Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);
+}
+
 void MAPPER_Run(const bool /*pressed*/)
 {
     poll_cb();
 
     if (emulated_mouse) {
-        int16_t emulated_mouse_x = input_cb(
-            0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
-        int16_t emulated_mouse_y = input_cb(
-            0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
-
-        if (abs(emulated_mouse_x) <= mouse_emu_deadzone * 32768 / 100) {
-            emulated_mouse_x = 0;
+        if (connected[0]) {
+            runMouseEmulation(0);
         }
-        if (abs(emulated_mouse_y) <= mouse_emu_deadzone * 32768 / 100) {
-            emulated_mouse_y = 0;
+        if (connected[1]) {
+            runMouseEmulation(1);
         }
-
-        float slowdown = 32768.0;
-        if (use_fast_mouse) {
-            slowdown /= 3.0f;
-        }
-        if (use_slow_mouse) {
-            slowdown *= 8.0f;
-        }
-
-        const float adjusted_x = emulated_mouse_x * mouse_speed_factor_x * 8.0f / slowdown;
-        const float adjusted_y = emulated_mouse_y * mouse_speed_factor_y * 8.0f / slowdown;
-        Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);
     }
 
-    // Mouse movement
     int16_t mouse_x = input_cb(0, RDEV(MOUSE), 0, RDID(MOUSE_X));
     int16_t mouse_y = input_cb(0, RDEV(MOUSE), 0, RDID(MOUSE_Y));
     if (mouse_x || mouse_y) {

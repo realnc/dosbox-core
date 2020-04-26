@@ -42,7 +42,9 @@
 /* #undef C_TARGETCPU */ /* The type of cpu this target has */
 #endif
 
+#ifndef __mips__
 #define C_UNALIGNED_MEMORY 1 /* Define to 1 to use a unaligned memory access */
+#endif
 
 // ----- DOSBOX CORE FEATURES: Many of these probably won't work even if you enable them
 #define C_FPU 1 /* Define to 1 to enable floating point emulation */
@@ -70,7 +72,7 @@
 #endif
 
 // ----- STANDARD LIBRARY FEATURES
-#if !defined (__QNX__) && !defined(VITA)
+#if !defined (__QNX__) && !defined(VITA) && !defined(PSP)
 #define DIRENT_HAS_D_TYPE 1 /* struct dirent has d_type */
 #endif
 /* #undef DB_HAVE_NO_POWF */ /* libm doesn't include powf */

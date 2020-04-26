@@ -168,7 +168,7 @@ else ifeq ($(platform), psp1)
 	AR = psp-ar$(EXE_EXT)
 	WITH_DYNAREC = mips
 	WITH_FAKE_SDL = 1
-	COMMONFLAGS += -DPSP -G0
+	COMMONFLAGS += -DPSP -G0 -I$(shell psp-config --pspsdk-path)/include -DRENDER_USE_ADVANCED_SCALERS=0
 	STATIC_LINKING = 1
 else ifeq ($(platform), vita)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a

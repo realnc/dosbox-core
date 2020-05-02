@@ -42,7 +42,7 @@
 /* #undef C_TARGETCPU */ /* The type of cpu this target has */
 #endif
 
-#ifndef __mips__
+#if defined(__i386__) || defined(__x86_64__)
 #define C_UNALIGNED_MEMORY 1 /* Define to 1 to use a unaligned memory access */
 #endif
 

@@ -34,7 +34,7 @@ as other contributors (the full commit history has been preserved.)
 
 Currently, binaries are provided for the following platforms:
 
-* Linux (x86-64)
+* Linux (x86-64, ARMv7 (armhf))
 * Windows 7 or later
 * macOS 10.13 (High Sierra) or later
 

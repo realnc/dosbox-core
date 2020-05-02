@@ -128,7 +128,8 @@ jobs:
             export BUNDLED_AUDIO_CODECS=1
             export BUNDLED_LIBSNDFILE=1
             export BUNDLED_SDL=1
-            make -j1
+            make deps
+            make -j2
             strip dosbox_core_libretro.so
           )'
         cd libretro

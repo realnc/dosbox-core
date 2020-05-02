@@ -26,7 +26,7 @@ SVN_VERSION := "$(shell cat svn)"
 UNAME=$(shell uname -s)
 UNAMEM=$(shell uname -m)
 
-CXXFLAGS += -std=c++17
+CXXFLAGS += -std=c++17 -Wno-register
 COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
 EXTRA_CMAKE_FLAGS :=
 

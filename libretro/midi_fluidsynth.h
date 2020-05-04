@@ -1,11 +1,14 @@
 // This is copyrighted software. More information is at the end of this file.
 #pragma once
+
+class Section_prop;
+
+#ifdef WITH_FLUIDSYNTH
+
 #include "midi.h"
 #include "mixer.h"
 #include <fluidsynth.h>
 #include <memory>
-
-class Section_prop;
 
 void init_fluid_dosbox_settings(Section_prop& secprop);
 
@@ -35,6 +38,13 @@ private:
 
     static void mixerCallback(Bitu len);
 };
+
+#else
+
+inline void init_fluid_dosbox_settings(Section_prop& /*secprop*/)
+{ }
+
+#endif
 
 /*
 

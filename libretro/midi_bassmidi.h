@@ -1,5 +1,8 @@
 // This is copyrighted software. More information is at the end of this file.
 #pragma once
+
+#ifdef WITH_BASSMIDI
+
 #include "midi.h"
 #include "mixer.h"
 #include <memory>
@@ -42,6 +45,15 @@ private:
     static void mixerCallback(Bitu len);
     static auto loadLibs() -> std::tuple<bool, std::string>;
 };
+
+#else
+
+namespace MidiHandlerBassmidi {
+inline void initDosboxSettings()
+{ }
+} // namespace MidiHandlerBassmidi
+
+#endif
 
 /*
 

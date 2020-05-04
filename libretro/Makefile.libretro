@@ -7,10 +7,12 @@ BUNDLED_AUDIO_CODECS ?= 1
 BUNDLED_LIBSNDFILE ?= 1
 # Build and link our own sdl and sdl_net statically.
 BUNDLED_SDL ?= 0
+# Build with BASSMIDI support
+WITH_BASSMIDI ?= 1
+# Build with fluidsynth support
+WITH_FLUIDSYNTH ?= 1
 # Extra command-line flags to pass to pkg-config.
 PKG_CONFIG_FLAGS ?=
-# Extra packages to link against with pkg-config.
-EXTRA_PACKAGES ?=
 # Link statically against some system-installed libraries (audio codecs and libsndfile.)
 STATIC_PACKAGES ?= 0
 # Path to macOS SDK. Leave undefined to use the system default.
@@ -315,30 +317,34 @@ SOURCES_C :=
 SOURCES_CXX :=
 
 DEPS_BIN_DIR = $(CURDIR)/deps_bin
-ifeq ($(BUNDLED_AUDIO_CODECS), 1)
-	OGG_BUILD_DIR = $(DEPS_BIN_DIR)/ogg_build
-	OGG = $(DEPS_BIN_DIR)/lib/pkgconfig/ogg.pc
-	VORBIS_BUILD_DIR = $(DEPS_BIN_DIR)/vorbis_build
-	VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
-	OPUS_BUILD_DIR = $(DEPS_BIN_DIR)/opus_build
-	OPUS = $(DEPS_BIN_DIR)/lib/pkgconfig/opus.pc
-	FLAC_BUILD_DIR = $(DEPS_BIN_DIR)/flac_build
-	FLAC = $(DEPS_BIN_DIR)/lib/pkgconfig/flac.pc
-endif
-ifeq ($(BUNDLED_LIBSNDFILE), 1)
-	LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
-	LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
-endif
 ifeq ($(BUNDLED_SDL), 1)
 	SDL_BUILD_DIR = $(DEPS_BIN_DIR)/sdl_build
 	SDL = $(DEPS_BIN_DIR)/lib/pkgconfig/sdl.pc
 	SDLNET_BUILD_DIR = $(DEPS_BIN_DIR)/sdl_net_build
 	SDLNET = $(DEPS_BIN_DIR)/lib/pkgconfig/SDL_net.pc
 endif
-LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
-LIBINSTPATCH = $(DEPS_BIN_DIR)/lib/pkgconfig/libinstpatch-1.0.pc
-FLUIDSYNTH_BUILD_DIR = $(DEPS_BIN_DIR)/fluidsynth_build
-FLUIDSYNTH = $(DEPS_BIN_DIR)/lib/pkgconfig/fluidsynth.pc
+ifeq ($(WITH_FLUIDSYNTH), 1)
+	ifeq ($(BUNDLED_AUDIO_CODECS), 1)
+		OGG_BUILD_DIR = $(DEPS_BIN_DIR)/ogg_build
+		OGG = $(DEPS_BIN_DIR)/lib/pkgconfig/ogg.pc
+		VORBIS_BUILD_DIR = $(DEPS_BIN_DIR)/vorbis_build
+		VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
+		OPUS_BUILD_DIR = $(DEPS_BIN_DIR)/opus_build
+		OPUS = $(DEPS_BIN_DIR)/lib/pkgconfig/opus.pc
+		FLAC_BUILD_DIR = $(DEPS_BIN_DIR)/flac_build
+		FLAC = $(DEPS_BIN_DIR)/lib/pkgconfig/flac.pc
+	endif
+	ifeq ($(BUNDLED_LIBSNDFILE), 1)
+		LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
+		LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
+	endif
+	LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
+	LIBINSTPATCH = $(DEPS_BIN_DIR)/lib/pkgconfig/libinstpatch-1.0.pc
+	FLUIDSYNTH_BUILD_DIR = $(DEPS_BIN_DIR)/fluidsynth_build
+	FLUIDSYNTH = $(DEPS_BIN_DIR)/lib/pkgconfig/fluidsynth.pc
+	EXTRA_PACKAGES += fluidsynth libinstpatch-1.0
+	COMMONFLAGS += -DWITH_FLUIDSYNTH=1
+endif
 MUNT_BUILD_DIR = $(DEPS_BIN_DIR)/munt_build
 MUNT = $(MUNT_BUILD_DIR)/libmt32emu.a
 export PKG_CONFIG_PATH := $(DEPS_BIN_DIR)/lib/pkgconfig:$(PKG_CONFIG_PATH)
@@ -355,7 +361,10 @@ endif
 include Makefile.common
 
 OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
-COMMONFLAGS += `$(PKGCONFIG) --cflags fluidsynth` -I$(MUNT_BUILD_DIR)/include
+INCFLAGS += -I$(MUNT_BUILD_DIR)/include
+ifeq ($(WITH_BASSMIDI), 1)
+	COMMONFLAGS += -DWITH_BASSMIDI=1
+endif
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 LDFLAGS += -lm $(fpic)
@@ -363,7 +372,11 @@ ifeq ($(STATIC_PACKAGES), 1)
 	LDFLAGS += -Wl,-Bstatic
 	PKG_CONFIG_FLAGS += --static
 endif
-LDFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs fluidsynth libinstpatch-1.0 $(EXTRA_PACKAGES)` -L$(MUNT_BUILD_DIR) -lmt32emu
+LDFLAGS += -L$(MUNT_BUILD_DIR) -lmt32emu
+ifdef EXTRA_PACKAGES
+	LDFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs $(EXTRA_PACKAGES)`
+	INCFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --cflags-only-I $(EXTRA_PACKAGES)`
+endif
 export CMAKE_GENERATOR
 
 # We append these flags here so they appear after all other flags, otherwise they might not work

@@ -935,10 +935,14 @@ void retro_init()
         if (fsynth_values.empty()) {
             fsynth_values.push_back({"none", "(no soundfonts found)"});
         }
+#ifdef WITH_BASSMIDI
         retro::core_options.option("bassmidi.soundfont")
             ->setValues(bass_values, bass_values.front());
+#endif
+#ifdef WITH_FLUIDSYNTH
         retro::core_options.option("fluid.soundfont")
             ->setValues(fsynth_values, fsynth_values.front());
+#endif
     }
 
     retro::core_options.setEnvironmentCallback(environ_cb);

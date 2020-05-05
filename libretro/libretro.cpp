@@ -569,6 +569,8 @@ static void check_variables()
         update_dosbox_variable(false, "dosbox", "machine", machine_type);
         update_dosbox_variable(false, "mixer", "blocksize", core_options["blocksize"].toString());
         update_dosbox_variable(false, "mixer", "prebuffer", core_options["prebuffer"].toString());
+        update_dosbox_variable(false, "pci", "voodoo", core_options["voodoo"].toString());
+        update_dosbox_variable(false, "pci", "voodoomem", core_options["voodoo_memory_size"].toString());
 
         mount_overlay = core_options["save_overlay"].toBool();
     } else {
@@ -668,6 +670,8 @@ static void check_variables()
             disney_init = disney_val == "on";
         }
     }
+
+    core_options.setVisible("voodoo_memory_size", core_options["voodoo"].toString() != "false");
 
     /* show cga options only if machine is cga and advanced options is enabled */
     core_options.setVisible(

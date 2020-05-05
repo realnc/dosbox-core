@@ -22,6 +22,7 @@ else ifeq ($(TARGET_ARCH_ABI), mips64)
 endif
 
 WITH_IPX := 1
+WITH_VOODOO := 1
 
 include $(CORE_DIR)/libretro/Makefile.common
 
@@ -44,7 +45,7 @@ SOURCES_C += \
 SOURCES_CXX +=\
 	$(CORE_DIR)/libretro/nonlibc/snprintf.cpp
 
-COMMONFLAGS += -D__LIBRETRO__ -DFRONTEND_SUPPORTS_RGB565 $(INCFLAGS) -DC_HAVE_MPROTECT="1" -DC_IPX
+COMMONFLAGS += -D__LIBRETRO__ -DFRONTEND_SUPPORTS_RGB565 $(INCFLAGS) -DC_HAVE_MPROTECT="1" -DC_IPX -DC_OPENGL
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 SVN_VERSION := " $(shell cat ../svn)"
@@ -63,8 +64,9 @@ LOCAL_SRC_FILES    := $(SOURCES_C) $(SOURCES_CXX)
 LOCAL_CFLAGS       := $(COMMONFLAGS)
 LOCAL_CPPFLAGS     := $(COMMONFLAGS)
 LOCAL_LDFLAGS      := -Wl,-version-script=$(CORE_DIR)/libretro/link.T
-LOCAL_LDLIBS       := -llog
+LOCAL_LDLIBS       := -llog -lGLESv2
 LOCAL_CPP_FEATURES := rtti exceptions
-LOCAL_DISABLE_FATAL_LINKER_WARNINGS := true
 LOCAL_ARM_MODE     := arm
+LOCAL_DISABLE_FATAL_LINKER_WARNINGS := true
+
 include $(BUILD_SHARED_LIBRARY)

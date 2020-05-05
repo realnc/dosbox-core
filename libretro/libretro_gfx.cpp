@@ -72,3 +72,31 @@ void GFX_Events()
 { }
 void GFX_SetPalette(Bitu /*start*/, Bitu /*count*/, GFX_PalEntry* /*entries*/)
 { }
+
+auto GFX_LazyFullscreenRequested() -> bool
+{
+    return false;
+}
+
+void GFX_TearDown()
+{ }
+
+auto GFX_IsFullscreen() -> bool
+{
+    return false;
+}
+
+void GFX_UpdateSDLCaptureState()
+{ }
+
+void GFX_RestoreMode()
+{ }
+
+void GFX_SwitchLazyFullscreen(bool /*lazy*/)
+{ }
+
+void GFX_SwitchFullscreenNoReset()
+{ }
+
+void GFX_SetShader(const char* /*src*/)
+{ }

@@ -94,10 +94,13 @@ endif
 # enable IPX
 ifeq ($(platform),win)
 	WITH_IPX := 1
+	WITH_VOODOO ?= 1
 else ifeq ($(platform),unix)
 	WITH_IPX := 1
+	WITH_VOODOO ?= 1
 else ifeq ($(platform),osx)
 	WITH_IPX := 1
+	WITH_VOODOO ?= 1
 endif
 
 # arm
@@ -274,7 +277,7 @@ else ifeq ($(platform), win)
 		LDFLAGS += -Wl,-Bstatic
 	else
 		LDFLAGS += -Wl,-Bstatic `$(cross_prefix)sdl-config --static-libs` -lSDL_net
-		LDFLAGS += -Wl,-Bdynamic -liphlpapi -lws2_32
+		LDFLAGS += -Wl,-Bdynamic -liphlpapi -lws2_32 -lopengl32
 	endif
 	COMMONFLAGS += -DWIN32=1 -D__USE_W32_SOCKETS -Werror=return-type
 else
@@ -309,6 +312,9 @@ else
 	COMMONFLAGS += `$(PKGCONFIG) --cflags sdl`
 	ifeq ($(WITH_IPX), 1)
 		COMMONFLAGS += -DC_IPX
+	endif
+	ifeq ($(WITH_VOODOO), 1)
+		COMMONFLAGS += -DC_OPENGL=1 -DWITH_VOODOO=1
 	endif
 endif
 

@@ -79,7 +79,9 @@ See `Makefile.libretro` for which make variables to set to disable the bundled
 libraries and use system-installed libraries instead.
 
 The only dependencies that are not bundled are glib and alsa-lib, the latter
-only being needed on Linux.
+only being needed on Linux. For a Windows build you need the dlfnc library,
+otherwise you'll get a link error if BASSMIDI support is enabled. dlfcn is
+available as a package in both MXE as well as MSYS2.
 
 Note that the bundled dependencies are provided in the form of git submodules,
 so prior to building the core, you should first perform a:

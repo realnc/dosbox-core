@@ -355,16 +355,13 @@ ifdef TARGET_TRIPLET
 	export PKG_CONFIG_PATH_$(subst .,_,$(subst -,_,$(TARGET_TRIPLET))) = $(PKG_CONFIG_PATH)
 endif
 
-ifeq ($(platform), win)
-	EXTRA_PACKAGES += dlfcn
-endif
-
 include Makefile.common
 
 OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 INCFLAGS += -I$(MUNT_BUILD_DIR)/include
 ifeq ($(WITH_BASSMIDI), 1)
 	COMMONFLAGS += -DWITH_BASSMIDI=1
+	LDFLAGS += -ldl
 endif
 CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)

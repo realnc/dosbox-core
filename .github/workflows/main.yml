@@ -35,7 +35,17 @@ jobs:
             add-apt-repository ppa:ubuntu-toolchain-r/test
             add-apt-repository ppa:janisozaur/cmake-update
             apt-get update
-            apt-get install -y build-essential gcc-9 g++-9 cmake ninja-build git libasound2-dev libglib2.0-dev
+            apt-get install -y \
+                build-essential \
+                cmake \
+                g++-9 \
+                gcc-9 \
+                git \
+                libasound2-dev \
+                libglib2.0-dev \
+                libglu1-mesa-dev \
+                mesa-common-dev \
+                ninja-build
             export CC=gcc-9
             export CXX=g++-9
             export platform=unix
@@ -75,6 +85,8 @@ jobs:
       run: sudo apt-get install
         libasound2-dev
         libglib2.0-dev
+        libglu1-mesa-dev
+        mesa-common-dev
         ninja-build
 
     - uses: actions/checkout@v2

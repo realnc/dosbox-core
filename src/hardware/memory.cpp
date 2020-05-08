@@ -25,6 +25,7 @@
 #include "regs.h"
 
 #include "voodoo.h"
+#include "pci_bus.h"
 
 #include <string.h>
 
@@ -142,8 +143,10 @@ PageHandler * MEM_GetPageHandler(Bitu phys_page) {
 	} else if ((phys_page>=memory.lfb.start_page+0x01000000/4096) &&
 				(phys_page<memory.lfb.start_page+0x01000000/4096+16)) {
 		return memory.lfb.mmiohandler;
+#ifdef PCI_FUNCTIONALITY_ENABLED
 	} else if (VOODOO_PCI_CheckLFBPage(phys_page)) {
 		return VOODOO_GetPageHandler();
+#endif
 	}
 	return &illegal_page_handler;
 }

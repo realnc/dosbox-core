@@ -19,7 +19,9 @@
 #ifndef DOSBOX_PCI_H
 #define DOSBOX_PCI_H
 
+#ifdef WITH_VOODOO
 #define PCI_FUNCTIONALITY_ENABLED 1
+#endif
 
 #if defined PCI_FUNCTIONALITY_ENABLED
 

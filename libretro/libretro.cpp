@@ -570,7 +570,8 @@ static void check_variables()
         update_dosbox_variable(false, "mixer", "blocksize", core_options["blocksize"].toString());
         update_dosbox_variable(false, "mixer", "prebuffer", core_options["prebuffer"].toString());
         update_dosbox_variable(false, "pci", "voodoo", core_options["voodoo"].toString());
-        update_dosbox_variable(false, "pci", "voodoomem", core_options["voodoo_memory_size"].toString());
+        update_dosbox_variable(
+            false, "pci", "voodoomem", core_options["voodoo_memory_size"].toString());
 
         mount_overlay = core_options["save_overlay"].toBool();
     } else {

@@ -314,7 +314,7 @@ else
 		COMMONFLAGS += -DC_IPX
 	endif
 	ifeq ($(WITH_VOODOO), 1)
-		COMMONFLAGS += -DC_OPENGL=1 -DWITH_VOODOO=1
+		COMMONFLAGS += -DWITH_VOODOO=1
 	endif
 endif
 

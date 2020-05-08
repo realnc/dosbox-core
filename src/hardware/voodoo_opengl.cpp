@@ -1835,7 +1835,7 @@ bool voodoo_ogl_init(voodoo_state *v) {
 	return false;
 }
 
-void voodoo_ogl_leave(void) {
+void voodoo_ogl_leave(bool leavemode) {
 }
 
 void voodoo_ogl_shutdown(voodoo_state *v) {
@@ -1851,6 +1851,10 @@ void voodoo_ogl_swap_buffer(void) {
 
 void voodoo_ogl_vblank_flush(void) {
 	E_Exit("invalid call to voodoo_ogl_vblank_flush");
+}
+
+void voodoo_ogl_update_dimensions(void) {
+	E_Exit("invalid call to voodoo_ogl_update_dimensions");
 }
 
 void voodoo_ogl_clear(void) {
@@ -1877,7 +1881,7 @@ void voodoo_ogl_draw_pixel(int x, int y, bool has_rgb, bool has_alpha, int r, in
 	E_Exit("invalid call to voodoo_ogl_draw_pixel");
 }
 
-void voodoo_ogl_draw_z(int x, int y, int z1, int z2) {
+void voodoo_ogl_draw_z(int x, int y, int z1) {
 	E_Exit("invalid call to voodoo_ogl_draw_z");
 }
 

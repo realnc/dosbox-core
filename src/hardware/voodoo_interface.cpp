@@ -213,7 +213,7 @@ static void Voodoo_UpdateScreen(void) {
 		if (v->ogl) {
 			v->ogl_dimchange = false;
 		} else {
-			RENDER_SetSize(v->fbi.width, v->fbi.height, 16, vdraw.vfreq, 4.0/3.0, false, false);
+			RENDER_SetSize(v->fbi.width, v->fbi.height, 16, 1000.0f / vdraw.vfreq, 4.0/3.0, false, false);
 		}
 
 		Voodoo_VerticalTimer(0);

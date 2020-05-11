@@ -3,16 +3,23 @@
 
 namespace retro {
 
-void CoreOptionDefinition::setValues(
-    std::vector<CoreOptionValue> values, const CoreOptionValue& default_value)
+void CoreOptionDefinition::setDefaultValue(const CoreOptionValue& default_value) noexcept
 {
-    for (size_t i = 0; i < values.size(); ++i) {
-        if (values[i] == default_value) {
+    for (size_t i = 0; i < values_.size(); ++i) {
+        if (values_[i] == default_value) {
             default_value_index_ = i;
             break;
         }
     }
-    values_ = std::move(values);
+    // TODO: log
+}
+
+auto CoreOptionDefinition::clearValues() noexcept -> std::vector<CoreOptionValue>
+{
+    auto ret = std::move(values_);
+    values_.clear();
+    default_value_index_ = 0;
+    return ret;
 }
 
 } // namespace retro

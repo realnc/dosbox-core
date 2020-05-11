@@ -141,6 +141,13 @@ public:
     void setVisible(
         std::initializer_list<const std::string_view> keys, bool visible) const noexcept;
 
+    /* Change the current value of the specified option. Note that the libretro API does not
+     * actually provide a proper way to do this, so we instead rely on the frontend to correctly
+     * re-apply changed option values. Works in RetroArch, but other frontends might not be as
+     * well-behaved and thus this might not work.
+     */
+    void setCurrentValue(std::string_view key, const CoreOptionValue& value);
+
 private:
     std::vector<CoreOptionDefinition> options_;
     std::map<std::string, CoreOptionDefinition*, std::less<>> options_map_;

@@ -73,6 +73,23 @@ void CoreOptions::setVisible(
     }
 }
 
+void CoreOptions::setCurrentValue(std::string_view key, const CoreOptionValue& value)
+{
+    auto* option = this->option(key);
+    if (!option) {
+        return;
+    }
+
+    auto default_value = option->defaultValue();
+    auto values = option->clearValues();
+    option->setValues({"_bogus_"}, "_bogus_");
+    updateFrontend();
+    option->setValues(values, value);
+    updateFrontend();
+    option->setDefaultValue(default_value);
+    updateFrontend();
+}
+
 void CoreOptions::updateRetroOptions()
 {
     retro_options_.clear();

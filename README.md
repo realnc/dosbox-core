@@ -24,6 +24,12 @@ The core provides some improvements over the DOSBox-SVN core:
   - Using [BASSMIDI](https://www.un4seen.com), a MIDI software synthesizer that
     supports SF2/SFZ soundfonts.
 
+* Experimental 3dfx Voodoo/Voodoo2 support.  
+  This is based on a [patch by kekko](https://www.vogons.org/viewtopic.php?t=41853),
+  which in turn is based on MAME code. Currently, only software-based emulation
+  is provided and as a result it is very slow. Most games will probably not be
+  able to run at full speed yet.
+
 * Other general, under-the-hood improvements and bugfixes.
 
 DOSBox-core was originally based on the https://github.com/libretro/dosbox-svn

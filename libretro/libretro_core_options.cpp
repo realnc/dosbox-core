@@ -183,7 +183,7 @@ retro::CoreOptions retro::core_options {
         #ifdef WITH_VOODOO
         {
             "voodoo",
-            "System: 3dfx Voodoo/Voodoo2 emulation (restart)",
+            "System: 3dfx Voodoo emulation (restart)",
             "This emulates the actual 3dfx hardware. This is not a glide emulator and as a result "
                 "a glide wrapper is neither needed nor supported.\n"
                 "Only slow (VERY slow), software-based emulation is supported at the moment. It is "
@@ -201,10 +201,11 @@ retro::CoreOptions retro::core_options {
         {
             "voodoo_memory_size",
             "System: Voodoo memory size (restart)",
-            "The amount of memory that the emulated Voodoo card has.",
+            "The amount of memory that the emulated Voodoo card has. 4MB is the standard memory "
+                "configuration for the original Voodoo. 12MB is a non-standard configuration.",
             {
-                { "standard", "4MB (Voodoo)" },
-                { "max", "12MB (Voodoo2)" },
+                { "standard", "4MB" },
+                { "max", "12MB" },
             },
             "standard"
         },

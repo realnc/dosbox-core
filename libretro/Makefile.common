@@ -146,15 +146,16 @@ SOURCES_CXX += \
 	$(CORE_DIR)/src/hardware/mame/sn76496.cpp \
 	$(CORE_DIR)/src/hardware/mame/ymf262.cpp
 
+ifeq ($(WITH_VOODOO), 1)
+	SOURCES_CXX += \
+		$(CORE_DIR)/src/hardware/voodoo.cpp \
+		$(CORE_DIR)/src/hardware/voodoo_emu.cpp \
+		$(CORE_DIR)/src/hardware/voodoo_interface.cpp \
+		$(CORE_DIR)/src/hardware/voodoo_opengl.cpp \
+		$(CORE_DIR)/src/hardware/voodoo_vogl.cpp
+endif
+
 ifneq ($(WITH_FAKE_SDL), 1)
-	ifeq ($(WITH_VOODOO), 1)
-		SOURCES_CXX += \
-			$(CORE_DIR)/src/hardware/voodoo.cpp \
-			$(CORE_DIR)/src/hardware/voodoo_emu.cpp \
-			$(CORE_DIR)/src/hardware/voodoo_interface.cpp \
-			$(CORE_DIR)/src/hardware/voodoo_opengl.cpp \
-			$(CORE_DIR)/src/hardware/voodoo_vogl.cpp
-	endif
 	ifeq ($(WITH_IPX), 1)
 	SOURCES_CXX += \
 		$(CORE_DIR)/src/hardware/ipx.cpp \

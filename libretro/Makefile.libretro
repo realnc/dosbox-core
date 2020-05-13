@@ -1,4 +1,6 @@
 DEBUG := 0
+# Build with 3dfx Voodoo emulation support
+WITH_VOODOO ?= 1
 # Link statically against libgcc_s and libstdc++.
 STATIC_LIBCXX ?= 0
 # Build and link our own bundled ogg, flac, etc. statically.
@@ -94,13 +96,10 @@ endif
 # enable IPX
 ifeq ($(platform),win)
 	WITH_IPX := 1
-	WITH_VOODOO ?= 1
 else ifeq ($(platform),unix)
 	WITH_IPX := 1
-	WITH_VOODOO ?= 1
 else ifeq ($(platform),osx)
 	WITH_IPX := 1
-	WITH_VOODOO ?= 1
 endif
 
 # arm
@@ -313,9 +312,10 @@ else
 	ifeq ($(WITH_IPX), 1)
 		COMMONFLAGS += -DC_IPX
 	endif
-	ifeq ($(WITH_VOODOO), 1)
-		COMMONFLAGS += -DWITH_VOODOO=1
-	endif
+endif
+
+ifeq ($(WITH_VOODOO), 1)
+	COMMONFLAGS += -DWITH_VOODOO=1
 endif
 
 CORE_DIR := ..

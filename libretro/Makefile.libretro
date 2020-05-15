@@ -179,9 +179,11 @@ else ifeq ($(platform), psp1)
 	STATIC_LINKING = 1
 else ifeq ($(platform), vita)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).a
-	CC = arm-vita-eabi-gcc$(EXE_EXT)
-	CXX = arm-vita-eabi-g++$(EXE_EXT)
-	AR = arm-vita-eabi-ar$(EXE_EXT)
+	CC ?= arm-vita-eabi-gcc
+	CXX ?= arm-vita-eabi-g++
+	AR ?= arm-vita-eabi-ar
+	WITH_BASSMIDI = 0
+	WITH_FLUIDSYNTH = 0
 	WITH_DYNAREC = arm
 	WITH_FAKE_SDL = 1
 	COMMONFLAGS += -DVITA -DWORDS_BIGENDIAN

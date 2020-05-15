@@ -181,6 +181,11 @@ ifeq ($(WITH_FLUIDSYNTH), 1)
 	SOURCES_CXX += $(CORE_DIR)/libretro/midi_fluidsynth.cpp
 endif
 
+ifeq ($(platform), vita)
+	SOURCES_CXX += \
+		$(CORE_DIR)/libretro/psvita.cpp
+endif
+
 SOURCES_C := \
 	$(LIBRETRO_COMM_DIR)/encodings/encoding_utf.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c \

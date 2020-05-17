@@ -745,7 +745,7 @@ download_github_macos:
 	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/macOS-x64.zip'
 	unzip macOS-x64.zip
 
-.PHONY: download_github_macos
+.PHONY: download_github_armhf
 download_github_armhf:
 	rm -f linux-armhf.zip
 	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/linux-armhf.zip'

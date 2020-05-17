@@ -38,7 +38,7 @@
 #include "emu_thread.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
-extern retro_log_printf_t log_cb;
+#include "log.h"
 #endif
 
 void upcase(std::string &str) {
@@ -196,10 +196,7 @@ void E_Exit(const char * format,...) {
 	//strcat(buf,"\n"); catcher should handle the end of line.. 
 
 #ifdef __LIBRETRO__
-	if (log_cb) {
-		const std::string msg_str = std::string(buf) + '\n';
-		log_cb(RETRO_LOG_ERROR, msg_str.c_str());
-	}
+	retro::logError("{}", buf);
 	dosbox_exit = true;
 	switchThread();
 	throw EmuThreadCanceled();

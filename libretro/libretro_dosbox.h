@@ -5,12 +5,9 @@
 #include <filesystem>
 #include <string>
 
-#define RETROLOG(msg) printf("%s\n", msg)
-
 extern retro_input_poll_t poll_cb;
 extern retro_input_state_t input_cb;
 extern retro_environment_t environ_cb;
-extern retro_log_printf_t log_cb;
 extern bool run_synced;
 extern float dosbox_aspect_ratio;
 extern Bit8u dosbox_framebuffers[2][1024 * 768 * 4];

@@ -4,6 +4,7 @@
 #include "keyboard.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
+#include "log.h"
 #include "mapper.h"
 #include "mouse.h"
 #include <memory>
@@ -561,7 +562,7 @@ void MAPPER_Init()
     auto addToRetroDesc = [&](const auto& input_desc_list) {
         for (const auto& desc : input_desc_list) {
             retro_desc.push_back(desc);
-            log_cb(RETRO_LOG_INFO, "Map: %s.\n", desc.description);
+            retro::logDebug("Map: {}.", desc.description);
         }
     };
 
@@ -569,17 +570,17 @@ void MAPPER_Init()
     JOYSTICK_Enable(1, true);
 
     if (connected[0] && connected[1]) {
-        log_cb(RETRO_LOG_INFO, "Both ports connected, deferring to two axis, two button pads.\n");
+        retro::logDebug("Both ports connected, deferring to two axis, two button pads.");
         update_dosbox_variable(false, "joystick", "joysticktype", "2axis");
         joytype = JOY_2AXIS;
         for (int port = 0; port < 2; ++port) {
-            log_cb(RETRO_LOG_INFO, "Port %i connected.\n", port);
+            retro::logDebug("Port {} connected.", port);
             if (gamepad[port]) {
-                log_cb(RETRO_LOG_INFO, "Port %i gamepad.\n", port);
+                retro::logDebug("Port {} gamepad.", port);
                 addDpad(port);
                 addToRetroDesc(make2buttonGamepadDescArray(port));
             } else {
-                log_cb(RETRO_LOG_INFO, "Port %i joystick.\n", port);
+                retro::logDebug("Port {} joystick.", port);
                 add2Axes(port);
                 addToRetroDesc(make2buttonJoystickDescArray(port));
             }
@@ -590,17 +591,17 @@ void MAPPER_Init()
             }
         }
     } else if (connected[0] || connected[1]) {
-        log_cb(RETRO_LOG_INFO, "One port connected, enabling 4 buttons in connected port.\n");
+        retro::logDebug("One port connected, enabling 4 buttons in connected port.");
         const int port = connected[0] ? 0 : 1;
         joytype = port == 0 ? JOY_4AXIS : JOY_4AXIS_2;
         update_dosbox_variable(false, "joystick", "joysticktype", port == 0 ? "4axis" : "4axis_2");
-        log_cb(RETRO_LOG_INFO, "Port %i connected.\n", port);
+        retro::logDebug("Port {} connected.", port);
         if (gamepad[port]) {
-            log_cb(RETRO_LOG_INFO, "Port %i gamepad.\n", port);
+            retro::logDebug("Port {} gamepad.", port);
             addDpad(port);
             addToRetroDesc(make4buttonGamepadDescArray(port));
         } else {
-            log_cb(RETRO_LOG_INFO, "Port %i joystick.\n", port);
+            retro::logDebug("Port {} joystick.", port);
             add4Axes(port);
             addToRetroDesc(make4buttonJoystickDescArray(port));
         }

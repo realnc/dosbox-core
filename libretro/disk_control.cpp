@@ -7,6 +7,7 @@
 #include "dos_inc.h"
 #include "dosbox.h"
 #include "libretro_dosbox.h"
+#include "log.h"
 #include "util.h"
 #include <memory>
 #include <vector>
@@ -41,7 +42,7 @@ static RETRO_CALLCONV auto get_image_index() -> unsigned int
 static RETRO_CALLCONV auto set_eject_state(const bool ejected) -> bool
 {
     state::is_ejected = ejected;
-    log_cb(RETRO_LOG_INFO, "[dosbox] Tray %s\n", ejected ? "open" : "close");
+    retro::logDebug("Tray {}.", ejected ? "open" : "close");
     if (get_num_images() == 0) {
         return true;
     }
@@ -58,14 +59,14 @@ static RETRO_CALLCONV auto set_image_index(const unsigned int index) -> bool
     }
 
     state::current_index = index;
-    log_cb(RETRO_LOG_INFO, "[dosbox] Disk index %u\n", index);
+    retro::logDebug("Disk index {}.", index);
     return true;
 }
 
 static RETRO_CALLCONV auto add_image_index() -> bool
 {
     state::images.emplace_back();
-    log_cb(RETRO_LOG_INFO, "[dosbox] Disk count %u\n", get_num_images());
+    retro::logDebug("Disk count {}.", get_num_images());
     return true;
 }
 
@@ -73,8 +74,7 @@ static RETRO_CALLCONV auto replace_image_index(
     const unsigned int index, const retro_game_info* const info) -> bool
 {
     if (index >= get_num_images()) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] Frontend tried to replace invalid disk index %u.\n", index);
+        retro::logWarn("Frontend tried to replace invalid disk index {}.", index);
         return false;
     }
 
@@ -134,21 +134,19 @@ static auto mount_floppy_image(const char drive_letter, const std::filesystem::p
 
     try {
         if (std::filesystem::file_size(path) > 2880 * 1024) {
-            log_cb(RETRO_LOG_WARN, "[dosbox] Mounting HDD images is currently not supported.\n");
+            retro::logError("Mounting HDD images is currently not supported.");
             return false;
         }
     }
     catch (const std::exception& e) {
-        log_cb(RETRO_LOG_WARN, "[dosbox] Failed to detect image file size: %s.\n", e.what());
+        retro::logError("Failed to detect image file size: {}.", e.what());
         return false;
     }
 
     // Geometry of floppy images is auto-detected so just pass zeros.
     auto floppy = std::make_unique<fatDrive>(path.string().c_str(), 0, 0, 0, 0, 0);
     if (!floppy.get()->created_successfully) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] Failed to mount drive %c as %s.\n", drive_letter,
-            path.string().c_str());
+        retro::logError("Failed to mount drive {} as {}.", drive_letter, path);
         return false;
     }
 
@@ -158,9 +156,7 @@ static auto mount_floppy_image(const char drive_letter, const std::filesystem::p
     mem_writeb(Real2Phys(dos.tables.mediaid) + (drive_letter - 'A') * 9, media_id);
     // Command uses dta so set it to our internal dta.
     dos.dta(dos.tables.tempdta);
-    log_cb(
-        RETRO_LOG_INFO, "[dosbox] Drive %c is mounted as %s.\n", drive_letter,
-        path.string().c_str());
+    retro::logDebug("Drive {} is mounted as {}.", drive_letter, path);
     return true;
 }
 
@@ -177,31 +173,31 @@ static auto mount_cd_image(const char drive_letter, const std::filesystem::path&
         break;
 
     case 1:
-        log_cb(RETRO_LOG_WARN, "[dosbox] %s\n", MSG_Get("MSCDEX_ERROR_MULTIPLE_CDROMS"));
+        retro::logError("{}", MSG_Get("MSCDEX_ERROR_MULTIPLE_CDROMS"));
         return false;
 
     case 2:
-        log_cb(RETRO_LOG_WARN, "[dosbox] %s\n", MSG_Get("MSCDEX_ERROR_NOT_SUPPORTED"));
+        retro::logError("{}", MSG_Get("MSCDEX_ERROR_NOT_SUPPORTED"));
         return false;
 
     case 3:
-        log_cb(RETRO_LOG_WARN, "[dosbox] %s\n", MSG_Get("MSCDEX_ERROR_OPEN"));
+        retro::logError("{}", MSG_Get("MSCDEX_ERROR_OPEN"));
         return false;
 
     case 4:
-        log_cb(RETRO_LOG_WARN, "[dosbox] %s\n", MSG_Get("MSCDEX_TOO_MANY_DRIVES"));
+        retro::logError("{}", MSG_Get("MSCDEX_TOO_MANY_DRIVES"));
         return false;
 
     case 5:
-        log_cb(RETRO_LOG_WARN, "[dosbox] %s\n", MSG_Get("MSCDEX_LIMITED_SUPPORT"));
+        retro::logError("{}", MSG_Get("MSCDEX_LIMITED_SUPPORT"));
         return false;
 
     case 6:
-        log_cb(RETRO_LOG_WARN, "[dosbox] %s\n", MSG_Get("MSCDEX_INVALID_FILEFORMAT"));
+        retro::logError("{}", MSG_Get("MSCDEX_INVALID_FILEFORMAT"));
         return false;
 
     default:
-        log_cb(RETRO_LOG_WARN, "[dosbox] %s\n", MSG_Get("MSCDEX_UNKNOWN_ERROR"));
+        retro::logError("{}", MSG_Get("MSCDEX_UNKNOWN_ERROR"));
         return false;
     }
 
@@ -215,7 +211,7 @@ static auto mount_cd_image(const char drive_letter, const std::filesystem::path&
 auto disk_control::mount(std::filesystem::path image) -> bool
 {
     if (control->SecureMode()) {
-        log_cb(RETRO_LOG_WARN, "[dosbox] This operation is not permitted in secure mode\n");
+        retro::logError("Mounting is not permitted in secure mode.");
         return false;
     }
 
@@ -224,17 +220,15 @@ auto disk_control::mount(std::filesystem::path image) -> bool
     char drive_letter;
 
     if (extension == ".img") {
-        log_cb(RETRO_LOG_INFO, "[dosbox] Mounting disk as floppy %s\n", image.string().c_str());
+        retro::logDebug("Mounting disk as floppy {}.", image);
         drive_letter = 'A';
         mounted_ok = mount_floppy_image(drive_letter, image);
     } else if (extension == ".iso" || extension == ".cue") {
-        log_cb(RETRO_LOG_INFO, "[dosbox] Mounting disk as cdrom %s\n", image.string().c_str());
+        retro::logDebug("Mounting disk as cdrom {}.", image);
         drive_letter = 'D';
         mounted_ok = mount_cd_image(drive_letter, image);
     } else {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] Unsupported disk image\n %s",
-            image.extension().string().c_str());
+        retro::logError("Unsupported disk image {}.", image.extension());
         return false;
     }
 
@@ -248,9 +242,7 @@ auto disk_control::mount(std::filesystem::path image) -> bool
         }
     }
     DriveManager::CycleDisks(drive_letter - 'A', true);
-    log_cb(
-        RETRO_LOG_INFO, "[dosbox] Drive %c is mounted as %s.\n", drive_letter,
-        image.string().c_str());
+    retro::logDebug("Drive {} is mounted as {}.", drive_letter, image);
     if (cb::get_num_images() == 0) {
         cb::add_image_index();
         state::images.at(0) = std::move(image);
@@ -263,20 +255,18 @@ static auto unmount(const std::filesystem::path& path) -> bool
     char drive_letter;
 
     if (cb::get_num_images() == 0) {
-        log_cb(RETRO_LOG_WARN, "[dosbox] No disks added to index.\n");
+        retro::logWarn("No disks added to index.");
         return false;
     }
 
     if (const auto extension = lower_case(path.extension().string()); extension == ".img") {
-        log_cb(RETRO_LOG_INFO, "[dosbox] Unmounting floppy %s.\n", path.string().c_str());
+        retro::logDebug("Unmounting floppy {}.", path);
         drive_letter = 'A';
     } else if (extension == ".iso" || extension == ".cue") {
-        log_cb(RETRO_LOG_INFO, "[dosbox] Umounting cdrom %s.\n", path.string().c_str());
+        retro::logDebug("Umounting cdrom {}.", path);
         drive_letter = 'D';
     } else {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] Unsupported disk image.\n %s",
-            path.extension().string().c_str());
+        retro::logError("Unsupported disk image {}.", path.extension());
         return false;
     }
 

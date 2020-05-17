@@ -3,6 +3,7 @@
 
 #include "control.h"
 #include "libretro_dosbox.h"
+#include "log.h"
 #include "setup.h"
 #include <clocale>
 #include <string_view>
@@ -90,9 +91,7 @@ auto MidiHandlerFluidsynth::Open(const char* const /*conf*/) -> bool
             return std::stod(section->Get_string(propname));
         }
         catch (const std::exception& e) {
-            log_cb(
-                RETRO_LOG_WARN, "[dosbox] error reading floating point '%s' conf setting: %s\n",
-                e.what());
+            retro::logError("Error reading floating point '{}' conf setting: {}.", e.what());
             return 0.0;
         }
     };
@@ -119,13 +118,19 @@ auto MidiHandlerFluidsynth::Open(const char* const /*conf*/) -> bool
 
     fsynth_ptr_t synth(new_fluid_synth(settings.get()), delete_fluid_synth);
     if (!synth) {
-        log_cb(RETRO_LOG_WARN, "[dosbox] Error creating fluidsynth synthesiser\n");
+        retro::logError("Error creating fluidsynth synthesiser.");
         return false;
     }
 
-    std::string_view soundfont = section->Get_string("fluid.soundfont");
-    if (!soundfont.empty() && fluid_synth_sfcount(synth.get()) == 0) {
-        fluid_synth_sfload(synth.get(), soundfont.data(), true);
+    if (std::string_view soundfont = section->Get_string("fluid.soundfont"); !soundfont.empty()) {
+        if (fluid_synth_sfcount(synth.get()) > 0) {
+            retro::logDebug("Fluidsynth soundfont already loaded. Not loading another one.");
+        } else {
+            retro::logDebug("Loading fluidsynth soundfont: {}.", soundfont);
+            if (fluid_synth_sfload(synth.get(), soundfont.data(), true) == FLUID_FAILED) {
+                retro::logError("Failed to load fluidsynth soundfont.");
+            }
+        }
     }
 
     MixerChannel_ptr_t channel(
@@ -191,7 +196,7 @@ void MidiHandlerFluidsynth::PlayMsg(Bit8u* const msg)
         static_assert(sizeof(tmp) == sizeof(DB_Midi::rt_buf));
         static_assert(sizeof(tmp) == sizeof(DB_Midi::cmd_buf));
         memcpy(&tmp, msg, sizeof(tmp));
-        log_cb(RETRO_LOG_WARN, "[dosbox] fluidsynth: unknown MIDI command: %08lx", tmp);
+        retro::logError("Unknown MIDI command: {:08x}.", tmp);
         break;
     }
     }

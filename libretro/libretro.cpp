@@ -11,6 +11,7 @@
 #include "ints/int10.h"
 #include "joystick.h"
 #include "libretro_dosbox.h"
+#include "log.h"
 #include "mapper.h"
 #include "midi_alsa.h"
 #include "midi_win32.h"
@@ -86,7 +87,6 @@ static retro_audio_sample_batch_t audio_batch_cb;
 retro_input_poll_t poll_cb;
 retro_input_state_t input_cb;
 retro_environment_t environ_cb;
-retro_log_printf_t log_cb;
 
 /* DOSBox state */
 static std::filesystem::path game_path;
@@ -184,14 +184,10 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
         path_str += std::filesystem::path::preferred_separator;
     }
 
-    if (log_cb) {
-        log_cb(RETRO_LOG_INFO, "[dosbox] mounting %s in %c as overlay\n", path_str.c_str(), drive);
-    }
+    retro::logDebug("Mounting {} in {} as overlay.", path_str, drive);
 
     if (!Drives[drive - 'A']) {
-        if (log_cb) {
-            log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not mounted\n", drive);
-        }
+        retro::logError("Base drive {} is not mounted.", drive);
         write_out("No basedrive mounted yet!");
         return;
     }
@@ -200,24 +196,16 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
     if (!base_drive || dynamic_cast<cdromDrive*>(base_drive)
         || dynamic_cast<Overlay_Drive*>(base_drive))
     {
-        if (log_cb) {
-            log_cb(RETRO_LOG_INFO, "[dosbox] base drive %c is not compatible\n", drive);
-        }
+        retro::logError("Base drive {} is not compatible.", drive);
         return;
     }
 
-    if (log_cb) {
-        log_cb(RETRO_LOG_INFO, "[dosbox] creating save directory %s\n", path_str.c_str());
-    }
+    retro::logDebug("Creating save directory {}.", path_str);
     try {
         std::filesystem::create_directories(path);
     }
     catch (const std::exception& e) {
-        if (log_cb) {
-            log_cb(
-                RETRO_LOG_ERROR, "[dosbox] error creating overlay directory %s: %s\n",
-                path_str.c_str(), e.what());
-        }
+        retro::logError("Error creating overlay directory {}: {}.", path_str, e.what());
         return;
     }
 
@@ -232,13 +220,13 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
     auto overlay = std::make_unique<Overlay_Drive>(
         base_drive->getBasedir(), path_str.c_str(), bytes_per_sector, sectors_per_cluster,
         total_clusters, free_clusters, 0xF8, o_error);
-    if (o_error) {
-        if (o_error == 1 && log_cb) {
-            log_cb(RETRO_LOG_INFO, "[dosbox] can't mix absolute and relative paths");
-        } else if (o_error == 2 && log_cb) {
-            log_cb(RETRO_LOG_INFO, "[dosbox] overlay can't be in the same underlying file system");
-        } else if (log_cb) {
-            log_cb(RETRO_LOG_INFO, "[dosbox] something went wrong");
+    if (o_error != 0) {
+        if (o_error == 1) {
+            retro::logError("Can't mix absolute and relative paths.");
+        } else if (o_error == 2) {
+            retro::logError("Overlay can't be in the same underlying file system.");
+        } else {
+            retro::logError("Aomething went wrong while mounting overlay. error code: {}", o_error);
         }
         return;
     }
@@ -287,9 +275,7 @@ auto update_dosbox_variable(
             section->ExecuteInit(false);
         }
     }
-    log_cb(
-        RETRO_LOG_INFO, "[dosbox] variable %s::%s updated\n", section_string.c_str(),
-        var_string.c_str(), val_string.c_str());
+    retro::logDebug("Variable {}::{} updated to {}.", section_string, var_string, val_string);
     return ret;
 }
 
@@ -320,21 +306,20 @@ static void update_gfx_mode(const bool change_fps)
         new_av_info.timing.fps = new_fps;
         new_av_info.timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
         cb_error = !environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
-        if (cb_error && log_cb) {
-            log_cb(RETRO_LOG_WARN, "[dosbox] SET_SYSTEM_AV_INFO failed\n");
+        if (cb_error) {
+            retro::logError("SET_SYSTEM_AV_INFO failed.");
         }
         currentFPS = new_fps;
     } else {
         cb_error = !environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
-        if (cb_error && log_cb) {
-            log_cb(RETRO_LOG_WARN, "[dosbox] SET_GEOMETRY failed\n");
+        if (cb_error) {
+            retro::logError("SET_GEOMETRY failed.");
         }
     }
 
-    if (!cb_error && log_cb) {
-        log_cb(
-            RETRO_LOG_INFO,
-            "[dosbox] resolution changed %dx%d @ %.3fHz AR: %.5f => %dx%d @ %.3fHz AR: %.5f\n",
+    if (!cb_error) {
+        retro::logInfo(
+            "Resolution changed {}x{} @ {:.3}Hz AR: {:.5} => {}x{} @ {:.3}Hz AR: {:.5}.",
             currentWidth, currentHeight, old_fps, current_aspect_ratio, RDOSGFXwidth, RDOSGFXheight,
             currentFPS, dosbox_aspect_ratio);
     }
@@ -635,11 +620,8 @@ static void check_variables()
             if (use_retro_midi && !have_retro_midi) {
                 have_retro_midi =
                     environ_cb(RETRO_ENVIRONMENT_GET_MIDI_INTERFACE, &retro_midi_interface);
-                if (log_cb) {
-                    log_cb(
-                        RETRO_LOG_INFO, "[dosbox] libretro MIDI interface %s.\n",
-                        have_retro_midi ? "initialized" : "unavailable");
-                }
+                retro::logDebug(
+                    "Libretro MIDI interface {}.", have_retro_midi ? "initialized" : "unavailable");
             }
 #if defined(HAVE_ALSA)
             // Dosbox only accepts the numerical MIDI port, not client/port names.
@@ -733,25 +715,18 @@ static void start_dosbox(const std::string cmd_line)
         control->StartUp();
     }
     catch (const EmuThreadCanceled&) {
-        if (log_cb) {
-            log_cb(RETRO_LOG_WARN, "[dosbox] frontend asked to exit\n");
-        }
+        retro::logDebug("Frontend asked to exit.");
         return;
     }
 
-    if (log_cb) {
-        log_cb(RETRO_LOG_WARN, "[dosbox] core asked to exit\n");
-    }
-
+    retro::logDebug("Core asked to exit.");
     dosbox_exit = true;
     switchThread();
 }
 
 void restart_program(std::vector<std::string>& /*parameters*/)
 {
-    if (log_cb) {
-        log_cb(RETRO_LOG_WARN, "[dosbox] program restart not supported\n");
-    }
+    retro::logWarn("Program restart not supported.");
 }
 
 auto retro_api_version() -> unsigned
@@ -835,49 +810,43 @@ void retro_get_system_av_info(retro_system_av_info* const info)
 
 void retro_init()
 {
-    /* Initialize logger interface */
-    retro_log_callback log;
-    if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log)) {
-        log_cb = log.log;
-    } else {
-        log_cb = nullptr;
-    }
-
-    if (log_cb) {
-        log_cb(RETRO_LOG_INFO, "[dosbox] logger interface initialized\n");
+    if (retro_log_callback log; !environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log)) {
+        retro::logError("RETRO_ENVIRONMENT_GET_LOG_INTERFACE failed.");
+    } else if (log.log) {
+        retro::setRetroLogCb(log.log);
+        retro::logDebug("Libretro logging interface initialized.");
     }
 
     RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_XRGB8888;
-    environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &RDOSGFXcolorMode);
+    retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
+    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &RDOSGFXcolorMode)) {
+        retro::logError("RETRO_ENVIRONMENT_SET_PIXEL_FORMAT failed.");
+    }
 
-    const char* system_dir = nullptr;
-    if (environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir) && system_dir) {
+    if (const char* system_dir = nullptr;
+        !environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir))
+    {
+        retro::logError("RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY failed.");
+    } else if (system_dir) {
         retro_system_directory = std::filesystem::path(system_dir).make_preferred();
-    }
-    if (log_cb) {
-        log_cb(
-            RETRO_LOG_INFO, "[dosbox] SYSTEM_DIRECTORY: %s\n",
-            retro_system_directory.u8string().c_str());
+        retro::logDebug("System directory: {}", retro_system_directory);
     }
 
-    const char* save_dir = nullptr;
-    if (environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir) && save_dir) {
+    if (const char* save_dir = nullptr;
+        !environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir)) {
+        retro::logError("RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY failed.");
+    } else if (save_dir) {
         retro_save_directory = std::filesystem::path(save_dir).make_preferred();
-    }
-    if (log_cb) {
-        log_cb(
-            RETRO_LOG_INFO, "[dosbox] SAVE_DIRECTORY: %s\n",
-            retro_save_directory.u8string().c_str());
+        retro::logDebug("Save directory: {}", retro_save_directory);
     }
 
-    const char* content_dir = nullptr;
-    if (environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir) && content_dir) {
+    if (const char* content_dir = nullptr;
+        !environ_cb(RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY, &content_dir))
+    {
+        retro::logError("RETRO_ENVIRONMENT_GET_CONTENT_DIRECTORY failed.");
+    } else if (content_dir) {
         retro_content_directory = std::filesystem::path(content_dir).make_preferred();
-    }
-    if (log_cb) {
-        log_cb(
-            RETRO_LOG_INFO, "[dosbox] CONTENT_DIRECTORY: %s\n",
-            retro_content_directory.u8string().c_str());
+        retro::logDebug("Core assets directory: {}", retro_content_directory);
     }
 
 #ifdef HAVE_ALSA
@@ -932,7 +901,7 @@ void retro_init()
             }
         }
         catch (const std::exception& e) {
-            log_cb(RETRO_LOG_WARN, "[dosbox] error reading soundfont directory: %s\n", e.what());
+            retro::logError("Error reading soundfont directory: {}", e.what());
         }
         if (bass_values.empty()) {
             bass_values.push_back({"none", "(no soundfonts found)"});
@@ -984,11 +953,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
         config_path = load_path;
         load_path.clear();
     } else {
-        if (log_cb) {
-            log_cb(
-                RETRO_LOG_INFO, "[dosbox] loading default configuration %s\n",
-                config_path.u8string().c_str());
-        }
+        retro::logInfo("Loading default configuration: {}", config_path);
         config_path = retro_save_directory / (retro_library_name + ".conf");
         if (extension == ".iso" || extension == ".cue") {
             disk_load_image = std::move(load_path);
@@ -1003,9 +968,8 @@ auto retro_load_game(const retro_game_info* const game) -> bool
             std::filesystem::current_path(game_path.parent_path());
         }
         catch (const std::exception& e) {
-            log_cb(
-                RETRO_LOG_WARN, "[dosbox] failed to change current directory to \"%s\": %s\n",
-                game_path.u8string().c_str(), e.what());
+            retro::logError(
+                "Failed to change current directory to \"{}\": {}", game_path, e.what());
         }
     }
 

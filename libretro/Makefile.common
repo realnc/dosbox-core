@@ -33,6 +33,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/libretro/libretro_gfx.cpp \
 	$(CORE_DIR)/libretro/libretro_mapper.cpp \
 	$(CORE_DIR)/libretro/libretro.cpp \
+	$(CORE_DIR)/libretro/log.cpp \
 	$(CORE_DIR)/libretro/util.cpp \
 	$(CORE_DIR)/src/cpu/callback.cpp \
 	$(CORE_DIR)/src/cpu/core_dyn_x86.cpp \

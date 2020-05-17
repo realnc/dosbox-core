@@ -3,6 +3,7 @@
 
 #include "control.h"
 #include "libretro_dosbox.h"
+#include "log.h"
 #include <dlfcn.h>
 #include <tuple>
 #ifdef _WIN32
@@ -88,7 +89,7 @@ auto MidiHandlerBassmidi::Open(const char* const /*conf*/) -> bool
 {
     if (!bass_libs_loaded_) {
         if (const auto [ok, msg] = loadLibs(); !ok) {
-            log_cb(RETRO_LOG_WARN, "[dosbox] failed to load BASS libraries: %s\n", msg.c_str());
+            retro::logError("Failed to load BASS libraries: {}", msg);
             return false;
         }
     }
@@ -96,9 +97,7 @@ auto MidiHandlerBassmidi::Open(const char* const /*conf*/) -> bool
     Close();
 
     if (!bass_initialized_ && !BASS_Init(0, 44100, 0, nullptr, nullptr)) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] bassmidi: failed to initialize BASS: code %d\n",
-            BASS_ErrorGetCode());
+        retro::logError("Failed to initialize BASS: code {}.", BASS_ErrorGetCode());
         return false;
     }
     bass_initialized_ = true;
@@ -110,44 +109,37 @@ auto MidiHandlerBassmidi::Open(const char* const /*conf*/) -> bool
             return std::stod(section->Get_string(propname));
         }
         catch (const std::exception& e) {
-            log_cb(
-                RETRO_LOG_WARN, "[dosbox] error reading floating point '%s' conf setting: %s\n",
-                e.what());
+            retro::logError("Error reading floating point '{}' conf setting: {}.", e.what());
             return 0.0;
         }
     };
 
-    std::string_view soundfont = section->Get_string("bassmidi.soundfont");
-    if (!soundfont.empty() && !BASS_SetConfigPtr(BASS_CONFIG_MIDI_DEFFONT, soundfont.data())) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] bassmidi: failed to set soundfont: code %d\n",
-            BASS_ErrorGetCode());
+    if (std::string_view soundfont = section->Get_string("bassmidi.soundfont"); !soundfont.empty())
+    {
+        retro::logDebug("Loading BASSMIDI soundfont: {}.", soundfont);
+        if (!BASS_SetConfigPtr(BASS_CONFIG_MIDI_DEFFONT, soundfont.data())) {
+            retro::logError("Failed to set BASSMIDI soundfont: code {}.", BASS_ErrorGetCode());
+        }
     }
 
     stream_ = BASS_MIDI_StreamCreate(16, BASS_STREAM_DECODE | BASS_MIDI_SINCINTER, 0);
     if (stream_ == 0) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] failed to create BASSMIDI stream: code %d\n",
-            BASS_ErrorGetCode());
+        retro::logError("Failed to create BASSMIDI stream: code {}.", BASS_ErrorGetCode());
         return false;
     }
 
     if (BASS_MIDI_FONT font{}; BASS_MIDI_StreamGetFonts(stream_, &font, 1) != -1) {
         if (!BASS_MIDI_FontSetVolume(font.font, get_double("bassmidi.sfvolume"))) {
-            log_cb(
-                RETRO_LOG_WARN, "[dosbox] failed to set BASSMIDI soundfont volume: code %d\n",
-                BASS_ErrorGetCode());
+            retro::logError(
+                "Failed to set BASSMIDI soundfont volume: code {}.", BASS_ErrorGetCode());
         }
     } else {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] failed to get BASSMIDI soundfont for stream: code %d\n",
-            BASS_ErrorGetCode());
+        retro::logError(
+            "Failed to get BASSMIDI soundfont for stream: code {}.", BASS_ErrorGetCode());
     }
 
     if (!BASS_SetConfig(BASS_CONFIG_MIDI_VOICES, section->Get_int("bassmidi.voices"))) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] failed to set BASSMIDI max voice count: code %d\n",
-            BASS_ErrorGetCode());
+        retro::logError("Failed to set BASSMIDI max voice count: code {}.", BASS_ErrorGetCode());
     }
 
     MixerChannel_ptr_t channel(MIXER_AddChannel(mixerCallback, 44100, "BASSMID"), MIXER_DelChannel);
@@ -199,13 +191,10 @@ void MidiHandlerBassmidi::PlayMsg(Bit8u* const msg)
             sprintf(msg_hex + i * 2, "%02x", msg[i]);
         }
         if (msg_len == sizeof(msg_hex)) {
-            log_cb(
-                RETRO_LOG_WARN, "[dosbox] bassmidi: unknown MIDI message %s: code %d\n", msg_hex,
-                BASS_ErrorGetCode());
+            retro::logError("Unknown MIDI message {}: code {}.", msg_hex, BASS_ErrorGetCode());
         } else {
-            log_cb(
-                RETRO_LOG_WARN, "[dosbox] bassmidi: error playing MIDI message %s: code %d\n",
-                msg_hex, BASS_ErrorGetCode());
+            retro::logError(
+                "BASSMIDI failed to play MIDI message {}: code {}.", msg_hex, BASS_ErrorGetCode());
         }
     }
 }
@@ -213,9 +202,7 @@ void MidiHandlerBassmidi::PlayMsg(Bit8u* const msg)
 void MidiHandlerBassmidi::PlaySysex(Bit8u* const sysex, const Bitu len)
 {
     if (BASS_MIDI_StreamEvents(stream_, BASS_MIDI_EVENTS_RAW, sysex, len) == -1u) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] bassmidi: error playing MIDI sysex: code %d\n",
-            BASS_ErrorGetCode());
+        retro::logError("BASSMIDI failed to play MIDI sysex: code {}.", BASS_ErrorGetCode());
     }
 }
 
@@ -227,9 +214,7 @@ auto MidiHandlerBassmidi::GetName() -> const char*
 void MidiHandlerBassmidi::mixerCallback(const Bitu len)
 {
     if (BASS_ChannelGetData(instance_.stream_, MixTemp, len * 4) == -1u) {
-        log_cb(
-            RETRO_LOG_WARN, "[dosbox] bassmidi: error rendering audio: code %d\n",
-            BASS_ErrorGetCode());
+        retro::logError("BASSMIDI failed to render audio: code {}.", BASS_ErrorGetCode());
     }
     instance_.channel_->AddSamples_s16(len, reinterpret_cast<Bit16s*>(MixTemp));
 }

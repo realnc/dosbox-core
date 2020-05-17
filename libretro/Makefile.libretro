@@ -641,7 +641,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH)
 	    -Denable-framework=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/fluidsynth" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install
 
 $(FMT):
 	mkdir -p "$(FMT_BUILD_DIR)"

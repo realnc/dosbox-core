@@ -39,3 +39,9 @@
 [submodule "libretro/deps/fmt"]
 	path = libretro/deps/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "libretro/deps/glib"]
+	path = libretro/deps/glib
+	url = https://github.com/GNOME/glib.git
+[submodule "libretro/deps/libffi"]
+	path = libretro/deps/libffi
+	url = https://github.com/libffi/libffi.git

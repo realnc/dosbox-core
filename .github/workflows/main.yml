@@ -46,9 +46,14 @@ jobs:
                 mesa-common-dev \
                 python3-pip
             python3 -m pip install --upgrade pip
-            python3 -m pip install \
-                meson \
-                ninja
+            python3 -m pip install meson
+            git clone 'https://github.com/ninja-build/ninja.git'
+            ln -s /usr/bin/python3 /usr/local/bin/python
+            cd ninja
+            git checkout tags/v1.10.0
+            ./bootstrap.py
+            mv ninja /usr/local/bin/
+            cd ..
             export CC=gcc-9
             export CXX=g++-9
             export platform=unix

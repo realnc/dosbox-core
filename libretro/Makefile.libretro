@@ -750,3 +750,9 @@ download_github_armhf:
 	rm -f linux-armhf.zip
 	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/linux-armhf.zip'
 	unzip linux-armhf.zip
+
+.PHONY: download_github_linux64
+download_github_linux64:
+	rm -f linux-x64.zip
+	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/linux-x64.zip'
+	unzip linux-x64.zip

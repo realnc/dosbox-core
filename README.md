@@ -80,13 +80,12 @@ CMake and Ninja are also assumed to be installed in order to build the bundled
 dependencies.
 
 Most of the dependencies are bundled. They are built and linked statically.
-See `Makefile.libretro` for which make variables to set to disable the bundled
-libraries and use system-installed libraries instead.
+See `Makefile.libretro` for which make variables to set to enable/disable the
+bundled libraries.
 
-The only dependencies that are not bundled are glib and alsa-lib, the latter
-only being needed on Linux. For a Windows build you need the dlfnc library,
-otherwise you'll get a link error if BASSMIDI support is enabled. dlfcn is
-available as a package in both MXE as well as MSYS2.
+The only dependencies that are not bundled are alsa-lib, which is only needed
+on Linux, and dlfnc which is needed on Windows. dlfcn is available as a package
+in both MXE as well as MSYS2.
 
 Note that the bundled dependencies are provided in the form of git submodules,
 so prior to building the core, you should first perform a:

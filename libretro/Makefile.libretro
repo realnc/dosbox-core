@@ -9,6 +9,8 @@ BUNDLED_AUDIO_CODECS ?= 1
 BUNDLED_LIBSNDFILE ?= 1
 # Build and link our own sdl and sdl_net statically.
 BUNDLED_SDL ?= 0
+# Use bundled fmt library (https://fmt.dev)
+BUNDLED_FMT ?= 1
 # Build with BASSMIDI support
 WITH_BASSMIDI ?= 1
 # Build with fluidsynth support
@@ -33,6 +35,7 @@ UNAMEM=$(shell uname -m)
 CXXFLAGS += -std=gnu++17 -Wno-register
 COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
 EXTRA_CMAKE_FLAGS :=
+EXTRA_PACKAGES += fmt
 
 # Target triplet for cross compilation. When cross compiling from Linux to
 # Windows 32-bit using MXE for example, you'd set this to something like:
@@ -356,6 +359,10 @@ ifeq ($(WITH_FLUIDSYNTH), 1)
 	EXTRA_PACKAGES += fluidsynth libinstpatch-1.0
 	COMMONFLAGS += -DWITH_FLUIDSYNTH=1
 endif
+ifeq ($(BUNDLED_FMT), 1)
+	FMT_BUILD_DIR = $(DEPS_BIN_DIR)/fmt_build
+	FMT = $(DEPS_BIN_DIR)/lib/pkgconfig/fmt.pc
+endif
 MUNT_BUILD_DIR = $(DEPS_BIN_DIR)/munt_build
 MUNT = $(MUNT_BUILD_DIR)/libmt32emu.a
 export PKG_CONFIG_PATH := $(DEPS_BIN_DIR)/lib/pkgconfig:$(PKG_CONFIG_PATH)
@@ -426,8 +433,11 @@ libinstpatch: $(LIBINSTPATCH)
 .PHONY: fluidsynth
 fluidsynth: $(FLUIDSYNTH)
 
+.PHONY: fmt
+fmt: $(FMT)
+
 .PHONY:
-deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth
+deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth fmt
 
 # Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
 # build system doesn't correctly link against static libraries. We simply replace the "Requires:"
@@ -631,6 +641,22 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH)
 	    -Denable-framework=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/fluidsynth" \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+
+$(FMT):
+	mkdir -p "$(FMT_BUILD_DIR)"
+	cd "$(FMT_BUILD_DIR)" \
+	&& $(CMAKE) \
+	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
+	    -DBUILD_SHARED_LIBS=OFF \
+	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DCMAKE_INSTALL_LIBDIR=lib \
+	    -DFMT_DOC=OFF \
+	    -DFMT_INSTALL=ON \
+	    -DFMT_TEST=OFF \
+	    $(EXTRA_CMAKE_FLAGS) \
+	    "$(CURDIR)/deps/fmt" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 
 $(OBJECTS): deps

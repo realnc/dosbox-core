@@ -11,6 +11,8 @@ BUNDLED_LIBSNDFILE ?= 1
 BUNDLED_SDL ?= 0
 # Use bundled fmt library (https://fmt.dev)
 BUNDLED_FMT ?= 1
+# Use bundled glib library.
+#BUNDLED_GLIB ?= 0
 # Build with BASSMIDI support
 WITH_BASSMIDI ?= 1
 # Build with fluidsynth support
@@ -292,6 +294,7 @@ else
 		COMMONFLAGS += -DHAVE_ALSA
 		LDFLAGS += `$(PKGCONFIG) --libs alsa`
 	endif
+	BUNDLED_GLIB ?= 1
 	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
 	TARGET := $(TARGET_NAME)_libretro.so
 	LDFLAGS += -shared -Wl,--version-script=link.T
@@ -307,9 +310,11 @@ endif
 ifeq ($(DEBUG), 1)
 	COMMONFLAGS += -O0 -g
 	CMAKE_BUILD_TYPE = Debug
+	MESON_BUILD_TYPE = debug
 else
 	COMMONFLAGS += -O3 -DNDEBUG
 	CMAKE_BUILD_TYPE = Release
+	MESON_BUILD_TYPE = release
 endif
 
 ifeq ($(WITH_FAKE_SDL), 1)
@@ -336,6 +341,12 @@ ifeq ($(BUNDLED_SDL), 1)
 	SDL = $(DEPS_BIN_DIR)/lib/pkgconfig/sdl.pc
 	SDLNET_BUILD_DIR = $(DEPS_BIN_DIR)/sdl_net_build
 	SDLNET = $(DEPS_BIN_DIR)/lib/pkgconfig/SDL_net.pc
+endif
+ifeq ($(BUNDLED_GLIB), 1)
+	LIBFFI_BUILD_DIR = $(DEPS_BIN_DIR)/libffi_build
+	LIBFFI = $(DEPS_BIN_DIR)/lib/pkgconfig/libffi.pc
+	GLIB_BUILD_DIR = $(DEPS_BIN_DIR)/glib_build
+	GLIB = $(DEPS_BIN_DIR)/lib/pkgconfig/glib-2.0.pc
 endif
 ifeq ($(WITH_FLUIDSYNTH), 1)
 	ifeq ($(BUNDLED_AUDIO_CODECS), 1)
@@ -366,6 +377,7 @@ endif
 MUNT_BUILD_DIR = $(DEPS_BIN_DIR)/munt_build
 MUNT = $(MUNT_BUILD_DIR)/libmt32emu.a
 export PKG_CONFIG_PATH := $(DEPS_BIN_DIR)/lib/pkgconfig:$(PKG_CONFIG_PATH)
+export PATH := $(DEPS_BIN_DIR)/bin:$(PATH)
 # When cross compiling with MXE, we need PKG_CONFIG_PATH_<TARGET_TRIPLET> but with all dashes and
 # dots converted to underscores.
 ifdef TARGET_TRIPLET
@@ -436,8 +448,14 @@ fluidsynth: $(FLUIDSYNTH)
 .PHONY: fmt
 fmt: $(FMT)
 
+.PHONY: libffi
+libffi: $(LIBFFI)
+
+.PHONY: glib
+glib: $(GLIB)
+
 .PHONY:
-deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth fmt
+deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth fmt libffi glib
 
 # Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
 # build system doesn't correctly link against static libraries. We simply replace the "Requires:"
@@ -588,7 +606,7 @@ $(MUNT):
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE)
 
 # Always a release build because ubsan is forced in debug builds.
-$(LIBINSTPATCH): $(LIBSNDFILE)
+$(LIBINSTPATCH): $(LIBSNDFILE) $(GLIB)
 	mkdir -p "$(LIBINSTPATCH_BUILD_DIR)"
 	cd "$(LIBINSTPATCH_BUILD_DIR)" \
 	&& $(CMAKE) \
@@ -602,7 +620,7 @@ $(LIBINSTPATCH): $(LIBSNDFILE)
 	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install
 
 # Always a release build because debug build creates broken .pc file with mingw.
-$(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH)
+$(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH) $(GLIB)
 	mkdir -p "$(FLUIDSYNTH_BUILD_DIR)"
 	cd "$(FLUIDSYNTH_BUILD_DIR)" \
 	&& $(CMAKE) \
@@ -658,6 +676,35 @@ $(FMT):
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/fmt" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+
+$(LIBFFI):
+	cd deps/libffi && ./autogen.sh
+	mkdir -p "$(LIBFFI_BUILD_DIR)"
+	cd "$(LIBFFI_BUILD_DIR)" \
+	&& "$(CURDIR)/deps/libffi/configure" \
+	    --host=$(TARGET_TRIPLET) \
+	    --prefix="$(DEPS_BIN_DIR)" \
+	    --disable-dependency-tracking \
+	    --disable-shared \
+	    --enable-static \
+	    --enable-portable-binary \
+	    --disable-docs \
+	    --with-pic \
+	    --with-gcc-arch=generic \
+	&& $(MAKE) -j`nproc` install
+
+$(GLIB): $(LIBFFI)
+	mkdir -p "$(GLIB_BUILD_DIR)"
+	meson "$(GLIB_BUILD_DIR)" "$(CURDIR)/deps/glib" \
+	    --buildtype $(MESON_BUILD_TYPE) \
+	    --prefix "$(DEPS_BIN_DIR)" \
+	    --libdir lib \
+	    --default-library static \
+	    -Db_staticpic=true \
+	    -Dinternal_pcre=true \
+	    -Dnls=disabled
+	ninja -C "$(GLIB_BUILD_DIR)" install
+	sed -i 's/^Libs:.*/& -lpthread/' $(GLIB)
 
 $(OBJECTS): deps
 

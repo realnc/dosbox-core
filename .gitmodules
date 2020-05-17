@@ -36,3 +36,6 @@
 	path = libretro/deps/sdl_net
 	url = https://github.com/SDL-mirror/SDL_net.git
 	branch = SDL-1.2
+[submodule "libretro/deps/fmt"]
+	path = libretro/deps/fmt
+	url = https://github.com/fmtlib/fmt.git

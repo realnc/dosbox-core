@@ -343,6 +343,8 @@ ifeq ($(BUNDLED_SDL), 1)
 	SDLNET = $(DEPS_BIN_DIR)/lib/pkgconfig/SDL_net.pc
 endif
 ifeq ($(BUNDLED_GLIB), 1)
+	LIBFFI_BUILD_DIR = $(DEPS_BIN_DIR)/libffi_build
+	LIBFFI = $(DEPS_BIN_DIR)/lib/pkgconfig/libffi.pc
 	GLIB_BUILD_DIR = $(DEPS_BIN_DIR)/glib_build
 	GLIB = $(DEPS_BIN_DIR)/lib/pkgconfig/glib-2.0.pc
 endif
@@ -446,11 +448,14 @@ fluidsynth: $(FLUIDSYNTH)
 .PHONY: fmt
 fmt: $(FMT)
 
+.PHONY: libffi
+libffi: $(LIBFFI)
+
 .PHONY: glib
 glib: $(GLIB)
 
 .PHONY:
-deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth fmt glib
+deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth fmt libffi glib
 
 # Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
 # build system doesn't correctly link against static libraries. We simply replace the "Requires:"
@@ -672,7 +677,23 @@ $(FMT):
 	    "$(CURDIR)/deps/fmt" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
 
-$(GLIB):
+$(LIBFFI):
+	cd deps/libffi && ./autogen.sh
+	mkdir -p "$(LIBFFI_BUILD_DIR)"
+	cd "$(LIBFFI_BUILD_DIR)" \
+	&& "$(CURDIR)/deps/libffi/configure" \
+	    --host=$(TARGET_TRIPLET) \
+	    --prefix="$(DEPS_BIN_DIR)" \
+	    --disable-dependency-tracking \
+	    --disable-shared \
+	    --enable-static \
+	    --enable-portable-binary \
+	    --disable-docs \
+	    --with-pic \
+	    --with-gcc-arch=generic \
+	&& $(MAKE) -j`nproc` install
+
+$(GLIB): $(LIBFFI)
 	mkdir -p "$(GLIB_BUILD_DIR)"
 	meson "$(GLIB_BUILD_DIR)" "$(CURDIR)/deps/glib" \
 	    --buildtype $(MESON_BUILD_TYPE) \

@@ -1,21 +1,43 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "CoreOptions.h"
 
+#include "log.h"
 #include <algorithm>
 
+static RETRO_CALLCONV auto envCbFallback(unsigned /*cmd*/, void* /*data*/) -> bool
+{
+    retro::logError("Core options running without environment callback.");
+    return false;
+}
+
 namespace retro {
+
+CoreOptions::CoreOptions(std::string key_prefix, std::vector<CoreOptionDefinition> options)
+    : options_(std::move(options))
+    , key_prefix_(std::move(key_prefix))
+    , env_cb_(envCbFallback)
+{
+    for (auto& option : options_) {
+        options_map_[option.key()] = &option;
+        option.setKey(key_prefix_ + option.key());
+    }
+}
 
 auto CoreOptions::operator[](const std::string_view key) const -> const CoreOptionValue&
 {
     const auto* option = this->option(key);
     if (!option) {
-        // TODO: log
+        retro::logError("Tried to access non-existent core option \"{}\".", key);
         return invalid_value_;
     }
 
-    retro_variable var{option->key().c_str()};
-    if (!env_cb_(RETRO_ENVIRONMENT_GET_VARIABLE, &var) || !var.value) {
-        // TODO: log
+    retro_variable var{option->key().c_str(), nullptr};
+    if (!env_cb_(RETRO_ENVIRONMENT_GET_VARIABLE, &var)) {
+        retro::logError("RETRO_ENVIRONMENT_GET_VARIABLE failed for core option \"{}\".", key);
+        return option->defaultValue();
+    } else if (!var.value) {
+        retro::logError(
+            "RETRO_ENVIRONMENT_GET_VARIABLE found no core option \"{}\".", option->key());
         return option->defaultValue();
     }
 
@@ -23,7 +45,7 @@ auto CoreOptions::operator[](const std::string_view key) const -> const CoreOpti
         return a.toString() == var_val;
     });
     if (value == option->end()) {
-        // TODO: log
+        retro::logError("Current value for core option \"{}\" not found.", key);
         return option->defaultValue();
     }
     return *value;
@@ -44,7 +66,7 @@ void CoreOptions::updateFrontend()
     env_cb_(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version);
 
     if (env_cb_(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && version >= 1) {
-        retro_core_options_intl core_options_intl{retro_options_.data()};
+        retro_core_options_intl core_options_intl{retro_options_.data(), nullptr};
         if (!env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL, &core_options_intl)) {
             env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, retro_options_.data());
         }
@@ -58,7 +80,7 @@ void CoreOptions::setVisible(const std::string_view key, const bool visible) con
 {
     const auto* opt = option(key);
     if (!opt) {
-        // TODO: log
+        retro::logError("Tried to set visibility for non-existent core option \"{}\".", key);
         return;
     }
     retro_core_option_display option_display{opt->key().c_str(), visible};
@@ -77,6 +99,7 @@ void CoreOptions::setCurrentValue(std::string_view key, const CoreOptionValue& v
 {
     auto* option = this->option(key);
     if (!option) {
+        retro::logError("Tried to set current value of non-existent core option \"{}\".", key);
         return;
     }
 

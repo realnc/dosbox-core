@@ -153,23 +153,12 @@ private:
     std::map<std::string, CoreOptionDefinition*, std::less<>> options_map_;
     std::vector<retro_core_option_definition> retro_options_;
     std::string key_prefix_;
-    // TODO: log when called.
-    retro_environment_t env_cb_ = [](unsigned, void*) { return false; };
+    retro_environment_t env_cb_;
     CoreOptionValue invalid_value_{""};
 
     void updateRetroOptions();
     void updateFrontendV0();
 };
-
-inline CoreOptions::CoreOptions(std::string key_prefix, std::vector<CoreOptionDefinition> options)
-    : options_(std::move(options))
-    , key_prefix_(std::move(key_prefix))
-{
-    for (auto& option : options_) {
-        options_map_[option.key()] = &option;
-        option.setKey(key_prefix_ + option.key());
-    }
-}
 
 inline void CoreOptions::setEnvironmentCallback(const retro_environment_t cb)
 {

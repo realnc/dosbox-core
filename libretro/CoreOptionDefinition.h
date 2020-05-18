@@ -1,6 +1,7 @@
 // This is copyrighted software. More information is at the end of this file.
 #pragma once
 #include "CoreOptionValue.h"
+#include "log.h"
 #include <string>
 #include <utility>
 #include <vector>
@@ -106,6 +107,7 @@ inline auto CoreOptionDefinition::info() const noexcept -> const std::string&
 inline auto CoreOptionDefinition::defaultValue() const noexcept -> const CoreOptionValue&
 {
     if (values_.empty()) {
+        retro::logError("Tried to query default value of empty core option \"{}\".", key());
         return invalid_value_;
     }
     return values_[default_value_index_];

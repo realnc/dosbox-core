@@ -1,5 +1,6 @@
 // This is copyrighted software. More information is at the end of this file.
 #pragma once
+#include "log.h"
 #include <exception>
 #include <string>
 #include <utility>
@@ -95,8 +96,9 @@ inline auto CoreOptionValue::toFloat() const noexcept -> float
     try {
         return std::stof(toString());
     }
-    catch (...) {
-        // TODO: log
+    catch (const std::exception& e) {
+        retro::logError(
+            "Failed to convert core option value \"{}\" to float: {}", toString(), e.what());
         return 0;
     }
 }
@@ -126,7 +128,8 @@ inline CoreOptionValue::CoreOptionValue(
     } else if (std::holds_alternative<bool>(value_)) {
         value_str_ = std::get<bool>(value_) ? "true" : "false";
     } else {
-        // TODO: Can't happen, log as internal bug.
+        // Can't happen.
+        retro::logError("Internal error in {} line {}.", __FILE__, __LINE__);
         std::terminate();
     }
 }
@@ -143,7 +146,7 @@ inline auto CoreOptionValue::value() const noexcept -> T
     if (std::holds_alternative<bool>(value_)) {
         return std::get<bool>(value_);
     }
-    // TODO: log
+    retro::logError("Invalid type requested for core option value \"{}\".", toString());
     return {};
 }
 

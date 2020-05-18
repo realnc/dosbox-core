@@ -1,6 +1,7 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "midi_win32.h"
 
+#include "log.h"
 #include <windows.h>
 
 auto getWin32MidiPorts() -> std::vector<std::string>
@@ -12,7 +13,7 @@ auto getWin32MidiPorts() -> std::vector<std::string>
         MIDIOUTCAPSA caps;
         MMRESULT mmr = midiOutGetDevCapsA(i, &caps, sizeof(caps));
         if (mmr != MMSYSERR_NOERROR) {
-            // TODO: log
+            retro::logError("Failed to get MIDI device capabilities. Error code: {}.", mmr);
             return {};
         }
         port_list.emplace_back(caps.szPname);

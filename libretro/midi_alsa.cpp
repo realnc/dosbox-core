@@ -1,6 +1,7 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "midi_alsa.h"
 
+#include "log.h"
 #include <alsa/asoundlib.h>
 #include <memory>
 
@@ -11,12 +12,14 @@ auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std:
     std::vector<std::tuple<std::string, std::string, std::string>> port_list;
     const auto seq = [] {
         snd_seq_t* tmp = nullptr;
-        snd_seq_open(&tmp, "default", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK);
+        const auto err = snd_seq_open(&tmp, "default", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK);
+        if (err != 0) {
+            retro::logError("Failed to open ALSA sequencer. Error code: {}.", err);
+        }
         return std::unique_ptr<snd_seq_t, decltype(&snd_seq_close)>(tmp, snd_seq_close);
     }();
 
     if (!seq) {
-        // TODO: log
         return {};
     }
 

@@ -11,7 +11,9 @@ void CoreOptionDefinition::setDefaultValue(const CoreOptionValue& default_value)
             break;
         }
     }
-    // TODO: log
+    retro::logError(
+        "Tried to set default value of core option \"{}\" to non-existent value \"{}\".", key(),
+        default_value.toString());
 }
 
 auto CoreOptionDefinition::clearValues() noexcept -> std::vector<CoreOptionValue>

@@ -32,9 +32,8 @@ jobs:
             set -eux
             apt-get update
             apt-get install -y software-properties-common wget
-            add-apt-repository ppa:ubuntu-toolchain-r/test
-            add-apt-repository ppa:janisozaur/cmake-update
-            apt-get update
+            add-apt-repository -y --update ppa:ubuntu-toolchain-r/test
+            add-apt-repository -y --update ppa:janisozaur/cmake-update
             apt-get install -y \
                 autoconf \
                 automake \
@@ -47,14 +46,15 @@ jobs:
                 libglu1-mesa-dev \
                 libtool \
                 mesa-common-dev \
+                pkg-config \
                 python3-pip
             python3 -m pip install --upgrade pip
             python3 -m pip install meson
             git clone 'https://github.com/ninja-build/ninja.git'
-            ln -s /usr/bin/python3 /usr/local/bin/python
             cd ninja
             git checkout tags/v1.10.0
-            ./bootstrap.py
+            ln -s /usr/bin/python3 /usr/local/bin/python
+            ./configure.py --bootstrap
             mv ninja /usr/local/bin/
             cd ..
             export CC=gcc-9

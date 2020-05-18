@@ -42,6 +42,3 @@
 [submodule "libretro/deps/glib"]
 	path = libretro/deps/glib
 	url = https://github.com/GNOME/glib.git
-[submodule "libretro/deps/libffi"]
-	path = libretro/deps/libffi
-	url = https://github.com/libffi/libffi.git

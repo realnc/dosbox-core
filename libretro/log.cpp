@@ -7,10 +7,9 @@
 static RETRO_CALLCONV void logFallbackCb(const retro_log_level level, const char* const fmt, ...)
 {
     std::va_list va;
-    std::FILE* const out_stream = level >= RETRO_LOG_WARN ? stderr : stdout;
 
     va_start(va, fmt);
-    vfprintf(out_stream, fmt, va);
+    vfprintf(level >= RETRO_LOG_WARN ? stderr : stdout, fmt, va);
     va_end(va);
 }
 

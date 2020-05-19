@@ -6,8 +6,8 @@ on:
 
 jobs:
   build_linux_arm:
-    # We run this in an Ubuntu ARM image inside QEMU which is very slow, so skip this when building
-    # release binaries.
+    # We run this in an Ubuntu ARM image inside QEMU which is very slow, so skip this when not
+    # building release binaries.
     if: github.event_name == 'push' && github.ref == 'refs/heads/libretro'
     runs-on: ubuntu-latest
 

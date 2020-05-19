@@ -42,7 +42,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: retroarch-nintendo-switch.zip
-          path: /libretro-super/nintendo-switch.zip
+          path: /libretro-super/retroarch-nintendo-switch.zip
 
   build_linux_arm:
     # We run this in an Ubuntu ARM image inside QEMU which is very slow, so skip this when not

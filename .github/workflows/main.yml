@@ -35,7 +35,7 @@ jobs:
         working-directory: /libretro-super
         run: |
           ./libretro-buildbot-recipe.sh recipes/nintendo/libnx
-          zip -9 retroarch-nintendo-switch.zip retroarch/pkg/libnx/retroarch/cores/dosbox_core_libretro_libnx.nro
+          zip -j -9 retroarch-nintendo-switch.zip retroarch/pkg/libnx/retroarch/cores/dosbox_core_libretro_libnx.nro
 
       - name: Upload artifact
         if: github.event_name == 'push'

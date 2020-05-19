@@ -670,6 +670,7 @@ $(FMT):
 	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
 	    -DCMAKE_INSTALL_LIBDIR=lib \
+	    -DFMT_DEBUG_POSTFIX= \
 	    -DFMT_DOC=OFF \
 	    -DFMT_INSTALL=ON \
 	    -DFMT_TEST=OFF \
@@ -711,7 +712,7 @@ $(OBJECTS): deps
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
-	./merge_static.sh $(AR) $@ $@ deps_bin/munt_build/libmt32emu.a
+	./merge_static.sh $(AR) $@ $@ deps_bin/munt_build/libmt32emu.a deps_bin/lib/libfmt.a
 else
 	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
 endif

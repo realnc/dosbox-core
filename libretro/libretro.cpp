@@ -477,6 +477,27 @@ static void update_mt32_variables(const bool mt32_enabled, const bool show_all)
     }
 }
 
+static void use_libretro_log_cb()
+{
+    retro_log_callback log_cb{nullptr};
+    if (!environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log_cb)) {
+        retro::logError("RETRO_ENVIRONMENT_GET_LOG_INTERFACE failed.");
+        log_cb.log = nullptr; // paranoia
+    } else if (log_cb.log) {
+        retro::setRetroLogCb(log_cb.log);
+    }
+}
+
+static void update_libretro_log_interface()
+{
+    retro_log_callback log_cb{nullptr};
+    if (retro::core_options["log_method"].toString() == "frontend") {
+        use_libretro_log_cb();
+    } else {
+        retro::setRetroLogCb(log_cb.log);
+    }
+}
+
 static void check_variables()
 {
     using namespace retro;
@@ -485,6 +506,8 @@ static void check_variables()
 
     bool blaster = false;
     bool gus = false;
+
+    update_libretro_log_interface();
 
     {
         const bool old_timing = run_synced;
@@ -677,7 +700,7 @@ static void check_variables()
     /* show these only if advanced options is enabled */
     core_options.setVisible(
         {"default_mount_freesize", "thread_sync", "cpu_type", "scaler", "mpu_type", "tandy",
-         "disney"},
+         "disney", "log_method"},
         adv_core_options);
 }
 
@@ -810,12 +833,7 @@ void retro_get_system_av_info(retro_system_av_info* const info)
 
 void retro_init()
 {
-    if (retro_log_callback log; !environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log)) {
-        retro::logError("RETRO_ENVIRONMENT_GET_LOG_INTERFACE failed.");
-    } else if (log.log) {
-        retro::setRetroLogCb(log.log);
-        retro::logDebug("Libretro logging interface initialized.");
-    }
+    use_libretro_log_cb();
 
     RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_XRGB8888;
     retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");

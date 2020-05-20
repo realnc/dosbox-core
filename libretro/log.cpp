@@ -21,6 +21,10 @@ namespace retro {
 
 void setRetroLogCb(const retro_log_printf_t cb)
 {
+    if (cb == internal::log_cb || (cb == nullptr && internal::log_cb == logFallbackCb)) {
+        return;
+    }
+    retro::logDebug("Switching log output to {}.", cb ? "frontend" : "stdout/stderr");
     internal::log_cb = cb ? cb : logFallbackCb;
 }
 

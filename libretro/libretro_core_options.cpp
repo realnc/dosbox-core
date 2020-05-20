@@ -1507,6 +1507,18 @@ retro::CoreOptions retro::core_options {
             },
             false
         },
+        {
+            "log_method",
+            "Logging: Output method",
+            "Where to send log output. \"Frontend\" will send it to the frontend, while "
+                "\"stdout/stderr\" will print it to standard output or standard error (warnings "
+                "and errors go to stderr, debug and informational messages to stdout.)",
+            {
+                "frontend",
+                "stdout/stderr",
+            },
+            "frontend",
+        },
     }
 };
 

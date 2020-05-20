@@ -36,7 +36,7 @@ UNAMEM=$(shell uname -m)
 
 CXXFLAGS += -std=gnu++17 -Wno-register
 COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
-EXTRA_CMAKE_FLAGS :=
+EXTRA_CMAKE_FLAGS := -DCMAKE_CXX_STANDARD=17
 EXTRA_PACKAGES += fmt
 
 # Target triplet for cross compilation. When cross compiling from Linux to
@@ -593,7 +593,6 @@ $(MUNT):
 	mkdir -p $(MUNT_BUILD_DIR)
 	cd $(MUNT_BUILD_DIR) \
 	&& $(CMAKE) \
-	    -DCMAKE_CXX_FLAGS="-std=c++17" \
 	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
 	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \

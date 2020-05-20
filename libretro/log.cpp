@@ -15,7 +15,8 @@ static RETRO_CALLCONV void logFallbackCb(const retro_log_level level, const char
 
 namespace retro::internal {
 retro_log_printf_t log_cb = logFallbackCb;
-};
+retro_log_level log_level = RETRO_LOG_DEBUG;
+}; // namespace retro::internal
 
 namespace retro {
 
@@ -26,6 +27,11 @@ void setRetroLogCb(const retro_log_printf_t cb)
     }
     retro::logDebug("Switching log output to {}.", cb ? "frontend" : "stdout/stderr");
     internal::log_cb = cb ? cb : logFallbackCb;
+}
+
+void setLoggingLevel(const retro_log_level log_level)
+{
+    internal::log_level = log_level;
 }
 
 } // namespace retro

@@ -498,6 +498,20 @@ static void update_libretro_log_interface()
     }
 }
 
+static void update_log_verbosity()
+{
+    const auto& level = retro::core_options["log_level"].toString();
+    if (level == "errors") {
+        retro::setLoggingLevel(RETRO_LOG_ERROR);
+    } else if (level == "warnings") {
+        retro::setLoggingLevel(RETRO_LOG_WARN);
+    } else if (level == "info") {
+        retro::setLoggingLevel(RETRO_LOG_INFO);
+    } else {
+        retro::setLoggingLevel(RETRO_LOG_DEBUG);
+    }
+}
+
 static void check_variables()
 {
     using namespace retro;
@@ -507,6 +521,7 @@ static void check_variables()
     bool blaster = false;
     bool gus = false;
 
+    update_log_verbosity();
     update_libretro_log_interface();
 
     {
@@ -700,7 +715,7 @@ static void check_variables()
     /* show these only if advanced options is enabled */
     core_options.setVisible(
         {"default_mount_freesize", "thread_sync", "cpu_type", "scaler", "mpu_type", "tandy",
-         "disney", "log_method"},
+         "disney", "log_method", "log_level"},
         adv_core_options);
 }
 

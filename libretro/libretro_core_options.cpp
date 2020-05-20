@@ -1519,6 +1519,17 @@ retro::CoreOptions retro::core_options {
             },
             "frontend",
         },
+        {
+            "log_level",
+            "Logging: Verbosity level",
+            {
+                "debug",
+                "info",
+                "warnings",
+                "errors",
+            },
+            "warnings",
+        },
     }
 };
 

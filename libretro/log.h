@@ -9,16 +9,22 @@ namespace retro {
 
 namespace internal {
     extern retro_log_printf_t log_cb;
-}
+    extern retro_log_level log_level;
+} // namespace internal
 
 /* Set the libretro log callback to use. If this is never called, or called with a null argument,
  * stdout/stderr will be used for output.
  */
 void setRetroLogCb(retro_log_printf_t cb);
 
+void setLoggingLevel(const retro_log_level log_level);
+
 template <typename... Args>
 constexpr void logDebug(Args&&... args)
 {
+    if (internal::log_level > RETRO_LOG_DEBUG) {
+        return;
+    }
     internal::log_cb(
         RETRO_LOG_DEBUG, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
 }
@@ -26,6 +32,9 @@ constexpr void logDebug(Args&&... args)
 template <typename... Args>
 constexpr void logInfo(Args&&... args)
 {
+    if (internal::log_level > RETRO_LOG_INFO) {
+        return;
+    }
     internal::log_cb(
         RETRO_LOG_INFO, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
 }
@@ -33,6 +42,9 @@ constexpr void logInfo(Args&&... args)
 template <typename... Args>
 constexpr void logWarn(Args&&... args)
 {
+    if (internal::log_level > RETRO_LOG_WARN) {
+        return;
+    }
     internal::log_cb(
         RETRO_LOG_WARN, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
 }
@@ -40,6 +52,9 @@ constexpr void logWarn(Args&&... args)
 template <typename... Args>
 constexpr void logError(Args&&... args)
 {
+    if (internal::log_level > RETRO_LOG_ERROR) {
+        return;
+    }
     internal::log_cb(
         RETRO_LOG_ERROR, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
 }

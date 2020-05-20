@@ -18,10 +18,12 @@ jobs:
       - run: apt-get -y update
 
       - name: Install deps
-        run: apt-get -y install
-          cmake
-          git
-          zip
+        run: |
+          apt-get -y install \
+            git \
+            zip
+          wget -q 'https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Linux-x86_64.sh'
+          sh ./cmake-3.17.2-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
       - name: Set up libretro-super
         working-directory: /

@@ -8,7 +8,7 @@ void CoreOptionDefinition::setDefaultValue(const CoreOptionValue& default_value)
     for (size_t i = 0; i < values_.size(); ++i) {
         if (values_[i] == default_value) {
             default_value_index_ = i;
-            break;
+            return;
         }
     }
     retro::logError(

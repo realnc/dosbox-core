@@ -1,4 +1,5 @@
 // This is copyrighted software. More information is at the end of this file.
+#include "CoreOptions.h"
 #include "dosbox.h"
 #include "joystick.h"
 #include "keyboard.h"
@@ -591,21 +592,44 @@ void MAPPER_Init()
             }
         }
     } else if (connected[0] || connected[1]) {
-        retro::logDebug("One port connected, enabling 4 buttons in connected port.");
+        const bool force_2axis = retro::core_options["joystick_force_2axis"].toBool();
         const int port = connected[0] ? 0 : 1;
-        joytype = port == 0 ? JOY_4AXIS : JOY_4AXIS_2;
-        update_dosbox_variable(false, "joystick", "joysticktype", port == 0 ? "4axis" : "4axis_2");
+        if (force_2axis) {
+            retro::logDebug(
+                "One port connected, but enabling only 2axis in connected port as forced in core "
+                "options.");
+            joytype = JOY_2AXIS;
+            update_dosbox_variable(false, "joystick", "joysticktype", "2axis");
+        } else {
+            retro::logDebug("One port connected, enabling 4 buttons in connected port.");
+            joytype = port == 0 ? JOY_4AXIS : JOY_4AXIS_2;
+            update_dosbox_variable(
+                false, "joystick", "joysticktype", port == 0 ? "4axis" : "4axis_2");
+        }
         retro::logDebug("Port {} connected.", port);
         if (gamepad[port]) {
             retro::logDebug("Port {} gamepad.", port);
             addDpad(port);
-            addToRetroDesc(make4buttonGamepadDescArray(port));
+            if (force_2axis) {
+                addToRetroDesc(make2buttonGamepadDescArray(port));
+            } else {
+                addToRetroDesc(make4buttonGamepadDescArray(port));
+            }
         } else {
             retro::logDebug("Port {} joystick.", port);
-            add4Axes(port);
-            addToRetroDesc(make4buttonJoystickDescArray(port));
+            if (force_2axis) {
+                add2Axes(port);
+                addToRetroDesc(make2buttonJoystickDescArray(port));
+            } else {
+                add4Axes(port);
+                addToRetroDesc(make4buttonJoystickDescArray(port));
+            }
         }
-        add4Buttons(port);
+        if (force_2axis) {
+            add2Buttons(port);
+        } else {
+            add4Buttons(port);
+        }
         if (emulated_mouse) {
             addMouseEmulationButtons(port);
             addToRetroDesc(makeEmulatedMouseDescArray(port));

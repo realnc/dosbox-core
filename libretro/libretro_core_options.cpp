@@ -411,6 +411,18 @@ retro::CoreOptions retro::core_options {
             "none"
         },
         {
+            "joystick_force_2axis",
+            "Input: Force 2-axis/2-button",
+            "Normally, when only one port is assigned a joystick or gamepad, 4 axes and 4 buttons "
+                "are emulated on that port. Some (usually older) games however do not work "
+                "correctly without a classic 2-axis/2-button joystick.",
+            {
+                true,
+                false,
+            },
+            false
+        },
+        {
             "joystick_timed",
             "Input: Enable joystick timed intervals",
             "Enable timed intervals for joystick axes. Experiment with this option if your "

@@ -55,10 +55,6 @@ bool startup_state_numlock;
 bool autofire;
 static bool dosbox_initialiazed = false;
 
-int mouse_emu_deadzone;
-float mouse_speed_factor_x = 1.0;
-float mouse_speed_factor_y = 1.0;
-
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
 
@@ -69,7 +65,11 @@ SVGACards svgaCard = SVGA_None;
 /* input variables */
 bool gamepad[16]; /* true means gamepad, false means joystick */
 bool connected[16];
-bool emulated_mouse;
+static bool force_2axis_joystick = false;
+bool emulated_mouse = false;
+int mouse_emu_deadzone = 0;
+float mouse_speed_factor_x = 1.0;
+float mouse_speed_factor_y = 1.0;
 
 /* core option variables */
 bool run_synced = true;
@@ -611,17 +611,17 @@ static void check_variables()
         gus = check_gus_variables(false);
 
         {
-            const bool prev = emulated_mouse;
-            emulated_mouse = core_options["emulated_mouse"].toBool();
-            if (prev != emulated_mouse) {
-                MAPPER_Init();
-            }
-        }
+            const bool prev_force_2axis_joystick = force_2axis_joystick;
+            const bool prev_emulated_mouse = emulated_mouse;
+            const int prev_mouse_emu_deadzone = mouse_emu_deadzone;
 
-        {
-            const unsigned prev = mouse_emu_deadzone;
+            force_2axis_joystick = core_options["joystick_force_2axis"].toBool();
+            emulated_mouse = core_options["emulated_mouse"].toBool();
             mouse_emu_deadzone = core_options["emulated_mouse_deadzone"].toInt();
-            if (prev != mouse_emu_deadzone) {
+            if (prev_force_2axis_joystick != force_2axis_joystick
+                || prev_emulated_mouse != emulated_mouse
+                || prev_mouse_emu_deadzone != mouse_emu_deadzone)
+            {
                 MAPPER_Init();
             }
         }

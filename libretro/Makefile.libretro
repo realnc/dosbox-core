@@ -34,7 +34,13 @@ UNAMEM=$(shell uname -m)
 
 CXXFLAGS += -std=gnu++17 -Wno-register -DFMT_HEADER_ONLY
 COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
-EXTRA_CMAKE_FLAGS := -DCMAKE_CXX_STANDARD=17
+ifeq ($(platform), libnx)
+	# The libretro buildbot has a cmake version that's too old and doesn't know about C++17. Use
+	# this for now as a workaround until the buildbot is updated.
+	EXTRA_CMAKE_FLAGS := -DCMAKE_CXX_FLAGS="-std=gnu++17"
+else
+	EXTRA_CMAKE_FLAGS := -DCMAKE_CXX_STANDARD=17
+endif
 
 # Target triplet for cross compilation. When cross compiling from Linux to
 # Windows 32-bit using MXE for example, you'd set this to something like:

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2002-2019  The DOSBox Team
+ *  Copyright (C) 2002-2020  The DOSBox Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -938,8 +938,8 @@ static Bit16u MSCDEX_IOCTL_Input(PhysPt buffer,Bit8u drive_unit) {
 					mem_writed(buffer+1,mscdex->GetDeviceStatus(drive_unit)); 
 					break;
 		case 0x07 : /* Get sector size */
-					if (mem_readb(buffer+1)==0) mem_writed(buffer+2,2048);
-					else if (mem_readb(buffer+1)==1) mem_writed(buffer+2,2352);
+					if (mem_readb(buffer+1)==0) mem_writew(buffer+2,2048);
+					else if (mem_readb(buffer+1)==1) mem_writew(buffer+2,2352);
 					else return 0x03;		// invalid function
 					break;
 		case 0x08 : /* Get size of current volume */

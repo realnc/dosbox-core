@@ -952,6 +952,11 @@ void retro_init()
 #endif
     }
 
+    {
+        bool flag = true;
+        environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_ACHIEVEMENTS, &flag);
+    }
+
     retro::core_options.setEnvironmentCallback(environ_cb);
     retro::core_options.updateFrontend();
     disk_control::init(environ_cb);
@@ -1094,17 +1099,23 @@ void retro_reset()
     restart_program(control->startup_params);
 }
 
-/* Stubs */
-auto retro_get_memory_data(const unsigned /*type*/) -> void*
+auto retro_get_memory_data(const unsigned type) -> void*
 {
+    if (type == RETRO_MEMORY_SYSTEM_RAM) {
+        return GetMemBase();
+    }
     return nullptr;
 }
 
-auto retro_get_memory_size(const unsigned /*type*/) -> size_t
+auto retro_get_memory_size(const unsigned type) -> size_t
 {
+    if (type == RETRO_MEMORY_SYSTEM_RAM) {
+        return MEM_TotalPages() * 4096;
+    }
     return 0;
 }
 
+/* Stubs */
 auto retro_serialize_size() -> size_t
 {
     return 0;

@@ -371,11 +371,12 @@ retro::CoreOptions retro::core_options {
         },
         {
             "aspect_correction",
-            "Video: Aspect ratio correction.",
+            "Video: Aspect ratio correction",
             "When enabled, the aspect ratio will match that of a CRT monitor. This is required for "
-                "non-square pixel VGA resolutions to look as intended. Disable this if you want "
-                "unscaled square pixel aspect ratios, but this will result in a squashed or "
-                "stretched image.",
+                "non-square pixel resolutions to look as intended. Disable this if you want "
+                "unscaled square pixel aspect ratios (at the cost of a squashed or stretched "
+                "image), or if the result looks clearly wrong (games that use 640x350 for example "
+                "will look stretched with this enabled.)",
             {
                 true,
                 false,

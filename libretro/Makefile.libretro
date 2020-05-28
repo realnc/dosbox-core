@@ -683,7 +683,7 @@ $(GLIB): $(LIBFFI)
 	    -Dinternal_pcre=true \
 	    -Dnls=disabled
 	ninja -C "$(GLIB_BUILD_DIR)" install
-	sed -i 's/^Libs:.*/& -lpthread/' $(GLIB)
+	sed -i'.original' 's/^Libs:.*/& -lpthread/' $(GLIB)
 
 $(OBJECTS): deps
 

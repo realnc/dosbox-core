@@ -55,8 +55,8 @@ jobs:
     steps:
     - name: Install QEMU
       run: |
-        sudo apt-get update
-        sudo apt-get install -y qemu-user-static
+        sudo apt-get -y update
+        sudo apt-get -y install qemu-user-static
 
     - uses: actions/checkout@v2
       with:
@@ -71,11 +71,11 @@ jobs:
           arm32v7/ubuntu:16.04 \
           bash -c '(
             set -eux
-            apt-get update
-            apt-get install -y software-properties-common wget
+            apt-get -y update
+            apt-get -y install software-properties-common wget
             add-apt-repository -y --update ppa:ubuntu-toolchain-r/test
             add-apt-repository -y --update ppa:janisozaur/cmake-update
-            apt-get install -y \
+            apt-get -y install \
                 autoconf \
                 automake \
                 build-essential \
@@ -135,7 +135,8 @@ jobs:
     steps:
     - name: Install deps
       run: |
-        sudo apt-get install \
+        sudo apt-get -y update
+        sudo apt-get -y install \
             libasound2-dev \
             libglu1-mesa-dev \
             mesa-common-dev \
@@ -244,7 +245,7 @@ jobs:
 
     steps:
     - name: Install deps
-      run: sudo apt-get install
+      run: sudo apt-get -y install
         ninja-build
 
     - name: Set up MXE environment

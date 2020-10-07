@@ -1,5 +1,6 @@
 .core-defs:
   variables:
+    GIT_SUBMODULE_STRATEGY: recursive
     JNI_PATH: libretro
     CORENAME: dosbox_core
 
@@ -11,8 +12,8 @@ include:
     file: '/linux-x64.yml'
   - project: 'libretro-infrastructure/ci-templates'
     file: '/windows-x64-mingw.yml'
-  - project: 'libretro-infrastructure/ci-templates'
-    file: '/android-jni.yml'
+  #- project: 'libretro-infrastructure/ci-templates'
+  #  file: '/android-jni.yml'
 
 stages:
   - build-prepare
@@ -26,35 +27,84 @@ libretro-build-linux-x64:
     - .core-defs
     - .libretro-linux-x64-make-default
   variables:
-    MAKEFILE: libretro/Makefile.libretro
+    MAKEFILE_PATH: libretro
+    MAKEFILE: Makefile.libretro
+    CC: gcc-9
+    CXX: g++-9
+    platform: unix
+    BUNDLED_AUDIO_CODECS: 1
+    BUNDLED_GLIB: 1
+    BUNDLED_LIBSNDFILE: 1
+    BUNDLED_SDL: 1
+    CMAKE_GENERATOR: Ninja
+    STATIC_LIBCXX: 1
+    WITH_BASSMIDI: 1
+    WITH_DYNAREC: x86_64
+    WITH_FLUIDSYNTH: 1
+    WITH_VOODOO: 1
+  image: realnc/dosbox-core-build:linux-x64
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-linux-x64-1"
+    untracked: false
+    paths:
+      - libretro/deps_bin/
+  script:
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
 
 libretro-build-windows-x64:
   extends:
     - .core-defs
     - .libretro-windows-x64-mingw-make-default
   variables:
-    MAKEFILE: libretro/Makefile.libretro
-    
+    MAKEFILE_PATH: libretro
+    MAKEFILE: Makefile.libretro
+    CC: gcc
+    CXX: g++
+    CMAKE_GENERATOR: Ninja
+    platform: win
+    TARGET_TRIPLET: x86_64-w64-mingw32.static
+    BUNDLED_AUDIO_CODECS: 0
+    BUNDLED_GLIB: 0
+    BUNDLED_LIBSNDFILE: 0
+    BUNDLED_SDL: 0
+    STATIC_LIBCXX: 0
+    WITH_BASSMIDI: 1
+    WITH_DYNAREC: x86_64
+    WITH_FLUIDSYNTH: 1
+    WITH_VOODOO: 1
+  image: realnc/dosbox-core-build:mxe
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-windows-x64-1"
+    untracked: false
+    paths:
+      - libretro/deps_bin/
+  script:
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
+
 # Android
-android-armeabi-v7a:
-  extends:
-    - .core-defs
-    - .libretro-android-jni-armeabi-v7a
+#android-armeabi-v7a:
+#  extends:
+#    - .core-defs
+#    - .libretro-android-jni-armeabi-v7a
 
-android-arm64-v8a:
-  extends:
-    - .core-defs
-    - .libretro-android-jni-arm64-v8a
+#android-arm64-v8a:
+#  extends:
+#    - .core-defs
+#    - .libretro-android-jni-arm64-v8a
 
-android-x86_64:
-  extends:
-    - .core-defs
-    - .libretro-android-jni-x86_64
-    
-android-x86:
-  extends:
-    - .core-defs
-    - .libretro-android-jni-x86
+#android-x86_64:
+#  extends:
+#    - .core-defs
+#    - .libretro-android-jni-x86_64
+
+#android-x86:
+#  extends:
+#    - .core-defs
+#    - .libretro-android-jni-x86
 
 # Static
 libretro-build-libnx-aarch64:
@@ -62,4 +112,11 @@ libretro-build-libnx-aarch64:
     - .core-defs
     - .libretro-libnx-static-retroarch-master
   variables:
-    MAKEFILE: libretro/Makefile.libretro
+    MAKEFILE_PATH: libretro
+    MAKEFILE: Makefile.libretro
+    CMAKE_GENERATOR: 'Unix Makefiles'
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-libnx-aarch64-1"
+    untracked: false
+    paths:
+      - libretro/deps_bin/

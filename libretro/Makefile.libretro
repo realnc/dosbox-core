@@ -31,6 +31,10 @@ SVN_VERSION := "$(shell cat svn)"
 
 UNAME=$(shell uname -s)
 UNAMEM=$(shell uname -m)
+NUMPROC?=$(shell nproc)
+ifeq ($(NUMPROC),)
+	NUMPROC=2
+endif
 
 CXXFLAGS += -std=gnu++17 -Wno-register -DFMT_HEADER_ONLY
 COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
@@ -471,7 +475,7 @@ $(OGG):
 	    -DBUILD_FRAMEWORK=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/ogg" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
 
 $(VORBIS): $(OGG)
 	mkdir -p $(VORBIS_BUILD_DIR)
@@ -484,7 +488,7 @@ $(VORBIS): $(OGG)
 	    -DBUILD_FRAMEWORK=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/vorbis" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC) \
 	&& sed -i'.original' '/^Requires:/d' $(VORBIS) \
 	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(VORBIS)
 
@@ -502,7 +506,7 @@ $(OPUS):
 	    -DOPUS_STACK_PROTECTOR=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/opus" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
 
 $(FLAC): $(OGG)
 	mkdir -p $(FLAC_BUILD_DIR)
@@ -522,7 +526,7 @@ $(FLAC): $(OGG)
 	    -DWITH_STACK_PROTECTOR=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/flac" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
 
 $(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	mkdir -p "$(LIBSNDFILE_BUILD_DIR)"
@@ -541,7 +545,7 @@ $(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	    -DENABLE_PACKAGE_CONFIG=ON \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/libsndfile" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install \
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC) \
 	&& sed -i'.original' '/^Requires:/d' $(LIBSNDFILE) \
 	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(LIBSNDFILE)
 
@@ -570,7 +574,7 @@ $(SDL):
 	    --disable-rpath \
 	    --with-pic \
 	    --without-x \
-	&& $(MAKE) -j`nproc` install
+	&& $(MAKE) -j$(NUMPROC) install
 
 $(SDLNET): $(SDL)
 	mkdir -p "$(SDLNET_BUILD_DIR)"
@@ -583,7 +587,7 @@ $(SDLNET): $(SDL)
 	    --disable-sdltest \
 	    --disable-gui \
 	    --with-pic \
-	&& $(MAKE) -j`nproc` install
+	&& $(MAKE) -j$(NUMPROC) install
 
 $(MUNT):
 	mkdir -p $(MUNT_BUILD_DIR)
@@ -598,7 +602,7 @@ $(MUNT):
 	    -Dlibmt32emu_WITH_INTERNAL_RESAMPLER=ON \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/munt/mt32emu" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE)
+	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) -j $(NUMPROC)
 
 # Always a release build because ubsan is forced in debug builds.
 $(LIBINSTPATCH): $(LIBSNDFILE) $(GLIB)
@@ -612,7 +616,7 @@ $(LIBINSTPATCH): $(LIBSNDFILE) $(GLIB)
 	    -DLIB_INSTALL_DIR=lib \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/libinstpatch" \
-	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install
+	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install -j $(NUMPROC)
 
 # Always a release build because debug build creates broken .pc file with mingw.
 $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH) $(GLIB)
@@ -654,7 +658,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH) $(GLIB)
 	    -Denable-framework=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/fluidsynth" \
-	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install
+	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install -j $(NUMPROC)
 
 $(LIBFFI):
 	cd deps/libffi && ./autogen.sh
@@ -670,7 +674,7 @@ $(LIBFFI):
 	    --disable-docs \
 	    --with-pic \
 	    --with-gcc-arch=generic \
-	&& $(MAKE) -j`nproc` install
+	&& $(MAKE) -j$(NUMPROC) install
 
 $(GLIB): $(LIBFFI)
 	mkdir -p "$(GLIB_BUILD_DIR)"
@@ -682,7 +686,7 @@ $(GLIB): $(LIBFFI)
 	    -Db_staticpic=true \
 	    -Dinternal_pcre=true \
 	    -Dnls=disabled
-	ninja -C "$(GLIB_BUILD_DIR)" install
+	ninja -C "$(GLIB_BUILD_DIR)" -j$(NUMPROC) install
 	sed -i'.original' 's/^Libs:.*/& -lpthread/' $(GLIB)
 
 $(OBJECTS): deps

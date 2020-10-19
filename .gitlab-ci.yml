@@ -74,7 +74,7 @@ libretro-build-windows-x64:
     WITH_DYNAREC: x86_64
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
-  image: realnc/dosbox-core-build:mxe
+  image: realnc/dosbox-core-build:mxe-x64
   cache:
     key: "$CI_COMMIT_REF_SLUG-windows-x64-1"
     untracked: false

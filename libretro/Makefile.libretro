@@ -455,7 +455,7 @@ libffi: $(LIBFFI)
 .PHONY: glib
 glib: $(GLIB)
 
-.PHONY:
+.PHONY: deps
 deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth libffi glib
 
 # Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
@@ -690,7 +690,7 @@ $(GLIB): $(LIBFFI)
 	ninja -C "$(GLIB_BUILD_DIR)" -j$(NUMPROC) install
 	sed -i'.original' 's/^Libs:.*/& -lpthread/' $(GLIB)
 
-$(OBJECTS): deps
+$(OBJECTS): $(FLUIDSYNTH) $(MUNT) $(SDLNET)
 
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)

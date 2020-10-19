@@ -390,13 +390,14 @@ endif
 include Makefile.common
 
 OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
+OBJECT_DEPS = $(OBJECTS:.o=.d)
 INCFLAGS += -I$(MUNT_BUILD_DIR)/include -Ideps/fmt/include
 ifeq ($(WITH_BASSMIDI), 1)
 	COMMONFLAGS += -DWITH_BASSMIDI=1
 	LDFLAGS += -ldl
 endif
-CXXFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
-CFLAGS += -D__LIBRETRO__ $(fpic) $(INCFLAGS) $(COMMONFLAGS)
+CXXFLAGS += -D__LIBRETRO__ -MMD $(fpic) $(INCFLAGS) $(COMMONFLAGS)
+CFLAGS += -D__LIBRETRO__ -MMD $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 LDFLAGS += -lm $(fpic)
 ifeq ($(STATIC_PACKAGES), 1)
 	LDFLAGS += -Wl,-Bstatic
@@ -699,9 +700,11 @@ else
 	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
 endif
 
+-include $(OBJECT_DEPS)
+
 .PHONY: targetclean
 targetclean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(OBJECTS) $(OBJECT_DEPS) $(TARGET)
 
 .PHONY: depsclean
 depsclean:

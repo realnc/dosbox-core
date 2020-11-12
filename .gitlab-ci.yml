@@ -43,6 +43,7 @@ libretro-build-linux-x64:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   image: realnc/dosbox-core-build:linux-x64
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:dosbox-core
   cache:
     key: "$CI_COMMIT_REF_SLUG-linux-x64-1"
     untracked: false
@@ -74,7 +75,7 @@ libretro-build-windows-x64:
     WITH_DYNAREC: x86_64
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
-  image: realnc/dosbox-core-build:mxe-x64
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-mxe:latest
   cache:
     key: "$CI_COMMIT_REF_SLUG-windows-x64-1"
     untracked: false

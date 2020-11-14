@@ -88,23 +88,32 @@ jobs:
                 libtool \
                 mesa-common-dev \
                 pkg-config \
-                python3-pip
-            python3 -m pip install --upgrade pip
-            python3 -m pip install meson
+                wget
+            wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
+                | tar xz -C /opt
+            sudo mv /opt/meson-* /opt/meson
             git clone 'https://github.com/ninja-build/ninja.git'
             cd ninja
-            git checkout tags/v1.10.0
+            git checkout tags/v1.10.1
             ln -s /usr/bin/python3 /usr/local/bin/python
             ./configure.py --bootstrap
             mv ninja /usr/local/bin/
             cd ..
             export CC=gcc-9
             export CXX=g++-9
-            export platform=unix
-            export STATIC_LIBCXX=1
             export BUNDLED_AUDIO_CODECS=1
+            export BUNDLED_GLIB=1
             export BUNDLED_LIBSNDFILE=1
             export BUNDLED_SDL=1
+            export CMAKE_GENERATOR=Ninja
+            export MESON=/opt/meson/meson.py
+            export NINJA=/usr/local/bin/ninja
+            export STATIC_LIBCXX=1
+            export WITH_BASSMIDI=1
+            export WITH_DYNAREC=arm
+            export WITH_FLUIDSYNTH=1
+            export WITH_VOODOO=1
+            export platform=unix
             make deps
             make -j2
             strip dosbox_core_libretro.so
@@ -125,26 +134,36 @@ jobs:
     env:
       CC: gcc-9
       CXX: g++-9
-      platform: unix
-      STATIC_LIBCXX: 1
       BUNDLED_AUDIO_CODECS: 1
+      BUNDLED_GLIB: 1
       BUNDLED_LIBSNDFILE: 1
       BUNDLED_SDL: 1
+      CMAKE_GENERATOR: Ninja
+      MESON: /opt/meson/meson.py
+      NINJA: /usr/local/bin/ninja
+      STATIC_LIBCXX: 1
+      WITH_BASSMIDI: 1
       WITH_DYNAREC: x86_64
+      WITH_FLUIDSYNTH: 1
+      WITH_VOODOO: 1
+      platform: unix
 
     steps:
     - name: Install deps
+      working-directory: /tmp
       run: |
         sudo apt-get -y update
         sudo apt-get -y install \
             libasound2-dev \
             libglu1-mesa-dev \
-            mesa-common-dev \
-            python3-pip
-        sudo python3 -m pip install --upgrade pip
-        sudo python3 -m pip install \
-            meson \
-            ninja
+            mesa-common-dev
+        wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
+            | sudo tar xz -C /opt
+        sudo mv /opt/meson-* /opt/meson
+        wget -q 'https://github.com/ninja-build/ninja/releases/download/v1.10.1/ninja-linux.zip'
+        unzip ninja-linux.zip
+        rm ninja-linux.zip
+        sudo mv ninja /usr/local/bin/
 
     - uses: actions/checkout@v2
       with:
@@ -228,10 +247,11 @@ jobs:
     strategy:
       matrix:
         config:
-          - {triplet: i686-w64-mingw32.static, dynarec: x86, zip_name: windows-x86.zip}
-          - {triplet: x86_64-w64-mingw32.static, dynarec: x86_64, zip_name: windows-x64.zip}
+          - {image: 'realnc/dosbox-core-build:mxe-x86', triplet: i686-w64-mingw32.static, dynarec: x86, zip_name: windows-x86.zip}
+          - {image: 'realnc/dosbox-core-build:mxe-x64', triplet: x86_64-w64-mingw32.static, dynarec: x86_64, zip_name: windows-x64.zip}
 
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
+    container: ${{ matrix.config.image }}
 
     env:
       CC: gcc
@@ -244,13 +264,6 @@ jobs:
       WITH_DYNAREC: ${{ matrix.config.dynarec }}
 
     steps:
-    - name: Install deps
-      run: sudo apt-get -y install
-        ninja-build
-
-    - name: Set up MXE environment
-      run: wget -q 'https://github.com/realnc/stuff/releases/download/stuff/mxe.tar.xz' -O- | sudo tar xJ -C /opt
-
     - uses: actions/checkout@v2
       with:
         submodules: recursive
@@ -258,7 +271,6 @@ jobs:
     - name: Build
       working-directory: ./libretro
       run: |
-        source /opt/mxe/mxe-env.sh
         make deps
         make -j`nproc`
         ${{ matrix.config.triplet }}-strip dosbox_core_libretro.dll

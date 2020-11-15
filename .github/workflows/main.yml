@@ -91,7 +91,7 @@ jobs:
                 wget
             wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
                 | tar xz -C /opt
-            sudo mv /opt/meson-* /opt/meson
+            mv /opt/meson-* /opt/meson
             git clone 'https://github.com/ninja-build/ninja.git'
             cd ninja
             git checkout tags/v1.10.1

@@ -1,65 +1,52 @@
+  
+# DESCRIPTION: GitLab CI/CD for libRetro (NOT FOR GitLab-proper)
+
+##############################################################################
+################################# BOILERPLATE ################################
+##############################################################################
+
+# Core definitions
 .core-defs:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
     JNI_PATH: libretro
     CORENAME: dosbox_core
+    MAKEFILE_PATH: libretro
+    MAKEFILE: Makefile.libretro
 
+# Inclusion templates, required for the build to work
 include:
-  - template: Jobs/Code-Quality.gitlab-ci.yml
-  - project: 'libretro-infrastructure/ci-templates'
-    file: '/libnx-static.yml'
-  - project: 'libretro-infrastructure/ci-templates'
-    file: '/linux-x64.yml'
+  ################################## DESKTOPS ################################
+  # Windows 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/windows-x64-mingw.yml'
-  #- project: 'libretro-infrastructure/ci-templates'
-  #  file: '/android-jni.yml'
+    
+  # Linux 64-bit
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-x64.yml'
+    
+  ################################## CONSOLES ################################
+  # Nintendo Switch
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/libnx-static.yml'
 
+# Stages for building
 stages:
   - build-prepare
   - build-shared
   - build-static
-  - test
 
-#Desktop
-libretro-build-linux-x64:
-  extends:
-    - .core-defs
-    - .libretro-linux-x64-make-default
-  variables:
-    MAKEFILE_PATH: libretro
-    MAKEFILE: Makefile.libretro
-    CC: gcc-9
-    CXX: g++-9
-    platform: unix
-    BUNDLED_AUDIO_CODECS: 1
-    BUNDLED_GLIB: 1
-    BUNDLED_LIBSNDFILE: 1
-    BUNDLED_SDL: 1
-    CMAKE_GENERATOR: Ninja
-    STATIC_LIBCXX: 1
-    WITH_BASSMIDI: 1
-    WITH_DYNAREC: x86_64
-    WITH_FLUIDSYNTH: 1
-    WITH_VOODOO: 1
-  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:dosbox-core
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-linux-x64-1"
-    untracked: false
-    paths:
-      - libretro/deps_bin/
-  script:
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
-    - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
-
+##############################################################################
+#################################### STAGES ##################################
+##############################################################################
+#
+################################### DESKTOPS #################################
+# Windows 64-bit
 libretro-build-windows-x64:
   extends:
-    - .core-defs
     - .libretro-windows-x64-mingw-make-default
+    - .core-defs
   variables:
-    MAKEFILE_PATH: libretro
-    MAKEFILE: Makefile.libretro
     CC: gcc
     CXX: g++
     CMAKE_GENERATOR: Ninja
@@ -75,48 +62,66 @@ libretro-build-windows-x64:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-mxe:latest
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-windows-x64-1"
-    untracked: false
-    paths:
-      - libretro/deps_bin/
   script:
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
-# Android
+# Linux 64-bit
+libretro-build-linux-x64:
+  extends:
+    - .libretro-linux-x64-make-default
+    - .core-defs
+  variables:
+    CC: gcc-9
+    CXX: g++-9
+    platform: unix
+    BUNDLED_AUDIO_CODECS: 1
+    BUNDLED_GLIB: 1
+    BUNDLED_LIBSNDFILE: 1
+    BUNDLED_SDL: 1
+    CMAKE_GENERATOR: Ninja
+    STATIC_LIBCXX: 1
+    WITH_BASSMIDI: 1
+    WITH_DYNAREC: x86_64
+    WITH_FLUIDSYNTH: 1
+    WITH_VOODOO: 1
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:dosbox-core
+  script:
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
+
+################################### CELLULAR #################################
+# Android ARMv7a
 #android-armeabi-v7a:
 #  extends:
-#    - .core-defs
 #    - .libretro-android-jni-armeabi-v7a
+#    - .core-defs
 
+# Android ARMv8a
 #android-arm64-v8a:
 #  extends:
-#    - .core-defs
 #    - .libretro-android-jni-arm64-v8a
+#    - .core-defs
 
+# Android 64-bit x86
 #android-x86_64:
 #  extends:
-#    - .core-defs
 #    - .libretro-android-jni-x86_64
+#    - .core-defs
 
+# Android 32-bit x86
 #android-x86:
 #  extends:
-#    - .core-defs
 #    - .libretro-android-jni-x86
+#    - .core-defs
 
-# Static
+################################### CONSOLES #################################
+# Nintendo Switch
 libretro-build-libnx-aarch64:
   extends:
-    - .core-defs
     - .libretro-libnx-static-retroarch-master
+    - .core-defs
   variables:
-    MAKEFILE_PATH: libretro
-    MAKEFILE: Makefile.libretro
     CMAKE_GENERATOR: 'Unix Makefiles'
-  cache:
-    key: "$CI_COMMIT_REF_SLUG-libnx-aarch64-1"
-    untracked: false
-    paths:
-      - libretro/deps_bin/

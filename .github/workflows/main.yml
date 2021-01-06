@@ -5,46 +5,46 @@ on:
   pull_request:
 
 jobs:
-  build_libnx:
-    runs-on: ubuntu-latest
-    container: devkitpro/devkita64
+#  build_libnx:
+#    runs-on: ubuntu-latest
+#    container: devkitpro/devkita64
 
-    env:
-      SINGLE_CORE: dosbox_core
-      FORCE: YES
-      EXIT_ON_ERROR: 1
+#    env:
+#      SINGLE_CORE: dosbox_core
+#      FORCE: YES
+#      EXIT_ON_ERROR: 1
 
-    steps:
-      - run: apt-get -y update
+#    steps:
+#      - run: apt-get -y update
 
-      - name: Install deps
-        run: |
-          apt-get -y install \
-            git \
-            zip
-          wget -q 'https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Linux-x86_64.sh'
-          sh ./cmake-3.17.2-Linux-x86_64.sh --skip-license --prefix=/usr/local
+#      - name: Install deps
+#        run: |
+#          apt-get -y install \
+#            git \
+#            zip
+#          wget -q 'https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Linux-x86_64.sh'
+#          sh ./cmake-3.17.2-Linux-x86_64.sh --skip-license --prefix=/usr/local
 
-      - name: Set up libretro-super
-        working-directory: /
-        run: |
-          git clone --depth=1 'https://github.com/libretro/libretro-super.git'
-          sed -i \
-            "s|^dosbox_core libretro-dosbox_core https://github.com/libretro/dosbox-core.git libretro |dosbox_core libretro-dosbox_core https://github.com/realnc/dosbox-core.git ${GITHUB_REF##refs/heads/} |g" \
-            libretro-super/recipes/nintendo/libnx
+#      - name: Set up libretro-super
+#        working-directory: /
+#        run: |
+#          git clone --depth=1 'https://github.com/libretro/libretro-super.git'
+#          sed -i \
+#            "s|^dosbox_core libretro-dosbox_core https://github.com/libretro/dosbox-core.git libretro |dosbox_core libretro-dosbox_core https://github.com/realnc/dosbox-core.git ${GITHUB_REF##refs/heads/} |g" \
+#            libretro-super/recipes/nintendo/libnx
 
-      - name: Build
-        working-directory: /libretro-super
-        run: |
-          ./libretro-buildbot-recipe.sh recipes/nintendo/libnx
-          zip -j -9 retroarch-nintendo-switch.zip retroarch/pkg/libnx/retroarch/cores/dosbox_core_libretro_libnx.nro
+#      - name: Build
+#        working-directory: /libretro-super
+#        run: |
+#          ./libretro-buildbot-recipe.sh recipes/nintendo/libnx
+#          zip -j -9 retroarch-nintendo-switch.zip retroarch/pkg/libnx/retroarch/cores/dosbox_core_libretro_libnx.nro
 
-      - name: Upload artifact
-        if: github.event_name == 'push'
-        uses: actions/upload-artifact@v2
-        with:
-          name: retroarch-nintendo-switch.zip
-          path: /libretro-super/retroarch-nintendo-switch.zip
+#      - name: Upload artifact
+#        if: github.event_name == 'push'
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: retroarch-nintendo-switch.zip
+#          path: /libretro-super/retroarch-nintendo-switch.zip
 
   build_linux_arm:
     # We run this in an Ubuntu ARM image inside QEMU which is very slow, so skip this when not
@@ -287,7 +287,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/libretro'
     runs-on: ubuntu-latest
     needs: [
-      build_libnx,
+      #build_libnx,
       build_linux_arm,
       build_linux_x64,
       build_macos,
@@ -307,6 +307,6 @@ jobs:
           linux-armhf.zip
           linux-x64.zip
           macOS-x64.zip
-          retroarch-nintendo-switch.zip
+          #retroarch-nintendo-switch.zip
           windows-x64.zip
           windows-x86.zip

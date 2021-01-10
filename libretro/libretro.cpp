@@ -988,7 +988,11 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     }
 
     if (const auto extension = lower_case(load_path.extension().string()); extension == ".conf") {
+#ifndef HAVE_LIBNX
         config_path = std::filesystem::absolute(load_path);
+#else
+        config_path = load_path;
+#endif
         load_path.clear();
     } else {
         retro::logInfo("Loading default configuration: {}", config_path);

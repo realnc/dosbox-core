@@ -21,6 +21,10 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/windows-x64-mingw.yml'
     
+  # Windows 32-bit
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/windows-i686-mingw.yml'
+
   # Linux 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
@@ -61,11 +65,35 @@ libretro-build-windows-x64:
     WITH_DYNAREC: x86_64
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
-  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-mxe:latest
   script:
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
+
+# Windows 32-bit
+libretro-build-windows-i686:
+  extends:
+    - .libretro-windows-i686-mingw-make-default
+    - .core-defs
+  variables:
+    CC: gcc
+    CXX: g++
+    CMAKE_GENERATOR: Ninja
+    platform: win
+    TARGET_TRIPLET: i686-w64-mingw32.static
+    BUNDLED_AUDIO_CODECS: 0
+    BUNDLED_GLIB: 0
+    BUNDLED_LIBSNDFILE: 0
+    BUNDLED_SDL: 0
+    STATIC_LIBCXX: 0
+    WITH_BASSMIDI: 1
+    WITH_DYNAREC: x86
+    WITH_FLUIDSYNTH: 1
+    WITH_VOODOO: 1
+  script:
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - i686-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
 # Linux 64-bit
 libretro-build-linux-x64:

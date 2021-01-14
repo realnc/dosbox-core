@@ -29,6 +29,11 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
     
+  ################################## CELLULAR ################################
+  # Android
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/android-jni.yml'
+
   ################################## CONSOLES ################################
   # Nintendo Switch
   - project: 'libretro-infrastructure/ci-templates'
@@ -122,28 +127,68 @@ libretro-build-linux-x64:
 
 ################################### CELLULAR #################################
 # Android ARMv7a
-#android-armeabi-v7a:
-#  extends:
-#    - .libretro-android-jni-armeabi-v7a
-#    - .core-defs
+android-armeabi-v7a:
+  extends:
+    - .libretro-android-jni-armeabi-v7a
+    - .core-defs
+  variables:
+    DEPS_BIN_DIR: deps_bin
+    CMAKE: cmake
+    CMAKE_BUILD_TYPE: Release
+    EXTRA_CMAKE_FLAGS: -DANDROID_PLATFORM=android-${API_LEVEL} -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=${ANDROID_ABI}
+  script:
+    - make -C ${MAKEFILE_PATH} -f deps/munt.makefile
+    - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
+    - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
+    - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
 
 # Android ARMv8a
-#android-arm64-v8a:
-#  extends:
-#    - .libretro-android-jni-arm64-v8a
-#    - .core-defs
+android-arm64-v8a:
+  extends:
+    - .libretro-android-jni-arm64-v8a
+    - .core-defs
+    variables:
+      DEPS_BIN_DIR: deps_bin
+      CMAKE: cmake
+      CMAKE_BUILD_TYPE: Release
+      EXTRA_CMAKE_FLAGS: -DANDROID_PLATFORM=android-${API_LEVEL} -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=${ANDROID_ABI}
+    script:
+      - make -C ${MAKEFILE_PATH} -f deps/munt.makefile
+      - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
+      - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
+      - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
 
 # Android 64-bit x86
-#android-x86_64:
-#  extends:
-#    - .libretro-android-jni-x86_64
-#    - .core-defs
+android-x86_64:
+  extends:
+    - .libretro-android-jni-x86_64
+    - .core-defs
+    variables:
+      DEPS_BIN_DIR: deps_bin
+      CMAKE: cmake
+      CMAKE_BUILD_TYPE: Release
+      EXTRA_CMAKE_FLAGS: -DANDROID_PLATFORM=android-${API_LEVEL} -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=${ANDROID_ABI}
+    script:
+      - make -C ${MAKEFILE_PATH} -f deps/munt.makefile
+      - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
+      - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
+      - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
 
 # Android 32-bit x86
-#android-x86:
-#  extends:
-#    - .libretro-android-jni-x86
-#    - .core-defs
+android-x86:
+  extends:
+    - .libretro-android-jni-x86
+    - .core-defs
+    variables:
+      DEPS_BIN_DIR: deps_bin
+      CMAKE: cmake
+      CMAKE_BUILD_TYPE: Release
+      EXTRA_CMAKE_FLAGS: -DANDROID_PLATFORM=android-${API_LEVEL} -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=${ANDROID_ABI}
+    script:
+      - make -C ${MAKEFILE_PATH} -f deps/munt.makefile
+      - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
+      - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
+      - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
 
 ################################### CONSOLES #################################
 # Nintendo Switch

@@ -1,7 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 CORE_DIR   := $(LOCAL_PATH)/../..
 
-INCFLAGS    := -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/SDL/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/SDL_net/
+INCFLAGS    := -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/SDL/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/SDL_net/ -I$(CORE_DIR)/libretro/deps/fmt/include -I$(CORE_DIR)/libretro/deps_bin/munt_build/include
 COMMONFLAGS :=
 
 WITH_DYNAREC :=
@@ -22,7 +22,7 @@ else ifeq ($(TARGET_ARCH_ABI), mips64)
 endif
 
 WITH_IPX := 1
-WITH_VOODOO := 1
+WITH_VOODOO := 0
 
 include $(CORE_DIR)/libretro/Makefile.common
 
@@ -59,14 +59,19 @@ ifneq ($(SVN_VERSION)," unknown")
 endif
 
 include $(CLEAR_VARS)
-LOCAL_MODULE       := retro
-LOCAL_SRC_FILES    := $(SOURCES_C) $(SOURCES_CXX)
-LOCAL_CFLAGS       := $(COMMONFLAGS)
-LOCAL_CPPFLAGS     := $(COMMONFLAGS)
-LOCAL_LDFLAGS      := -Wl,-version-script=$(CORE_DIR)/libretro/link.T
-LOCAL_LDLIBS       := -llog -lGLESv2
-LOCAL_CPP_FEATURES := rtti exceptions
-LOCAL_ARM_MODE     := arm
-LOCAL_DISABLE_FATAL_LINKER_WARNINGS := true
+LOCAL_MODULE := munt
+LOCAL_SRC_FILES := $(CORE_DIR)/libretro/deps_bin/munt_build/libmt32emu.a
+include $(PREBUILT_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+LOCAL_MODULE := retro
+LOCAL_SRC_FILES := $(SOURCES_C) $(SOURCES_CXX)
+LOCAL_STATIC_LIBRARIES := munt
+LOCAL_CFLAGS := $(COMMONFLAGS)
+LOCAL_CPPFLAGS := $(COMMONFLAGS) -std=gnu++17 -Wno-register -DFMT_HEADER_ONLY
+LOCAL_LDFLAGS := -Wl,-version-script=$(CORE_DIR)/libretro/link.T
+LOCAL_LDLIBS := -llog -lGLESv2
+LOCAL_CPP_FEATURES := rtti exceptions
+LOCAL_ARM_MODE := arm
+LOCAL_DISABLE_FATAL_LINKER_WARNINGS := true
 include $(BUILD_SHARED_LIBRARY)

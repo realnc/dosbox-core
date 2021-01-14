@@ -348,41 +348,27 @@ SOURCES_CXX :=
 
 DEPS_BIN_DIR = $(CURDIR)/deps_bin
 ifeq ($(BUNDLED_SDL), 1)
-	SDL_BUILD_DIR = $(DEPS_BIN_DIR)/sdl_build
-	SDL = $(DEPS_BIN_DIR)/lib/pkgconfig/sdl.pc
-	SDLNET_BUILD_DIR = $(DEPS_BIN_DIR)/sdl_net_build
-	SDLNET = $(DEPS_BIN_DIR)/lib/pkgconfig/SDL_net.pc
+	include deps/sdl.makefile
+	include deps/sdl_net.makefile
 endif
 ifeq ($(BUNDLED_GLIB), 1)
-	LIBFFI_BUILD_DIR = $(DEPS_BIN_DIR)/libffi_build
-	LIBFFI = $(DEPS_BIN_DIR)/lib/pkgconfig/libffi.pc
-	GLIB_BUILD_DIR = $(DEPS_BIN_DIR)/glib_build
-	GLIB = $(DEPS_BIN_DIR)/lib/pkgconfig/glib-2.0.pc
+	include deps/libffi.makefile
+	include deps/glib.makefile
 endif
 ifeq ($(WITH_FLUIDSYNTH), 1)
 	ifeq ($(BUNDLED_AUDIO_CODECS), 1)
-		OGG_BUILD_DIR = $(DEPS_BIN_DIR)/ogg_build
-		OGG = $(DEPS_BIN_DIR)/lib/pkgconfig/ogg.pc
-		VORBIS_BUILD_DIR = $(DEPS_BIN_DIR)/vorbis_build
-		VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
-		OPUS_BUILD_DIR = $(DEPS_BIN_DIR)/opus_build
-		OPUS = $(DEPS_BIN_DIR)/lib/pkgconfig/opus.pc
-		FLAC_BUILD_DIR = $(DEPS_BIN_DIR)/flac_build
-		FLAC = $(DEPS_BIN_DIR)/lib/pkgconfig/flac.pc
+		include deps/ogg.makefile
+		include deps/vorbis.makefile
+		include deps/opus.makefile
+		include deps/flac.makefile
 	endif
 	ifeq ($(BUNDLED_LIBSNDFILE), 1)
-		LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
-		LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
+		include deps/libsndfile.makefile
 	endif
-	LIBINSTPATCH_BUILD_DIR = $(DEPS_BIN_DIR)/libinstpatch_build
-	LIBINSTPATCH = $(DEPS_BIN_DIR)/lib/pkgconfig/libinstpatch-1.0.pc
-	FLUIDSYNTH_BUILD_DIR = $(DEPS_BIN_DIR)/fluidsynth_build
-	FLUIDSYNTH = $(DEPS_BIN_DIR)/lib/pkgconfig/fluidsynth.pc
-	EXTRA_PACKAGES += fluidsynth libinstpatch-1.0
-	COMMONFLAGS += -DWITH_FLUIDSYNTH=1
+	include deps/libinstpatch.makefile
+	include deps/fluidsynth.makefile
 endif
-MUNT_BUILD_DIR = $(DEPS_BIN_DIR)/munt_build
-MUNT = $(MUNT_BUILD_DIR)/libmt32emu.a
+include deps/munt.makefile
 export PKG_CONFIG_PATH := $(DEPS_BIN_DIR)/lib/pkgconfig:$(PKG_CONFIG_PATH)
 export PATH := $(DEPS_BIN_DIR)/bin:$(PATH)
 # When cross compiling with MXE, we need PKG_CONFIG_PATH_<TARGET_TRIPLET> but with all dashes and
@@ -395,7 +381,7 @@ include Makefile.common
 
 OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 OBJECT_DEPS = $(OBJECTS:.o=.d)
-INCFLAGS += -I$(MUNT_BUILD_DIR)/include -Ideps/fmt/include
+INCFLAGS += $(MUNT_INCFLAGS) -Ideps/fmt/include
 ifeq ($(WITH_BASSMIDI), 1)
 	COMMONFLAGS += -DWITH_BASSMIDI=1
 	LDFLAGS += -ldl
@@ -407,7 +393,7 @@ ifeq ($(STATIC_PACKAGES), 1)
 	LDFLAGS += -Wl,-Bstatic
 	PKG_CONFIG_FLAGS += --static
 endif
-LDFLAGS += -L$(MUNT_BUILD_DIR) -lmt32emu
+LDFLAGS += $(MUNT_LDFLAGS)
 ifdef EXTRA_PACKAGES
 	LDFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs $(EXTRA_PACKAGES)`
 	INCFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --cflags-only-I $(EXTRA_PACKAGES)`
@@ -423,276 +409,8 @@ endif
 .PHONY: all
 all: $(TARGET)
 
-.PHONY: ogg
-ogg: $(OGG)
-
-.PHONY: vorbis
-vorbis: $(VORBIS)
-
-.PHONY: opus
-opus: $(OPUS)
-
-.PHONY: flac
-flac: $(FLAC)
-
-.PHONY: libsndfile
-libsndfile: $(LIBSNDFILE)
-
-.PHONY: sdl
-sdl: $(SDL)
-
-.PHONY: sdl_net
-sdl_net: $(SDLNET)
-
-.PHONY: munt
-munt: $(MUNT)
-
-.PHONY: libinstpatch
-libinstpatch: $(LIBINSTPATCH)
-
-.PHONY: fluidsynth
-fluidsynth: $(FLUIDSYNTH)
-
-.PHONY: libffi
-libffi: $(LIBFFI)
-
-.PHONY: glib
-glib: $(GLIB)
-
 .PHONY: deps
-deps: ogg vorbis opus flac libsndfile sdl sdl_net munt libinstpatch fluidsynth libffi glib
-
-# Note that we sed-patch the .pc files of some libinstpatch deps. Needed because libinstpatch's
-# build system doesn't correctly link against static libraries. We simply replace the "Requires:"
-# line with the "Requires.private:" one, which contains the deps needed for static linking.
-
-$(OGG):
-	mkdir -p $(OGG_BUILD_DIR)
-	cd $(OGG_BUILD_DIR) \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DCMAKE_INSTALL_LIBDIR=lib \
-	    -DBUILD_TESTING=OFF \
-	    -DINSTALL_DOCS=OFF \
-	    -DINSTALL_PKG_CONFIG_MODULE=ON \
-	    -DBUILD_FRAMEWORK=OFF \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/ogg" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
-
-$(VORBIS): $(OGG)
-	mkdir -p $(VORBIS_BUILD_DIR)
-	cd $(VORBIS_BUILD_DIR) \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DCMAKE_INSTALL_LIBDIR=lib \
-	    -DBUILD_FRAMEWORK=OFF \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/vorbis" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC) \
-	&& sed -i'.original' '/^Requires:/d' $(VORBIS) \
-	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(VORBIS)
-
-$(OPUS):
-	mkdir -p $(OPUS_BUILD_DIR)
-	cd $(OPUS_BUILD_DIR) \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DCMAKE_INSTALL_LIBDIR=lib \
-	    -DOPUS_BUILD_PROGRAMS=OFF \
-	    -DOPUS_BUILD_SHARED_LIBRARY=OFF \
-	    -DOPUS_INSTALL_PKG_CONFIG_MODULE=ON \
-	    -DOPUS_STACK_PROTECTOR=OFF \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/opus" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
-
-$(FLAC): $(OGG)
-	mkdir -p $(FLAC_BUILD_DIR)
-	cd $(FLAC_BUILD_DIR) \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DCMAKE_INSTALL_LIBDIR=lib \
-	    -DBUILD_CXXLIBS=OFF \
-	    -DBUILD_PROGRAMS=OFF \
-	    -DBUILD_DOCS=OFF \
-	    -DBUILD_DOXYGEN=OFF \
-	    -DBUILD_EXAMPLES=OFF \
-	    -DBUILD_TESTING=OFF \
-	    -DENABLE_WERROR=OFF \
-	    -DWITH_STACK_PROTECTOR=OFF \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/flac" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
-
-$(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
-	mkdir -p "$(LIBSNDFILE_BUILD_DIR)"
-	cd "$(LIBSNDFILE_BUILD_DIR)" \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
-	    -DBUILD_SHARED_LIBS=OFF \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DCMAKE_INSTALL_LIBDIR=lib \
-	    -DBUILD_EXAMPLES=OFF \
-	    -DBUILD_PROGRAMS=OFF \
-	    -DBUILD_REGTEST=OFF \
-	    -DBUILD_TESTING=OFF \
-	    -DENABLE_EXTERNAL_LIBS=ON \
-	    -DENABLE_PACKAGE_CONFIG=ON \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/libsndfile" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC) \
-	&& sed -i'.original' '/^Requires:/d' $(LIBSNDFILE) \
-	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(LIBSNDFILE)
-
-$(SDL):
-	mkdir -p "$(SDL_BUILD_DIR)"
-	cd "$(SDL_BUILD_DIR)" \
-	&& "$(CURDIR)/deps/sdl/configure" \
-	    --host=$(TARGET_TRIPLET) \
-	    --prefix="$(DEPS_BIN_DIR)" \
-	    --disable-shared \
-	    --enable-static \
-	    --disable-audio \
-	    --disable-video \
-	    --disable-events \
-	    --disable-joystick \
-	    --enable-cdrom \
-	    --enable-threads \
-	    --enable-timers \
-	    --enable-file \
-	    --disable-loadso \
-	    --enable-cpuinfo \
-	    --enable-assembly \
-	    --disable-nasm \
-	    --disable-altivec \
-	    --disable-stdio-redirect \
-	    --disable-rpath \
-	    --with-pic \
-	    --without-x \
-	&& $(MAKE) -j$(NUMPROC) install
-
-$(SDLNET): $(SDL)
-	mkdir -p "$(SDLNET_BUILD_DIR)"
-	cd "$(SDLNET_BUILD_DIR)" \
-	&& "$(CURDIR)/deps/sdl_net/configure" \
-	    --host=$(TARGET_TRIPLET) \
-	    --prefix="$(DEPS_BIN_DIR)" \
-	    --disable-shared \
-	    --enable-static \
-	    --disable-sdltest \
-	    --disable-gui \
-	    --with-pic \
-	&& $(MAKE) -j$(NUMPROC) install
-
-$(MUNT):
-	mkdir -p $(MUNT_BUILD_DIR)
-	cd $(MUNT_BUILD_DIR) \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DLIB_INSTALL_DIR=lib \
-	    -Dlibmt32emu_C_INTERFACE=ON \
-	    -Dlibmt32emu_SHARED=OFF \
-	    -Dlibmt32emu_WITH_INTERNAL_RESAMPLER=ON \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/munt/mt32emu" \
-	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) -j $(NUMPROC)
-
-# Always a release build because ubsan is forced in debug builds.
-$(LIBINSTPATCH): $(LIBSNDFILE) $(GLIB)
-	mkdir -p "$(LIBINSTPATCH_BUILD_DIR)"
-	cd "$(LIBINSTPATCH_BUILD_DIR)" \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=Release \
-	    -DBUILD_SHARED_LIBS=OFF \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DLIB_INSTALL_DIR=lib \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/libinstpatch" \
-	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install -j $(NUMPROC)
-
-# Always a release build because debug build creates broken .pc file with mingw.
-$(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH) $(GLIB)
-	mkdir -p "$(FLUIDSYNTH_BUILD_DIR)"
-	cd "$(FLUIDSYNTH_BUILD_DIR)" \
-	&& $(CMAKE) \
-	    -DCMAKE_BUILD_TYPE=Release \
-	    -DBUILD_SHARED_LIBS=OFF \
-	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
-	    -DLIB_INSTALL_DIR=lib \
-	    -DDEFAULT_SOUNDFONT= \
-	    -Denable-alsa=OFF \
-	    -Denable-aufile=OFF \
-	    -Denable-dbus=OFF \
-	    -Denable-dsound=OFF \
-	    -Denable-ipv6=OFF \
-	    -Denable-jack=OFF \
-	    -Denable-ladspa=OFF \
-	    -Denable-lash=OFF \
-	    -Denable-libinstpatch=ON \
-	    -Denable-libsndfile=ON \
-	    -Denable-midishare=OFF \
-	    -Denable-network=OFF \
-	    -Denable-oboe=OFF \
-	    -Denable-opensles=OFF \
-	    -Denable-oss=OFF \
-	    -Denable-pkgconfig=ON \
-	    -Denable-portaudio=OFF \
-	    -Denable-pulseaudio=OFF \
-	    -Denable-readline=OFF \
-	    -Denable-sdl2=OFF \
-	    -Denable-systemd=OFF \
-	    -Denable-threads=ON \
-	    -Denable-waveout=OFF \
-	    -Denable-winmidi=OFF \
-	    -Denable-coreaudio=OFF \
-	    -Denable-coremidi=OFF \
-	    -Denable-framework=OFF \
-	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/fluidsynth" \
-	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install -j $(NUMPROC)
-
-$(LIBFFI):
-	cd deps/libffi && ./autogen.sh
-	mkdir -p "$(LIBFFI_BUILD_DIR)"
-	cd "$(LIBFFI_BUILD_DIR)" \
-	&& "$(CURDIR)/deps/libffi/configure" \
-	    --host=$(TARGET_TRIPLET) \
-	    --prefix="$(DEPS_BIN_DIR)" \
-	    --disable-dependency-tracking \
-	    --disable-shared \
-	    --enable-static \
-	    --enable-portable-binary \
-	    --disable-docs \
-	    --with-pic \
-	    --with-gcc-arch=generic \
-	&& $(MAKE) -j$(NUMPROC) install
-
-$(GLIB): $(LIBFFI)
-	mkdir -p "$(GLIB_BUILD_DIR)"
-	$(MESON) "$(GLIB_BUILD_DIR)" "$(CURDIR)/deps/glib" \
-	    --buildtype $(MESON_BUILD_TYPE) \
-	    --prefix "$(DEPS_BIN_DIR)" \
-	    --libdir lib \
-	    --default-library static \
-	    -Db_staticpic=true \
-	    -Dinternal_pcre=true \
-	    -Dnls=disabled
-	$(NINJA) -C "$(GLIB_BUILD_DIR)" -j$(NUMPROC) install
-	sed -i'.original' 's/^Libs:.*/& -lpthread/' $(GLIB)
+deps:
 
 $(OBJECTS): $(FLUIDSYNTH) $(MUNT) $(SDLNET)
 
@@ -746,3 +464,5 @@ download_github_linux64:
 	rm -f linux-x64.zip
 	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/linux-x64.zip'
 	unzip linux-x64.zip
+
+.DEFAULT_GOAL := all

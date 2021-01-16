@@ -1,7 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 CORE_DIR   := $(LOCAL_PATH)/../..
 
-INCFLAGS    := -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/SDL/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/SDL_net/ -I$(CORE_DIR)/libretro/deps/fmt/include -I$(CORE_DIR)/libretro/deps_bin/munt_build/include
+INCFLAGS    := -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/include/SDL/ -I$(CORE_DIR)/libretro/deps/embedded_sdl/SDL_net/ -I$(CORE_DIR)/libretro/deps/fmt/include
 COMMONFLAGS :=
 
 WITH_DYNAREC :=
@@ -45,7 +45,7 @@ SOURCES_C += \
 SOURCES_CXX +=\
 	$(CORE_DIR)/libretro/nonlibc/snprintf.cpp
 
-COMMONFLAGS += -D__LIBRETRO__ -DFRONTEND_SUPPORTS_RGB565 $(INCFLAGS) -DC_HAVE_MPROTECT="1" -DC_IPX -DC_OPENGL
+COMMONFLAGS += -D__LIBRETRO__ -DFRONTEND_SUPPORTS_RGB565 $(INCFLAGS) -DC_HAVE_MPROTECT="1" -DC_IPX
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 SVN_VERSION := " $(shell cat ../svn)"
@@ -60,7 +60,8 @@ endif
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := munt
-LOCAL_SRC_FILES := $(CORE_DIR)/libretro/deps_bin/munt_build/libmt32emu.a
+LOCAL_SRC_FILES := $(CORE_DIR)/libretro/deps_bin/$(TARGET_ARCH_ABI)/munt_build/libmt32emu.a
+LOCAL_EXPORT_C_INCLUDES := $(CORE_DIR)/libretro/deps_bin/$(TARGET_ARCH_ABI)/munt_build/include
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -70,8 +71,7 @@ LOCAL_STATIC_LIBRARIES := munt
 LOCAL_CFLAGS := $(COMMONFLAGS)
 LOCAL_CPPFLAGS := $(COMMONFLAGS) -std=gnu++17 -Wno-register -DFMT_HEADER_ONLY
 LOCAL_LDFLAGS := -Wl,-version-script=$(CORE_DIR)/libretro/link.T
-LOCAL_LDLIBS := -llog -lGLESv2
+LOCAL_LDLIBS := -llog
 LOCAL_CPP_FEATURES := rtti exceptions
 LOCAL_ARM_MODE := arm
-LOCAL_DISABLE_FATAL_LINKER_WARNINGS := true
 include $(BUILD_SHARED_LIBRARY)

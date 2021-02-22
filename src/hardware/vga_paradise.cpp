@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2002-2020  The DOSBox Team
+ *  Copyright (C) 2002-2021  The DOSBox Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -103,7 +103,7 @@ void write_p3cf_pvga1a(Bitu reg,Bitu val,Bitu /*iolen*/) {
 		pvga1a.PR5 = val;
 		break;
 	default:
-		LOG(LOG_VGAMISC,LOG_NORMAL)("VGA:GFX:PVGA1A:Write to illegal index %2X", reg);
+		LOG(LOG_VGAMISC,LOG_NORMAL)("VGA:GFX:PVGA1A:Write to illegal index %2" sBitfs(X), reg);
 		break;
 	}
 }
@@ -128,7 +128,7 @@ Bitu read_p3cf_pvga1a(Bitu reg,Bitu /*iolen*/) {
 	case 0x0f:
 		return pvga1a.PR5;
 	default:
-		LOG(LOG_VGAMISC,LOG_NORMAL)("VGA:GFX:PVGA1A:Read from illegal index %2X", reg);
+		LOG(LOG_VGAMISC,LOG_NORMAL)("VGA:GFX:PVGA1A:Read from illegal index %2" sBitfs(X), reg);
 		break;
 	}
 
@@ -138,7 +138,7 @@ Bitu read_p3cf_pvga1a(Bitu reg,Bitu /*iolen*/) {
 void FinishSetMode_PVGA1A(Bitu /*crtc_base*/, VGA_ModeExtraData* modeData) {
 	pvga1a.biosMode = modeData->modeNo;
 
-// Reset to single bank and set it to 0. May need to unlock first (DPaint locks on exit)
+	// Reset to single bank and set it to 0. May need to unlock first (DPaint locks on exit)
 	IO_Write(0x3ce, 0x0f);
 	Bitu oldlock = IO_Read(0x3cf);
 	IO_Write(0x3cf, 0x05);

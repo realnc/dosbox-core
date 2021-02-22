@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2002-2020  The DOSBox Team
+ *  Copyright (C) 2002-2021  The DOSBox Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ public:
 		CodePageHandlerDynRec * handler;			// page containing this code
 	} page;
 	struct {
-		Bit8u * start;			// where in the cache are we
+		const Bit8u * start;			// where in the cache are we
 		Bitu size;
 		CacheBlockDynRec * next;
 		// writemap masking maskpointer/start/length
@@ -78,7 +78,7 @@ static struct {
 		CacheBlockDynRec * free;		// pointer to the free list
 		CacheBlockDynRec * running;		// the last block that was entered for execution
 	} block;
-	Bit8u * pos;		// position in the cache block
+	const Bit8u * pos;		// position in the cache block
 	CodePageHandlerDynRec * free_pages;		// pointer to the free list
 	CodePageHandlerDynRec * used_pages;		// pointer to the list of used pages
 	CodePageHandlerDynRec * last_page;		// the last used page
@@ -567,8 +567,8 @@ static void cache_closeblock(void) {
 
 
 // place an 8bit value into the cache
-static INLINE void cache_addb(Bit8u val,Bit8u *pos) {
-	*pos=val;
+static INLINE void cache_addb(Bit8u val,const Bit8u *pos) {
+	*(Bit8u*)pos = val;
 }
 static INLINE void cache_addb(Bit8u val) {
 #ifdef HAVE_LIBNX
@@ -576,14 +576,14 @@ static INLINE void cache_addb(Bit8u val) {
 	*rwPos=val;
 	cache.pos++;
 #else
-	Bit8u *pos=cache.pos+1;
+	const Bit8u *pos=cache.pos+1;
 	cache_addb(val,cache.pos);
 	cache.pos=pos;
 #endif
 }
 
 // place a 16bit value into the cache
-static INLINE void cache_addw(Bit16u val,Bit8u *pos) {
+static INLINE void cache_addw(Bit16u val,const Bit8u *pos) {
 	*(Bit16u*)pos=val;
 }
 static INLINE void cache_addw(Bit16u val) {
@@ -592,14 +592,14 @@ static INLINE void cache_addw(Bit16u val) {
 	*rwPos=val;
 	cache.pos+=2;
 #else
-	Bit8u *pos=cache.pos+2;
+	const Bit8u *pos=cache.pos+2;
 	cache_addw(val,cache.pos);
 	cache.pos=pos;
 #endif
 }
 
 // place a 32bit value into the cache
-static INLINE void cache_addd(Bit32u val,Bit8u *pos) {
+static INLINE void cache_addd(Bit32u val,const Bit8u *pos) {
 	*(Bit32u*)pos=val;
 }
 static INLINE void cache_addd(Bit32u val) {
@@ -608,14 +608,14 @@ static INLINE void cache_addd(Bit32u val) {
 	*rwPos=val;
 	cache.pos+=4;
 #else
-	Bit8u *pos=cache.pos+4;
+	const Bit8u *pos=cache.pos+4;
 	cache_addd(val,cache.pos);
 	cache.pos=pos;
 #endif
 }
 
 // place a 64bit value into the cache
-static INLINE void cache_addq(Bit64u val,Bit8u *pos) {
+static INLINE void cache_addq(Bit64u val,const Bit8u *pos) {
 	*(Bit64u*)pos=val;
 }
 static INLINE void cache_addq(Bit64u val) {
@@ -624,7 +624,7 @@ static INLINE void cache_addq(Bit64u val) {
 	*rwPos=val;
 	cache.pos+=8;
 #else
-	Bit8u *pos=cache.pos+8;
+	const Bit8u *pos=cache.pos+8;
 	cache_addq(val,cache.pos);
 	cache.pos=pos;
 #endif
@@ -719,7 +719,7 @@ static void cache_init(bool enable) {
 
 #if (C_DYNREC)
 		cache.pos=&cache_code_link_blocks[64];
-		core_dynrec.runcode=(BlockReturn (*)(Bit8u*))cache.pos;
+		core_dynrec.runcode=(BlockReturn (*)(const Bit8u*))cache.pos;
 //		link_blocks[1].cache.start=cache.pos;
 		dyn_run_code();
 #endif

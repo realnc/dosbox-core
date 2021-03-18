@@ -28,7 +28,11 @@ include:
   # Linux 64-bit
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-x64.yml'
-    
+
+  # Linux 32-bit
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/linux-i686.yml'
+
   ################################## CELLULAR ################################
   # Android
   - project: 'libretro-infrastructure/ci-templates'
@@ -122,6 +126,32 @@ libretro-build-linux-x64:
     WITH_VOODOO: 1
   image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:dosbox-core
   script:
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
+
+# Linux 32-bit
+libretro-build-linux-i686:
+  extends:
+    - .libretro-linux-i686-make-default
+    - .core-defs
+  variables:
+    CC: gcc-9
+    CXX: g++-9
+    platform: unix
+    BUNDLED_AUDIO_CODECS: 1
+    BUNDLED_GLIB: 1
+    BUNDLED_LIBSNDFILE: 1
+    BUNDLED_SDL: 1
+    CMAKE_GENERATOR: Ninja
+    STATIC_LIBCXX: 1
+    WITH_BASSMIDI: 1
+    WITH_DYNAREC: x86
+    WITH_FLUIDSYNTH: 1
+    WITH_VOODOO: 1
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-i386-ubuntu:xenial-gcc9
+  script:
+    - python3 -m pip install --no-cache-dir meson==0.55.3 ninja
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so

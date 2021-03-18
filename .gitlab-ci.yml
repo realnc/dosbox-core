@@ -124,8 +124,9 @@ libretro-build-linux-x64:
     WITH_DYNAREC: x86_64
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
-  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:dosbox-core
+  image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:xenial-gcc9
   script:
+    - python3 -m pip install --no-cache-dir meson==0.55.3 ninja
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so

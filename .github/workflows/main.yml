@@ -86,6 +86,7 @@ jobs:
                 libasound2-dev \
                 libglu1-mesa-dev \
                 libtool \
+                libtool-bin \
                 mesa-common-dev \
                 pkg-config \
                 wget
@@ -156,6 +157,8 @@ jobs:
         sudo apt-get -y install \
             libasound2-dev \
             libglu1-mesa-dev \
+            libtool \
+            libtool-bin \
             mesa-common-dev
         wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
             | sudo tar xz -C /opt

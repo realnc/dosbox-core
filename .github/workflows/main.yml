@@ -82,6 +82,7 @@ jobs:
                 cmake \
                 g++-9 \
                 gcc-9 \
+                gettext \
                 git \
                 libasound2-dev \
                 libglu1-mesa-dev \

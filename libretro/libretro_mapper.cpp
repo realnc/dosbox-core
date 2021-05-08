@@ -486,54 +486,76 @@ static constexpr auto makeEmulatedMouseDescArray(const unsigned int port)
     }};
 }
 
-static void addDpad(const unsigned int port)
+static void addDpad(const unsigned int retro_port, const unsigned int dos_port)
 {
-    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_LEFT), port, 0));
-    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_RIGHT), port, 0));
-    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_UP), port, 1));
-    input_list.push_back(std::make_unique<JoystickHat>(port, RDID(JOYPAD_DOWN), port, 1));
+    input_list.push_back(std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_LEFT), dos_port, 0));
+    input_list.push_back(
+        std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_RIGHT), dos_port, 0));
+    input_list.push_back(std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_UP), dos_port, 1));
+    input_list.push_back(std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_DOWN), dos_port, 1));
 };
 
-static void add2Buttons(const unsigned int port)
+static void add2Buttons(const unsigned int retro_port, const unsigned int dos_port)
 {
-    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_B), port, 0));
-    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_A), port, 1));
+    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_B), dos_port, 0));
+    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_A), dos_port, 1));
 };
 
-static void add4Buttons(const unsigned int port)
+static void add4Buttons(const unsigned int retro_port)
 {
-    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_B), 0, 0));
-    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_A), 0, 1));
-    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_Y), 1, 0));
-    input_list.push_back(std::make_unique<JoystickButton>(port, RDID(JOYPAD_X), 1, 1));
+    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_B), 0, 0));
+    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_A), 0, 1));
+    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_Y), 1, 0));
+    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_X), 1, 1));
 };
 
-static void add2Axes(const unsigned int port)
+static void add2Axes(const unsigned int retro_port, const unsigned int dos_port)
 {
     input_list.push_back(
-        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), port, 0));
+        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), dos_port, 0));
     input_list.push_back(
-        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), port, 1));
+        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), dos_port, 1));
 };
 
-static void add4Axes(const unsigned int port)
+static void add4Axes(const unsigned int retro_port)
 {
     input_list.push_back(
-        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
+        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
     input_list.push_back(
-        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
+        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
     input_list.push_back(
-        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_RIGHT), RDID(ANALOG_X), 1, 0));
+        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_RIGHT), RDID(ANALOG_X), 1, 0));
     input_list.push_back(
-        std::make_unique<JoystickAxis>(port, RDIX(ANALOG_RIGHT), RDID(ANALOG_Y), 1, 1));
+        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_RIGHT), RDID(ANALOG_Y), 1, 1));
 };
 
-static void addMouseEmulationButtons(const unsigned int port)
+static void addMouseEmulationButtons(const unsigned int retro_port)
 {
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_R), 0));
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_L), 1));
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_R2), 2));
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(port, RDID(JOYPAD_L2), 3));
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_R), 0));
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_L), 1));
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_R2), 2));
+    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_L2), 3));
+}
+
+static auto get_active_ports() noexcept -> std::tuple<int, int, int>
+{
+    int active_port_count = 0;
+    int first_retro_port = 0;
+    int second_retro_port = 0;
+
+    for (int retro_port = 0;
+         active_port_count < 2 && retro_port < static_cast<int>(connected.size()); ++retro_port)
+    {
+        if (connected[retro_port]) {
+            ++active_port_count;
+            if (active_port_count == 1) {
+                first_retro_port = retro_port;
+            } else if (active_port_count == 2) {
+                second_retro_port = retro_port;
+            }
+        }
+    }
+    return {active_port_count, first_retro_port, second_retro_port};
 }
 
 void MAPPER_Init()
@@ -570,69 +592,71 @@ void MAPPER_Init()
     JOYSTICK_Enable(0, true);
     JOYSTICK_Enable(1, true);
 
-    if (connected[0] && connected[1]) {
+    const auto [active_port_count, first_retro_port, second_retro_port] = get_active_ports();
+
+    if (active_port_count == 2) {
+        int dos_port = 0;
         retro::logDebug("Both ports connected, deferring to two axis, two button pads.");
         update_dosbox_variable(false, "joystick", "joysticktype", "2axis");
-        joytype = JOY_2AXIS;
-        for (int port = 0; port < 2; ++port) {
-            retro::logDebug("Port {} connected.", port);
-            if (gamepad[port]) {
-                retro::logDebug("Port {} gamepad.", port);
-                addDpad(port);
-                addToRetroDesc(make2buttonGamepadDescArray(port));
+        ::joytype = JOY_2AXIS;
+        for (const auto retro_port : {first_retro_port, second_retro_port}) {
+            retro::logDebug("Port {} connected.", retro_port);
+            if (gamepad[retro_port]) {
+                retro::logDebug("Port {} gamepad.", retro_port);
+                addDpad(retro_port, dos_port);
+                addToRetroDesc(make2buttonGamepadDescArray(retro_port));
             } else {
-                retro::logDebug("Port {} joystick.", port);
-                add2Axes(port);
-                addToRetroDesc(make2buttonJoystickDescArray(port));
+                retro::logDebug("Port {} joystick.", retro_port);
+                add2Axes(retro_port, dos_port);
+                addToRetroDesc(make2buttonJoystickDescArray(retro_port));
             }
-            add2Buttons(port);
+            add2Buttons(retro_port, dos_port);
             if (emulated_mouse) {
-                addMouseEmulationButtons(port);
-                addToRetroDesc(makeEmulatedMouseDescArray(port));
+                addMouseEmulationButtons(retro_port);
+                addToRetroDesc(makeEmulatedMouseDescArray(retro_port));
             }
+            ++dos_port;
         }
-    } else if (connected[0] || connected[1]) {
+    } else if (active_port_count == 1) {
         const bool force_2axis = retro::core_options["joystick_force_2axis"].toBool();
-        const int port = connected[0] ? 0 : 1;
         if (force_2axis) {
             retro::logDebug(
                 "One port connected, but enabling only 2axis in connected port as forced in core "
                 "options.");
-            joytype = JOY_2AXIS;
+            ::joytype = JOY_2AXIS;
             update_dosbox_variable(false, "joystick", "joysticktype", "2axis");
         } else {
             retro::logDebug("One port connected, enabling 4 buttons in connected port.");
-            joytype = port == 0 ? JOY_4AXIS : JOY_4AXIS_2;
-            update_dosbox_variable(
-                false, "joystick", "joysticktype", port == 0 ? "4axis" : "4axis_2");
+            ::joytype = JOY_4AXIS;
+            update_dosbox_variable(false, "joystick", "joysticktype", "4axis");
         }
-        retro::logDebug("Port {} connected.", port);
-        if (gamepad[port]) {
-            retro::logDebug("Port {} gamepad.", port);
-            addDpad(port);
+        retro::logDebug("Port {} connected.", first_retro_port);
+        if (gamepad[first_retro_port]) {
+            retro::logDebug("Port {} gamepad.", first_retro_port);
+            addDpad(first_retro_port, 0);
             if (force_2axis) {
-                addToRetroDesc(make2buttonGamepadDescArray(port));
+                addToRetroDesc(make2buttonGamepadDescArray(first_retro_port));
             } else {
-                addToRetroDesc(make4buttonGamepadDescArray(port));
+                addToRetroDesc(make4buttonGamepadDescArray(first_retro_port));
             }
         } else {
-            retro::logDebug("Port {} joystick.", port);
+            retro::logDebug("Port {} joystick.", first_retro_port);
             if (force_2axis) {
-                add2Axes(port);
-                addToRetroDesc(make2buttonJoystickDescArray(port));
+                add2Axes(first_retro_port, 0);
+                addToRetroDesc(make2buttonJoystickDescArray(first_retro_port));
             } else {
-                add4Axes(port);
-                addToRetroDesc(make4buttonJoystickDescArray(port));
+                add4Axes(first_retro_port);
+                addToRetroDesc(make4buttonJoystickDescArray(first_retro_port));
             }
         }
         if (force_2axis) {
-            add2Buttons(port);
+            add2Buttons(first_retro_port, 0);
         } else {
-            add4Buttons(port);
+            add4Buttons(first_retro_port);
         }
         if (emulated_mouse) {
-            addMouseEmulationButtons(port);
-            addToRetroDesc(makeEmulatedMouseDescArray(port));
+            addMouseEmulationButtons(first_retro_port);
+            addToRetroDesc(makeEmulatedMouseDescArray(first_retro_port));
         }
     } else {
         update_dosbox_variable(false, "joystick", "joysticktype", "none");

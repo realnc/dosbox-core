@@ -1,6 +1,7 @@
 #pragma once
 #include "config.h"
 #include "libretro.h"
+#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <string>
@@ -27,7 +28,7 @@ extern bool autofire;
 extern int mouse_emu_deadzone;
 extern float mouse_speed_factor_x;
 extern float mouse_speed_factor_y;
-extern bool connected[16];
+extern std::array<bool, 16> connected;
 extern bool gamepad[16];
 extern bool emulated_mouse;
 

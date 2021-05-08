@@ -64,7 +64,7 @@ SVGACards svgaCard = SVGA_None;
 
 /* input variables */
 bool gamepad[16]; /* true means gamepad, false means joystick */
-bool connected[16];
+std::array<bool, 16> connected;
 static bool force_2axis_joystick = false;
 bool emulated_mouse = false;
 int mouse_emu_deadzone = 0;
@@ -786,19 +786,14 @@ void retro_set_environment(const retro_environment_t cb)
         {"Disconnected", RETRO_DEVICE_NONE},
         {},
     };
-    static const retro_controller_description ports_keyboard[]{
-        {"Keyboard + Mouse", RETRO_DEVICE_KEYBOARD},
-        {"Disconnected", RETRO_DEVICE_NONE},
-        {},
-    };
 
     static retro_controller_info ports[]{
         {ports_default, 4},
         {ports_default, 4},
-        {ports_keyboard, 2},
-        {ports_keyboard, 2},
-        {ports_keyboard, 2},
-        {ports_keyboard, 2},
+        {ports_default, 4},
+        {ports_default, 4},
+        {ports_default, 4},
+        {ports_default, 4},
         {},
     };
     environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, ports);

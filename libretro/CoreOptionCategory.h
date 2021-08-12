@@ -10,12 +10,12 @@ namespace retro {
 class CoreOptionCategory final
 {
 public:
-    CoreOptionCategory(
-        std::string key, std::string desc, std::string info,
-        std::vector<CoreOptionDefinition> options);
+    template <typename... Ts>
+    CoreOptionCategory(std::string key, std::string desc, std::string info, Ts&&... Args);
 
+    template <typename... Ts>
     CoreOptionCategory(
-        std::string key, std::string desc, std::vector<CoreOptionDefinition> options);
+        std::string key, std::string desc, CoreOptionDefinition&& first, Ts&&... Args);
 
     [[nodiscard]]
     auto key() const noexcept -> const std::string&;
@@ -39,18 +39,22 @@ private:
     std::vector<CoreOptionDefinition> options_;
 };
 
-inline CoreOptionCategory::CoreOptionCategory(
-    std::string key, std::string desc, std::string info, std::vector<CoreOptionDefinition> options)
+template <typename... Ts>
+CoreOptionCategory::CoreOptionCategory(
+    std::string key, std::string desc, std::string info, Ts&&... Args)
     : key_(std::move(key))
     , desc_(std::move(desc))
     , info_(std::move(info))
-    , options_(std::move(options))
-
+    , options_(std::vector<CoreOptionDefinition>{std::forward<CoreOptionDefinition>(Args)...})
 { }
 
-inline CoreOptionCategory::CoreOptionCategory(
-    std::string key, std::string desc, std::vector<CoreOptionDefinition> options)
-    : CoreOptionCategory(std::move(key), std::move(desc), {}, std::move(options))
+template <typename... Ts>
+CoreOptionCategory::CoreOptionCategory(
+    std::string key, std::string desc, CoreOptionDefinition&& first, Ts&&... Args)
+    : key_(std::move(key))
+    , desc_(std::move(desc))
+    , options_(std::vector<CoreOptionDefinition>{
+          std::move(first), std::forward<CoreOptionDefinition>(Args)...})
 { }
 
 inline auto CoreOptionCategory::key() const noexcept -> const std::string&

@@ -22,50 +22,101 @@ namespace retro {
  *     // All option keys will get automatically prefixed with this.
  *     "core_name_",
  *
- *     // Core option definitions follow.
- *     {
- *         CoreOptionDefinition {
- *             // Option key. Will be automatically converted to "core_name_overclock".
- *             "overclock",
+ *     // Core categories and core option definitions follow. They can be defined in any order.
  *
- *             // Label.
- *             "Overclock CPU",
+ *     // This is an option definition. Any options not defined within a category (see below) will
+ *     // be displayed at the top-lop level of the frontend's option menu.
+ *     CoreOptionDefinition {
+ *         // Option key. Must be unique in regard to any other option key. Will be automatically
+ *         // prefixed by the global prefix we specified above. So in this case, it will be
+ *         // automatically converted to "core_name_overclock".
+ *         "overclock",
  *
- *             // Description. Frontends usually display this as small text below the label.
- *             // Specifying a description is optional and can be omitted.
- *             "Overclocks the emulated CPU. Might result in glitches with some games."
+ *         // Label. This will be displayed in the options UI of the frontend.
+ *         "Overclock CPU",
  *
- *             // Possible values and their labels. Can be any combination of string, bool and int.
- *             // The label string is optional and can be omitted.
- *             {
- *                 { false, "OFF" },
- *                 { true, "ON" },
- *             },
+ *         // Description. Frontends usually display this as small text below the label.
+ *         // Specifying a description is optional and can be omitted.
+ *         "Overclocks the emulated CPU. Might result in glitches with some games."
  *
- *             // Default value. Must be one of the previously specified values, otherwise the first
- *             // value will be used.
- *             false
+ *         // Possible values and their labels. Can be any combination of string, bool and int.
+ *         // The label string is optional and can be omitted.
+ *         {
+ *             { false, "OFF" },
+ *             { true, "ON" },
  *         },
  *
- *         // Note how we omit the description here.
- *         CoreOptionDefinition {
- *             "frameskip",
- *             "Frame skipping",
- *             {
- *                 { 0, "None" },
- *                 { 1, "One frame" },
- *                 { 2, "Two frames" },
- *                 { 3, "Three frames" },
- *             },
- *             0
- *         },
+ *         // Default value. Must be one of the previously specified values, otherwise the first
+ *         // value will be used.
+ *         false
+ *     },
  *
- *         // Note how we omit both a description as well as the values here. Read below on why
- *         // omitting values is sometimes useful.
+ *     // This is an options category. If the frontend supports categories, all options defined
+ *     // within the category will be displayed inside a submenu (or in some other fontend-dependent
+ *     // way that group options of a category together.)
+ *     //
+ *     // If the frontend does not support categories, the options will be automatically converted
+ *     // to top-level options and their labels prefixed with the name of the category.
+ *     //
+ *     // Note: Categories can NOT be nested. That is, you cannot define a category within another
+ *     // category. The libretro options API (as of V2) does not allow nested categories.
+ *     CoreOptionCategory {
+ *         // Category key. Must be unique in regard to other categories. Allowed characters are
+ *         // [a-z, A-Z, 0-9, _, -].
+ *         "accuracy",
+ *
+ *         // Category label.
+ *         "Accuracy",
+ *
+ *         // Category description. This is optional and can be completely omitted.
+ *         "Emulation settings to choose between better accuracy or better performance",
+ *
+ *         // Any number of options can be defined within a category. Here, we define two options.
  *         CoreOptionDefinition {
- *             "midi_device",
- *             "MIDI output device",
- *         }
+ *             "cpu_accuracy",
+ *             "CPU accuracy",
+ *             "If the emulator runs too slow, lower this setting. ",
+ *             {
+ *                 "low",
+ *                 "medium",
+ *                 "high",
+ *                 {"perfect", "perfect (warning: extremely demanding!)"},
+ *             },
+ *             "medium"
+ *         },
+ *         CoreOptionDefinition {
+ *             "audio_accuracy",
+ *             "Audio accuracy",
+ *             "If the emulator runs too slow, lower this setting, but note that audio glitches can
+ *                 occur at settings other than \"high\". ",
+ *             {
+ *                 "low",
+ *                 "medium",
+ *                 "high",
+ *             },
+ *             "high"
+ *         },
+ *     },
+ *     // The category definition ends here.
+ *
+ *     // Note how we omit the description here.
+ *     CoreOptionDefinition {
+ *         "frameskip",
+ *         "Frame skipping",
+ *         {
+ *             { 0, "None" },
+ *             { 1, "One frame" },
+ *             { 2, "Two frames" },
+ *             { 3, "Three frames" },
+ *         },
+ *         0
+ *     },
+ *
+ *     // Note how we omit both a description as well as the values here. Read below on why
+ *     // omitting values is sometimes useful.
+ *     CoreOptionDefinition {
+ *         "midi_device",
+ *         "MIDI output device",
  *     }
  * };
  *
@@ -95,19 +146,30 @@ namespace retro {
  *     int frames_to_skip = core_options["frameskip"].toInt();
  *     string midi_device = core_options["midi_device"].toString();
  *
+ * You can also change core option values programmatically from within your core's code. This is
+ * not a feature directly supported by the libretro API, but it is made possible through a trick.
+ * Frontends that follow the spec to the letter (like RetroArch) will work. However, some other
+ * frontends might possibly get confused by this.
+ *
+ * To change the current value of an option, just use the setCurrentValue() function of your options
+ * object. To change the "audio_accuracy" option to "low", and the "frameskip" option to 3 from the
+ * above example, you would do:
+ *
+ *     core_options.setCurrentValue("audio_accuracy", "low");
+ *     core_options.setCurrentValue("frameskip", 3);
+ *
  * Note that the omission of the key prefix when using functions of this class is only a
  * convenience. The actual CoreOptionDefinition instances contain the full key. For example:
  *
- *     cout << options.option("overclock")->key();
+ *     cout << options.option("audio_accuracy")->key();
  *
- * will print "core_name_overclock", not "overclock".
+ * will print "core_name_audio_accuracy", not "audio_accuracy".
  */
 class CoreOptions final
 {
 public:
-    CoreOptions(
-        std::string key_prefix,
-        std::vector<std::variant<CoreOptionDefinition, CoreOptionCategory>> options);
+    template <typename... Ts>
+    CoreOptions(std::string key_prefix, Ts&&... Args);
 
     /* Set the frontend environment callback.
      */
@@ -153,19 +215,42 @@ public:
     void setCurrentValue(std::string_view key, const CoreOptionValue& value);
 
 private:
-    std::vector<std::variant<CoreOptionDefinition, CoreOptionCategory>> options_and_categories;
+    std::vector<std::variant<CoreOptionDefinition, CoreOptionCategory>> options_and_categories_;
     std::map<std::string, CoreOptionDefinition*, std::less<>> options_map_;
-    std::vector<retro_core_option_v2_category> retro_categories_v2;
-    std::vector<retro_core_option_v2_definition> retro_options_v2;
+    std::vector<retro_core_option_v2_category> retro_categories_v2_;
+    std::vector<retro_core_option_v2_definition> retro_options_v2_;
     std::vector<std::string> categorized_option_descriptions_;
     std::string key_prefix_;
-    retro_environment_t env_cb_;
+    retro_environment_t env_cb_ = envCbFallback;
     CoreOptionValue invalid_value_{""};
 
     void updateRetroOptions();
     void updateFrontendV0();
     void updateFrontendV1();
+
+    static RETRO_CALLCONV auto envCbFallback(unsigned /*cmd*/, void* /*data*/) -> bool;
 };
+
+template <typename... Ts>
+CoreOptions::CoreOptions(std::string key_prefix, Ts&&... Args)
+    : options_and_categories_(std::vector<std::variant<CoreOptionDefinition, CoreOptionCategory>>{
+        std::forward<std::variant<CoreOptionDefinition, CoreOptionCategory>>(Args)...})
+    , key_prefix_(std::move(key_prefix))
+{
+    // TODO: check for duplicate option keys.
+    for (auto& option_or_category : options_and_categories_) {
+        if (std::holds_alternative<CoreOptionDefinition>(option_or_category)) {
+            auto& option = std::get<CoreOptionDefinition>(option_or_category);
+            options_map_[option.key()] = &option;
+            option.setKey(key_prefix_ + option.key());
+        } else {
+            for (auto& option : std::get<CoreOptionCategory>(option_or_category).options()) {
+                options_map_[option.key()] = &option;
+                option.setKey(key_prefix_ + option.key());
+            }
+        }
+    }
+}
 
 inline void CoreOptions::setEnvironmentCallback(const retro_environment_t cb)
 {

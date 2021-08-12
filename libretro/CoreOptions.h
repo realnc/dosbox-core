@@ -1,5 +1,6 @@
 // This is copyrighted software. More information is at the end of this file.
 #pragma once
+#include "CoreOptionCategory.h"
 #include "CoreOptionDefinition.h"
 #include "libretro.h"
 #include <initializer_list>
@@ -7,12 +8,13 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace retro {
 
-/* Wraps the libretro core options API. Supports options API version 1, but if the frontend doesn't,
- * options are automatically converted to the old "version 0" format.
+/* Wraps the libretro core options API. Supports options API version 2, but if the frontend doesn't,
+ * options are automatically converted to the older v1 or the legacy "v0" format.
  *
  * Usage is fairly straightforward:
  *
@@ -22,7 +24,7 @@ namespace retro {
  *
  *     // Core option definitions follow.
  *     {
- *         {
+ *         CoreOptionDefinition {
  *             // Option key. Will be automatically converted to "core_name_overclock".
  *             "overclock",
  *
@@ -46,7 +48,7 @@ namespace retro {
  *         },
  *
  *         // Note how we omit the description here.
- *         {
+ *         CoreOptionDefinition {
  *             "frameskip",
  *             "Frame skipping",
  *             {
@@ -60,7 +62,7 @@ namespace retro {
  *
  *         // Note how we omit both a description as well as the values here. Read below on why
  *         // omitting values is sometimes useful.
- *         {
+ *         CoreOptionDefinition {
  *             "midi_device",
  *             "MIDI output device",
  *         }
@@ -103,7 +105,9 @@ namespace retro {
 class CoreOptions final
 {
 public:
-    CoreOptions(std::string key_prefix, std::vector<CoreOptionDefinition> options);
+    CoreOptions(
+        std::string key_prefix,
+        std::vector<std::variant<CoreOptionDefinition, CoreOptionCategory>> options);
 
     /* Set the frontend environment callback.
      */
@@ -149,15 +153,18 @@ public:
     void setCurrentValue(std::string_view key, const CoreOptionValue& value);
 
 private:
-    std::vector<CoreOptionDefinition> options_;
+    std::vector<std::variant<CoreOptionDefinition, CoreOptionCategory>> options_and_categories;
     std::map<std::string, CoreOptionDefinition*, std::less<>> options_map_;
-    std::vector<retro_core_option_definition> retro_options_;
+    std::vector<retro_core_option_v2_category> retro_categories_v2;
+    std::vector<retro_core_option_v2_definition> retro_options_v2;
+    std::vector<std::string> categorized_option_descriptions_;
     std::string key_prefix_;
     retro_environment_t env_cb_;
     CoreOptionValue invalid_value_{""};
 
     void updateRetroOptions();
     void updateFrontendV0();
+    void updateFrontendV1();
 };
 
 inline void CoreOptions::setEnvironmentCallback(const retro_environment_t cb)

@@ -23,6 +23,7 @@ INCFLAGS += \
 
 # common files
 SOURCES_CXX += \
+	$(CORE_DIR)/libretro/CoreOptionCategory.cpp \
 	$(CORE_DIR)/libretro/CoreOptionDefinition.cpp \
 	$(CORE_DIR)/libretro/CoreOptionValue.cpp \
 	$(CORE_DIR)/libretro/CoreOptions.cpp \

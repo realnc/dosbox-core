@@ -12,14 +12,25 @@ static RETRO_CALLCONV auto envCbFallback(unsigned /*cmd*/, void* /*data*/) -> bo
 
 namespace retro {
 
-CoreOptions::CoreOptions(std::string key_prefix, std::vector<CoreOptionDefinition> options)
-    : options_(std::move(options))
+CoreOptions::CoreOptions(
+    std::string key_prefix,
+    std::vector<std::variant<CoreOptionDefinition, CoreOptionCategory>> options)
+    : options_and_categories(std::move(options))
     , key_prefix_(std::move(key_prefix))
     , env_cb_(envCbFallback)
 {
-    for (auto& option : options_) {
-        options_map_[option.key()] = &option;
-        option.setKey(key_prefix_ + option.key());
+    // TODO: check for duplicate option keys.
+    for (auto& option_or_category : options_and_categories) {
+        if (std::holds_alternative<CoreOptionDefinition>(option_or_category)) {
+            auto& option = std::get<CoreOptionDefinition>(option_or_category);
+            options_map_[option.key()] = &option;
+            option.setKey(key_prefix_ + option.key());
+        } else {
+            for (auto& option : std::get<CoreOptionCategory>(option_or_category).options()) {
+                options_map_[option.key()] = &option;
+                option.setKey(key_prefix_ + option.key());
+            }
+        }
     }
 }
 
@@ -60,18 +71,20 @@ auto CoreOptions::changed() const noexcept -> bool
 
 void CoreOptions::updateFrontend()
 {
-    unsigned version = 0;
-
     updateRetroOptions();
+    retro_core_options_v2 v2_options{retro_categories_v2.data(), retro_options_v2.data()};
+
+    unsigned version = 0;
     env_cb_(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version);
 
-    if (env_cb_(RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION, &version) && version >= 1) {
-        retro_core_options_intl core_options_intl{retro_options_.data(), nullptr};
-        if (!env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL, &core_options_intl)) {
-            env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, retro_options_.data());
+    if (version >= 2) {
+        retro_core_options_v2_intl core_options_intl{&v2_options, nullptr};
+        if (!env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2_INTL, &core_options_intl)) {
+            env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2, &v2_options);
         }
+    } else if (version == 1) {
+        updateFrontendV1();
     } else {
-        // Frontend only supports legacy options.
         updateFrontendV0();
     }
 }
@@ -113,58 +126,116 @@ void CoreOptions::setCurrentValue(std::string_view key, const CoreOptionValue& v
     updateFrontend();
 }
 
+static auto make_retro_core_option_v2_definition(
+    const CoreOptionCategory* category, const CoreOptionDefinition& option,
+    const char* desc_with_category) -> retro_core_option_v2_definition
+{
+    retro_core_option_v2_definition def{};
+
+    def.key = option.key().c_str();
+    def.desc = desc_with_category;
+    def.desc_categorized = option.desc().c_str();
+    def.info = option.info().empty() ? nullptr : option.info().c_str();
+    def.category_key = category ? category->key().c_str() : nullptr;
+    int i = 0;
+    for (const auto& value : option) {
+        if (i == RETRO_NUM_CORE_OPTION_VALUES_MAX - 1) {
+            retro::logError(
+                "Core option \"{}\" exceeds maximum value count of {}.", def.key,
+                RETRO_NUM_CORE_OPTION_VALUES_MAX - 1);
+            break;
+        }
+        def.values[i].value = value.toString().c_str();
+        def.values[i].label = value.label().empty() ? nullptr : value.label().c_str();
+        ++i;
+    }
+    def.values[i] = {};
+    def.default_value =
+        option.defaultValue().isValid() ? option.defaultValue().toString().c_str() : nullptr;
+    return def;
+}
+
 void CoreOptions::updateRetroOptions()
 {
-    retro_options_.clear();
-    retro_options_.reserve(options_.size() + 1);
-    for (const auto& option : options_) {
-        retro_core_option_definition def{};
-        def.key = option.key().c_str();
-        def.desc = option.desc().c_str();
-        def.info = option.info().empty() ? nullptr : option.info().c_str();
-        def.default_value =
-            option.defaultValue().isValid() ? option.defaultValue().toString().c_str() : nullptr;
-        int i = 0;
-        for (const auto& value : option) {
-            def.values[i].value = value.toString().c_str();
-            def.values[i].label = value.label().empty() ? nullptr : value.label().c_str();
-            ++i;
+    retro_options_v2.clear();
+    retro_options_v2.reserve(options_map_.size() + 1);
+    retro_categories_v2.clear();
+    categorized_option_descriptions_.clear();
+    categorized_option_descriptions_.reserve(options_map_.size());
+    for (const auto& option_or_category : options_and_categories) {
+        if (std::holds_alternative<CoreOptionDefinition>(option_or_category)) {
+            const auto& option = std::get<CoreOptionDefinition>(option_or_category);
+            retro_options_v2.push_back(
+                make_retro_core_option_v2_definition(nullptr, option, option.desc().c_str()));
+        } else {
+            const auto& category = std::get<CoreOptionCategory>(option_or_category);
+            retro_core_option_v2_category retro_category{};
+            retro_category.key = category.key().c_str();
+            retro_category.desc = category.desc().c_str();
+            retro_category.info = category.info().c_str();
+            retro_categories_v2.push_back(retro_category);
+            for (const auto& option : category.options()) {
+                categorized_option_descriptions_.emplace_back(
+                    category.desc() + ": " + option.desc());
+                retro_options_v2.push_back(make_retro_core_option_v2_definition(
+                    &category, option, categorized_option_descriptions_.back().c_str()));
+            }
         }
-        def.values[i] = {};
-        retro_options_.push_back(std::move(def));
     }
-    retro_options_.push_back({});
+    retro_options_v2.push_back({});
+    retro_categories_v2.push_back({});
 }
 
 void CoreOptions::updateFrontendV0()
 {
     std::vector<retro_variable> variables;
     std::vector<std::string> value_strings;
-    variables.reserve(options_.size() + 1);
-    value_strings.reserve(options_.size());
+    variables.reserve(retro_options_v2.size());
+    value_strings.reserve(retro_options_v2.size());
 
-    for (const auto& option : options_) {
+    for (size_t i = 0; i < retro_options_v2.size() - 1; ++i) {
         // Build values string.
-        if (option.size() > 0) {
-            auto str = option.desc();
-            str += "; ";
-
-            // Default value goes first.
-            str += option.defaultValue().toString();
-
-            // Add remaining values.
-            for (const auto& value : option) {
-                if (&value != &option.defaultValue()) {
-                    str += '|';
-                    str += value.toString();
-                }
+        std::string str = retro_options_v2[i].desc;
+        str += "; ";
+        // Default value goes first.
+        str += retro_options_v2[i].default_value;
+        // Add remaining values.
+        for (const auto& value : retro_options_v2[i].values) {
+            if (!value.label && !value.value) {
+                break;
             }
-            value_strings.emplace_back(std::move(str));
+            if (value.value != retro_options_v2[i].default_value) {
+                str += '|';
+                str += value.value;
+            }
         }
-        variables.push_back({option.key().c_str(), value_strings.back().c_str()});
+        value_strings.emplace_back(std::move(str));
+        variables.push_back({retro_options_v2[i].key, value_strings.back().c_str()});
     }
     variables.push_back({});
     env_cb_(RETRO_ENVIRONMENT_SET_VARIABLES, variables.data());
+}
+
+void CoreOptions::updateFrontendV1()
+{
+    std::vector<retro_core_option_definition> retro_options_;
+    retro_options_.reserve(retro_options_v2.size());
+
+    for (const auto& option_v2 : retro_options_v2) {
+        retro_core_option_definition option_v1{};
+        option_v1.key = option_v2.key;
+        option_v1.desc = option_v2.desc;
+        option_v1.info = option_v2.info;
+        std::copy(
+            std::begin(option_v2.values), std::end(option_v2.values), std::begin(option_v1.values));
+        option_v1.default_value = option_v2.default_value;
+        retro_options_.push_back(option_v1);
+    }
+
+    retro_core_options_intl core_options_intl{retro_options_.data(), nullptr};
+    if (!env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL, &core_options_intl)) {
+        env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS, retro_options_.data());
+    }
 }
 
 } // namespace retro

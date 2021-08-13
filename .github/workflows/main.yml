@@ -131,54 +131,71 @@ jobs:
         path: libretro/linux-armhf.zip
 
   build_linux_x64:
-    runs-on: ubuntu-16.04
-
-    env:
-      CC: gcc-9
-      CXX: g++-9
-      BUNDLED_AUDIO_CODECS: 1
-      BUNDLED_GLIB: 1
-      BUNDLED_LIBSNDFILE: 1
-      BUNDLED_SDL: 1
-      CMAKE_GENERATOR: Ninja
-      MESON: /opt/meson/meson.py
-      NINJA: /usr/local/bin/ninja
-      STATIC_LIBCXX: 1
-      WITH_BASSMIDI: 1
-      WITH_DYNAREC: x86_64
-      WITH_FLUIDSYNTH: 1
-      WITH_VOODOO: 1
-      platform: unix
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Install deps
-      working-directory: /tmp
-      run: |
-        sudo apt-get -y update
-        sudo apt-get -y install \
-            libasound2-dev \
-            libglu1-mesa-dev \
-            libtool \
-            libtool-bin \
-            mesa-common-dev
-        wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
-            | sudo tar xz -C /opt
-        sudo mv /opt/meson-* /opt/meson
-        wget -q 'https://github.com/ninja-build/ninja/releases/download/v1.10.1/ninja-linux.zip'
-        unzip ninja-linux.zip
-        rm ninja-linux.zip
-        sudo mv ninja /usr/local/bin/
-
     - uses: actions/checkout@v2
       with:
         submodules: recursive
 
     - name: Build
-      working-directory: ./libretro
       run: |
-        make deps
-        make -j`nproc`
-        strip dosbox_core_libretro.so
+        docker run \
+          -v "$PWD":/build \
+          -w /build/libretro \
+          amd64/ubuntu:16.04 \
+          bash -c '(
+            set -eux
+            apt-get -y update
+            apt-get -y install software-properties-common wget
+            add-apt-repository -y --update ppa:ubuntu-toolchain-r/test
+            add-apt-repository -y --update ppa:janisozaur/cmake-update
+            apt-get -y install \
+                autoconf \
+                automake \
+                build-essential \
+                cmake \
+                g++-9 \
+                gcc-9 \
+                gettext \
+                git \
+                libasound2-dev \
+                libglu1-mesa-dev \
+                libtool \
+                libtool-bin \
+                mesa-common-dev \
+                pkg-config \
+                wget
+            wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
+                | tar xz -C /opt
+            mv /opt/meson-* /opt/meson
+            git clone 'https://github.com/ninja-build/ninja.git'
+            cd ninja
+            git checkout tags/v1.10.1
+            ln -s /usr/bin/python3 /usr/local/bin/python
+            ./configure.py --bootstrap
+            mv ninja /usr/local/bin/
+            cd ..
+            export CC=gcc-9
+            export CXX=g++-9
+            export BUNDLED_AUDIO_CODECS=1
+            export BUNDLED_GLIB=1
+            export BUNDLED_LIBSNDFILE=1
+            export BUNDLED_SDL=1
+            export CMAKE_GENERATOR=Ninja
+            export MESON=/opt/meson/meson.py
+            export NINJA=/usr/local/bin/ninja
+            export STATIC_LIBCXX=1
+            export WITH_BASSMIDI=1
+            export WITH_DYNAREC=x86_64
+            export WITH_FLUIDSYNTH=1
+            export WITH_VOODOO=1
+            export platform=unix
+            make deps
+            make -j`nproc`
+            strip dosbox_core_libretro.so
+          )'
+        cd libretro
         zip -9 linux-x64.zip dosbox_core_libretro.so
 
     - name: Upload artifact

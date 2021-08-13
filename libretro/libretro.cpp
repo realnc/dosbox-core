@@ -415,6 +415,7 @@ static void check_cpu_cycle_variables()
 
 static void update_bassmidi_variables(const bool bassmidi_enabled, const bool show_all)
 {
+#ifdef WITH_BASSMIDI
     const auto soundfont = retro_system_directory / "soundfonts"
         / retro::core_options["bassmidi.soundfont"].toString();
     update_dosbox_variable(false, "bassmidi", "bassmidi.soundfont", soundfont.u8string());
@@ -428,10 +429,15 @@ static void update_bassmidi_variables(const bool bassmidi_enabled, const bool sh
     update_dosbox_variable(
         false, "bassmidi", "bassmidi.voices", retro::core_options["bassmidi.voices"].toString());
     retro::core_options.setVisible("bassmidi.voices", bassmidi_enabled && show_all);
+#else
+    (void)bassmidi_enabled;
+    (void)show_all;
+#endif
 }
 
 static void update_fsynth_variables(const bool fsynth_enabled, const bool show_all)
 {
+#ifdef WITH_FLUIDSYNTH
     const auto soundfont =
         retro_system_directory / "soundfonts" / retro::core_options["fluid.soundfont"].toString();
     update_dosbox_variable(false, "midi", "fluid.soundfont", soundfont.u8string());
@@ -450,6 +456,10 @@ static void update_fsynth_variables(const bool fsynth_enabled, const bool show_a
         update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
         retro::core_options.setVisible(name, fsynth_enabled && show_all);
     }
+#else
+    (void)fsynth_enabled;
+    (void)show_all;
+#endif
 }
 
 static void update_mt32_variables(const bool mt32_enabled, const bool show_all)

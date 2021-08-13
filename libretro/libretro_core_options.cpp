@@ -635,22 +635,6 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "gusrate",
-            "Ultrasound sample rate",
-            "Gravis Ultrasound emulation sample rate.",
-            {
-                8000,
-                11025,
-                16000,
-                22050,
-                32000,
-                44100,
-                48000,
-                49716,
-            },
-            44100
-        },
-        CoreOptionDefinition {
             "gusbase",
             "Ultrasound IO address",
             "The IO base address for the emulated Gravis Ultrasound card.",

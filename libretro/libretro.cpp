@@ -355,7 +355,6 @@ static auto check_gus_variables(const bool autoexec) -> bool
     auto gus_value = core_options["gus"];
 
     update_dosbox_variable(autoexec, "gus", "gus", gus_value.toString());
-    update_dosbox_variable(autoexec, "gus", "gusrate", core_options["gusrate"].toString());
     update_dosbox_variable(autoexec, "gus", "gusbase", core_options["gusbase"].toString());
     update_dosbox_variable(autoexec, "gus", "gusirq", core_options["gusirq"].toString());
     update_dosbox_variable(autoexec, "gus", "gusdma", core_options["gusdma"].toString());
@@ -710,7 +709,7 @@ static void check_variables()
         adv_core_options && blaster);
 
     /* show ultrasound options only if it's it enabled and advanced options is enabled */
-    core_options.setVisible({"gusrate", "gusbase", "gusirq", "gusdma"}, adv_core_options && gus);
+    core_options.setVisible({"gusbase", "gusirq", "gusdma"}, adv_core_options && gus);
 
     /* show these only if advanced options is enabled */
     core_options.setVisible(

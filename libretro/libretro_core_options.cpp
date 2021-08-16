@@ -1586,6 +1586,35 @@ CoreOptions core_options {
             "warnings",
         },
     },
+    CoreOptionCategory {
+        "vkbd",
+        "Virtual Keyboard",
+        "Virtual keyboard appearance options.",
+
+        CoreOptionDefinition {
+            "vkbd_theme",
+            "Theme",
+            {
+                { "light", "Light (shadow)" },
+                { "light_outline", "Light (outline)" },
+                { "dark", "Dark (shadow)" },
+                { "dark_outline", "Dark (outline)" },
+            },
+            "light",
+        },
+        CoreOptionDefinition {
+            "vkbd_transparency",
+            "Transparency",
+            {
+                "0%",
+                "25%",
+                "50%",
+                "75%",
+                "100%",
+            },
+            "25%",
+        },
+    },
 };
 #endif
 

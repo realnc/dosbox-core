@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <string>
 
+#define RETRO_DEVICES 5
+
 extern retro_input_poll_t poll_cb;
 extern retro_input_state_t input_cb;
 extern retro_environment_t environ_cb;

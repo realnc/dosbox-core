@@ -11,6 +11,7 @@
 #include "ints/int10.h"
 #include "joystick.h"
 #include "libretro_dosbox.h"
+#include "libretro_vkbd.h"
 #include "log.h"
 #include "mapper.h"
 #include "midi_alsa.h"
@@ -87,6 +88,7 @@ static retro_audio_sample_batch_t audio_batch_cb;
 retro_input_poll_t poll_cb;
 retro_input_state_t input_cb;
 retro_environment_t environ_cb;
+retro_perf_callback perf_cb;
 
 /* DOSBox state */
 static std::filesystem::path game_path;
@@ -139,6 +141,11 @@ static std::thread emu_thread;
 
 /* helper functions */
 static char last_written_character = 0;
+
+long retro_ticks(void)
+{
+    return (perf_cb.get_time_usec) ? perf_cb.get_time_usec() : 0;
+}
 
 static void write_out_buffer(const char* const format, ...)
 {
@@ -359,6 +366,21 @@ static auto check_gus_variables(const bool autoexec) -> bool
     update_dosbox_variable(autoexec, "gus", "gusirq", core_options["gusirq"].toString());
     update_dosbox_variable(autoexec, "gus", "gusdma", core_options["gusdma"].toString());
     return gus_value.toBool();
+}
+
+static auto check_vkbd_variables(void)
+{
+    using namespace retro;
+
+    if      (core_options["vkbd_theme"].toString().find("light") != std::string::npos)   opt_vkbd_theme = 1;
+    else if (core_options["vkbd_theme"].toString().find("dark") != std::string::npos)    opt_vkbd_theme = 2;
+    if      (core_options["vkbd_theme"].toString().find("outline") != std::string::npos) opt_vkbd_theme |= 0x80;
+
+    if      (core_options["vkbd_transparency"].toString() == "0%")   opt_vkbd_alpha = GRAPH_ALPHA_100;
+    else if (core_options["vkbd_transparency"].toString() == "25%")  opt_vkbd_alpha = GRAPH_ALPHA_75;
+    else if (core_options["vkbd_transparency"].toString() == "50%")  opt_vkbd_alpha = GRAPH_ALPHA_50;
+    else if (core_options["vkbd_transparency"].toString() == "75%")  opt_vkbd_alpha = GRAPH_ALPHA_25;
+    else if (core_options["vkbd_transparency"].toString() == "100%") opt_vkbd_alpha = GRAPH_ALPHA_0;
 }
 
 void core_autoexec()
@@ -699,6 +721,8 @@ static void check_variables()
             update_dosbox_variable(false, "speaker", "disney", disney_val);
             disney_init = disney_val == "on";
         }
+
+        check_vkbd_variables();
     }
 
     core_options.setVisible("voodoo_memory_size", core_options["voodoo"].toString() != "false");
@@ -964,6 +988,9 @@ void retro_init()
     retro::core_options.setEnvironmentCallback(environ_cb);
     retro::core_options.updateFrontend();
     disk_control::init(environ_cb);
+
+    if (!environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb))
+        perf_cb.get_time_usec = NULL;
 }
 
 void retro_deinit()
@@ -1079,6 +1106,10 @@ void retro_run()
     /* Run emulator */
     fakeTimingReset();
     switchThread();
+
+    /* Virtual keyboard */
+    if (retro_vkbd)
+        print_vkbd();
 
     // If we have a new frame, submit it.
     if (dosbox_frontbuffer_uploaded) {

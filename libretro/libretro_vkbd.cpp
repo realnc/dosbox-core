@@ -345,6 +345,10 @@ static void input_vkbd_sticky(void)
 
 void toggle_vkbd(void)
 {
+   /* No toggling while key is pressed */
+   if (vkflag[RETRO_DEVICE_ID_JOYPAD_B])
+      return;
+
    retro_vkbd = !retro_vkbd;
 
    /* Reset VKBD input readiness */

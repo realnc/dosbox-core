@@ -516,6 +516,35 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
+        "vkbd",
+        "Virtual keyboard",
+        "On-screen virtual keyboard.",
+
+        CoreOptionDefinition {
+            "vkbd_theme",
+            "Color theme",
+            {
+                { "light", "Light (shadow)" },
+                { "light_outline", "Light (outline)" },
+                { "dark", "Dark (shadow)" },
+                { "dark_outline", "Dark (outline)" },
+            },
+            "light",
+        },
+        CoreOptionDefinition {
+            "vkbd_transparency",
+            "Transparency",
+            {
+                "0%",
+                "25%",
+                "50%",
+                "75%",
+                "100%",
+            },
+            "25%",
+        },
+    },
+    CoreOptionCategory {
         "sound_card",
         "Sound",
         "Emulated audio device parameters.",
@@ -1584,35 +1613,6 @@ CoreOptions core_options {
                 "errors",
             },
             "warnings",
-        },
-    },
-    CoreOptionCategory {
-        "vkbd",
-        "Virtual keyboard",
-        "On-screen virtual keyboard.",
-
-        CoreOptionDefinition {
-            "vkbd_theme",
-            "Color theme",
-            {
-                { "light", "Light (shadow)" },
-                { "light_outline", "Light (outline)" },
-                { "dark", "Dark (shadow)" },
-                { "dark_outline", "Dark (outline)" },
-            },
-            "light",
-        },
-        CoreOptionDefinition {
-            "vkbd_transparency",
-            "Transparency",
-            {
-                "0%",
-                "25%",
-                "50%",
-                "75%",
-                "100%",
-            },
-            "25%",
         },
     },
 };

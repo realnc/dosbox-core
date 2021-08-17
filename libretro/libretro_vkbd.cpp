@@ -85,6 +85,7 @@ void print_vkbd(void)
    int YPADDING                      = 0;
    int XKEYSPACING                   = 1;
    int YKEYSPACING                   = 1;
+   int XBASEWIDTH                    = (retrow < 320) ? retrow : 320;
 
    int BKG_PADDING_X                 = 0;
    int BKG_PADDING_Y                 = 0;
@@ -151,7 +152,7 @@ void print_vkbd(void)
       YPADDING       *= 2;
    }
 
-   int XSIDE     = (320 * FONT_WIDTH) / VKBDX;
+   int XSIDE     = (XBASEWIDTH * FONT_WIDTH) / VKBDX;
    int YSIDE     = 22 * FONT_HEIGHT;
 
    XPADDING      = retrow - (XSIDE * VKBDX);

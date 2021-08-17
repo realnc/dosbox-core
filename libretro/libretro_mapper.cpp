@@ -182,8 +182,9 @@ public:
 
     void press() const
     {
-        if (retro_vkbd)
+        if (retro_vkbd) {
             return;
+        }
         handler_(true);
     }
 
@@ -218,8 +219,7 @@ public:
     }
 
     void release() const
-    {
-    }
+    { }
 
 private:
     unsigned retro_port_;
@@ -242,8 +242,9 @@ public:
 
     void press() const
     {
-        if (retro_vkbd)
+        if (retro_vkbd) {
             return;
+        }
         Mouse_ButtonPressed(dosbox_button_);
     }
 
@@ -275,8 +276,9 @@ public:
 
     void press() const
     {
-        if (retro_vkbd)
+        if (retro_vkbd) {
             return;
+        }
         if (dosbox_button_ == 2) {
             use_slow_mouse = true;
         } else if (dosbox_button_ == 3) {
@@ -323,8 +325,9 @@ public:
 
     void press() const
     {
-        if (retro_vkbd)
+        if (retro_vkbd) {
             return;
+        }
         JOYSTICK_Button(dosbox_port_, dosbox_id_ & 1, true);
     }
 
@@ -391,8 +394,9 @@ public:
 
     void press() const
     {
-        if (retro_vkbd)
+        if (retro_vkbd) {
             return;
+        }
         if (dosbox_axis_ == 0) {
             if (retro_id_ == RETRO_DEVICE_ID_JOYPAD_LEFT) {
                 JOYSTICK_Move_X(dosbox_port_, -1.0f);
@@ -439,50 +443,41 @@ private:
 
 void retro_key_down(const int keycode)
 {
-   for (const auto [retro_id, dosbox_id] : retro_dosbox_map)
-   {
-      if (retro_id == keycode)
-      {
-         KEYBOARD_AddKey(dosbox_id, 1);
-         return;
-      }
-   }
+    for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
+        if (retro_id == keycode) {
+            KEYBOARD_AddKey(dosbox_id, 1);
+            return;
+        }
+    }
 }
 
 void retro_key_up(const int keycode)
 {
-   for (const auto [retro_id, dosbox_id] : retro_dosbox_map)
-   {
-      if (retro_id == keycode)
-      {
-         KEYBOARD_AddKey(dosbox_id, 0);
-         return;
-      }
-   }
+    for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
+        if (retro_id == keycode) {
+            KEYBOARD_AddKey(dosbox_id, 0);
+            return;
+        }
+    }
 }
 
 static RETRO_CALLCONV void keyboardEventCb(
     const bool down, const unsigned keycode, const uint32_t /*character*/,
     const uint16_t /*key_modifiers*/)
 {
-    if (retro_vkbd)
-    {
-        if (keycode == RETROK_CAPSLOCK)
-        {
-            if (down && !keyboard_state[KBD_capslock])
-            {
+    if (retro_vkbd) {
+        if (keycode == RETROK_CAPSLOCK) {
+            if (down && !keyboard_state[KBD_capslock]) {
                 KEYBOARD_AddKey(KBD_capslock, down);
                 retro_capslock = !retro_capslock;
-            }
-            else if (!down && keyboard_state[KBD_capslock])
-            {
+            } else if (!down && keyboard_state[KBD_capslock]) {
                 KEYBOARD_AddKey(KBD_capslock, down);
             }
             keyboard_state[KBD_capslock] = down;
             return;
-        }
-        else if (down)
+        } else if (down) {
             return;
+        }
     }
 
     for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
@@ -490,8 +485,9 @@ static RETRO_CALLCONV void keyboardEventCb(
             if (keyboard_state[dosbox_id] != down) {
                 keyboard_state[dosbox_id] = down;
                 KEYBOARD_AddKey(dosbox_id, down);
-                if (keycode == RETROK_CAPSLOCK)
+                if (keycode == RETROK_CAPSLOCK) {
                     retro_capslock = down;
+                }
             }
             return;
         }
@@ -812,19 +808,18 @@ void MAPPER_Run(const bool /*pressed*/)
 {
     poll_cb();
 
-    for (unsigned j = 0; j < RETRO_DEVICES; j++)
-    {
-        if (libretro_supports_bitmasks)
+    for (unsigned j = 0; j < RETRO_DEVICES; ++j) {
+        if (libretro_supports_bitmasks) {
             joypad_bits[j] = input_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
-        else
-        {
+        } else {
             joypad_bits[j] = 0;
-            for (unsigned i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3+1; i++)
+            for (unsigned i = 0; i < RETRO_DEVICE_ID_JOYPAD_R3 + 1; ++i) {
                 joypad_bits[j] |= input_cb(j, RETRO_DEVICE_JOYPAD, 0, i) ? (1 << i) : 0;
+            }
         }
     }
 
-    /* Virtual keyboard for ports 1 & 2 */
+    // Virtual keyboard for ports 1 & 2.
     input_vkbd();
 
     if (emulated_mouse) {
@@ -849,8 +844,9 @@ void MAPPER_Run(const bool /*pressed*/)
         float adjusted_x = mouse_x * mouse_speed_factor_x / slowdown;
         float adjusted_y = mouse_y * mouse_speed_factor_y / slowdown;
 
-        if (!retro_vkbd)
+        if (!retro_vkbd) {
             Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);
+        }
     }
 
     for (const auto& processable : input_list) {

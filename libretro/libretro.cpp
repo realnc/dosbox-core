@@ -142,9 +142,9 @@ static std::thread emu_thread;
 /* helper functions */
 static char last_written_character = 0;
 
-long retro_ticks(void)
+auto retro_ticks() -> long
 {
-    return (perf_cb.get_time_usec) ? perf_cb.get_time_usec() : 0;
+    return perf_cb.get_time_usec ? perf_cb.get_time_usec() : 0;
 }
 
 static void write_out_buffer(const char* const format, ...)
@@ -368,19 +368,30 @@ static auto check_gus_variables(const bool autoexec) -> bool
     return gus_value.toBool();
 }
 
-static auto check_vkbd_variables(void)
+static void check_vkbd_variables()
 {
     using namespace retro;
 
-    if      (core_options["vkbd_theme"].toString().find("light") != std::string::npos)   opt_vkbd_theme = 1;
-    else if (core_options["vkbd_theme"].toString().find("dark") != std::string::npos)    opt_vkbd_theme = 2;
-    if      (core_options["vkbd_theme"].toString().find("outline") != std::string::npos) opt_vkbd_theme |= 0x80;
+    if (core_options["vkbd_theme"].toString().find("light") != std::string::npos) {
+        opt_vkbd_theme = 1;
+    } else if (core_options["vkbd_theme"].toString().find("dark") != std::string::npos) {
+        opt_vkbd_theme = 2;
+    }
+    if (core_options["vkbd_theme"].toString().find("outline") != std::string::npos) {
+        opt_vkbd_theme |= 0x80;
+    }
 
-    if      (core_options["vkbd_transparency"].toString() == "0%")   opt_vkbd_alpha = GRAPH_ALPHA_100;
-    else if (core_options["vkbd_transparency"].toString() == "25%")  opt_vkbd_alpha = GRAPH_ALPHA_75;
-    else if (core_options["vkbd_transparency"].toString() == "50%")  opt_vkbd_alpha = GRAPH_ALPHA_50;
-    else if (core_options["vkbd_transparency"].toString() == "75%")  opt_vkbd_alpha = GRAPH_ALPHA_25;
-    else if (core_options["vkbd_transparency"].toString() == "100%") opt_vkbd_alpha = GRAPH_ALPHA_0;
+    if (core_options["vkbd_transparency"].toString() == "0%") {
+        opt_vkbd_alpha = GRAPH_ALPHA_100;
+    } else if (core_options["vkbd_transparency"].toString() == "25%") {
+        opt_vkbd_alpha = GRAPH_ALPHA_75;
+    } else if (core_options["vkbd_transparency"].toString() == "50%") {
+        opt_vkbd_alpha = GRAPH_ALPHA_50;
+    } else if (core_options["vkbd_transparency"].toString() == "75%") {
+        opt_vkbd_alpha = GRAPH_ALPHA_25;
+    } else if (core_options["vkbd_transparency"].toString() == "100%") {
+        opt_vkbd_alpha = GRAPH_ALPHA_0;
+    }
 }
 
 void core_autoexec()

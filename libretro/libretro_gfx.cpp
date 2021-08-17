@@ -58,9 +58,9 @@ void GFX_EndUpdate(const Bit16u* const changedLines)
         dosbox_frontbuffer_uploaded = false;
         dosbox_gfx_cb(GFX_CallBackRedraw);
 
-        if (!run_synced)
+        if (!run_synced) {
             std::swap(dosbox_frontbuffer, dosbox_backbuffer);
-
+        }
         return;
     }
 

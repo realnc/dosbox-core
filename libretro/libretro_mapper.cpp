@@ -682,10 +682,11 @@ static void runMouseEmulation(const unsigned int port)
     int16_t emulated_mouse_y = input_cb(
         port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
 
-    if (abs(emulated_mouse_x) <= mouse_emu_deadzone * 32768 / 100) {
+    const int deadzone = mouse_emu_deadzone * 32768 / 100;
+    float magnitude = sqrt((emulated_mouse_x*emulated_mouse_x) + (emulated_mouse_y*emulated_mouse_y));
+    if (magnitude <= deadzone)
+    {
         emulated_mouse_x = 0;
-    }
-    if (abs(emulated_mouse_y) <= mouse_emu_deadzone * 32768 / 100) {
         emulated_mouse_y = 0;
     }
 

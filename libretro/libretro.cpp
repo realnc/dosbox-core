@@ -372,24 +372,26 @@ static void check_vkbd_variables()
 {
     using namespace retro;
 
-    if (core_options["vkbd_theme"].toString().find("light") != std::string::npos) {
+    const auto& theme = core_options["vkbd_theme"].toString();
+    if (theme.find("light") != std::string::npos) {
         opt_vkbd_theme = 1;
-    } else if (core_options["vkbd_theme"].toString().find("dark") != std::string::npos) {
+    } else if (theme.find("dark") != std::string::npos) {
         opt_vkbd_theme = 2;
     }
-    if (core_options["vkbd_theme"].toString().find("outline") != std::string::npos) {
+    if (theme.find("outline") != std::string::npos) {
         opt_vkbd_theme |= 0x80;
     }
 
-    if (core_options["vkbd_transparency"].toString() == "0%") {
+    const auto& transparency = core_options["vkbd_transparency"].toString();
+    if (transparency == "0%") {
         opt_vkbd_alpha = GRAPH_ALPHA_100;
-    } else if (core_options["vkbd_transparency"].toString() == "25%") {
+    } else if (transparency == "25%") {
         opt_vkbd_alpha = GRAPH_ALPHA_75;
-    } else if (core_options["vkbd_transparency"].toString() == "50%") {
+    } else if (transparency == "50%") {
         opt_vkbd_alpha = GRAPH_ALPHA_50;
-    } else if (core_options["vkbd_transparency"].toString() == "75%") {
+    } else if (transparency == "75%") {
         opt_vkbd_alpha = GRAPH_ALPHA_25;
-    } else if (core_options["vkbd_transparency"].toString() == "100%") {
+    } else if (transparency == "100%") {
         opt_vkbd_alpha = GRAPH_ALPHA_0;
     }
 }

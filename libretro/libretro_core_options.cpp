@@ -1588,12 +1588,12 @@ CoreOptions core_options {
     },
     CoreOptionCategory {
         "vkbd",
-        "Virtual Keyboard",
-        "Virtual keyboard appearance options.",
+        "Virtual keyboard",
+        "On-screen virtual keyboard.",
 
         CoreOptionDefinition {
             "vkbd_theme",
-            "Theme",
+            "Color theme",
             {
                 { "light", "Light (shadow)" },
                 { "light_outline", "Light (outline)" },

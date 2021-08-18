@@ -38,7 +38,7 @@ typedef struct
    int value;
 } retro_vkeys;
 
-static retro_vkeys vkeys[VKBDX * VKBDY * 2] =
+static const retro_vkeys vkeys[VKBDX * VKBDY * 2] =
 {
    /* 0 PG1 */
    { "Esc" ,"Esc" ,RETROK_ESCAPE },

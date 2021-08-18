@@ -902,7 +902,7 @@ void retro_get_system_av_info(retro_system_av_info* const info)
     info->geometry.base_width = 320;
     info->geometry.base_height = 200;
     info->geometry.max_width = 1024;
-    info->geometry.max_height = 768;
+    info->geometry.max_height = 820;
     info->geometry.aspect_ratio = 4.0 / 3;
     info->timing.fps = currentFPS;
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();

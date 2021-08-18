@@ -6,8 +6,8 @@
 #include <math.h>
 
 #include "libretro_dosbox.h"
-#include "libretro_graph.h"
-#include "libretro_font.i"
+#include "libretro-graph.h"
+#include "font.i"
 
 static unsigned short int *linesurf = NULL;
 static int linesurf_w          = 0;

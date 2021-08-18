@@ -11,7 +11,7 @@
 #include "ints/int10.h"
 #include "joystick.h"
 #include "libretro_dosbox.h"
-#include "libretro_vkbd.h"
+#include "libretro-vkbd.h"
 #include "log.h"
 #include "mapper.h"
 #include "midi_alsa.h"

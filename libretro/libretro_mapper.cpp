@@ -5,7 +5,7 @@
 #include "keyboard.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
-#include "libretro_vkbd.h"
+#include "libretro-vkbd.h"
 #include "log.h"
 #include "mapper.h"
 #include "mouse.h"

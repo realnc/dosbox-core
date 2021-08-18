@@ -2,7 +2,7 @@
 #define LIBRETRO_VKBD_H
 
 #include "libretro.h"
-#include "libretro_graph.h"
+#include "libretro-graph.h"
 #include <stdint.h>
 
 extern bool retro_vkbd;

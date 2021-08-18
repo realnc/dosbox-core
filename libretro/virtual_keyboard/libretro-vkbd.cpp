@@ -2,8 +2,8 @@
 #include <string.h>
 
 #include "libretro_dosbox.h"
-#include "libretro_graph.h"
-#include "libretro_vkbd.h"
+#include "libretro-graph.h"
+#include "libretro-vkbd.h"
 
 #include "keyboard.h"
 

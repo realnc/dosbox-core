@@ -2,7 +2,7 @@
 #include "emu_thread.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
-#include "libretro_vkbd.h"
+#include "libretro-vkbd.h"
 #include "render.h"
 #include "video.h"
 #include <algorithm>

@@ -37,8 +37,8 @@ SOURCES_CXX += \
 	$(CORE_DIR)/libretro/libretro.cpp \
 	$(CORE_DIR)/libretro/log.cpp \
 	$(CORE_DIR)/libretro/util.cpp \
-	$(CORE_DIR)/libretro/virtual_keyboard/libretro_graph.cpp \
-	$(CORE_DIR)/libretro/virtual_keyboard/libretro_vkbd.cpp \
+	$(CORE_DIR)/libretro/virtual_keyboard/libretro-graph.cpp \
+	$(CORE_DIR)/libretro/virtual_keyboard/libretro-vkbd.cpp \
 	$(CORE_DIR)/src/cpu/callback.cpp \
 	$(CORE_DIR)/src/cpu/core_dyn_x86.cpp \
 	$(CORE_DIR)/src/cpu/core_dynrec.cpp \

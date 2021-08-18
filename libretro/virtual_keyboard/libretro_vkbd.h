@@ -1,7 +1,9 @@
 #ifndef LIBRETRO_VKBD_H
 #define LIBRETRO_VKBD_H
 
+#include "libretro.h"
 #include "libretro_graph.h"
+#include <stdint.h>
 
 extern bool retro_vkbd;
 extern bool retro_capslock;

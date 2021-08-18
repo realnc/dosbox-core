@@ -1,6 +1,8 @@
 #ifndef LIBRETRO_GRAPH_H
 #define LIBRETRO_GRAPH_H
 
+#include <stdint.h>
+
 #define RGB565(r, g, b) ((((r>>3)<<11) | ((g>>2)<<5) | (b>>3)))
 #define ARGB888(a, r, g, b) ((a << 24) | (r << 16) | (g << 8) | b)
 

@@ -2,6 +2,7 @@
 #include "emu_thread.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
+#include "libretro-vkbd.h"
 #include "render.h"
 #include "video.h"
 #include <algorithm>
@@ -53,6 +54,16 @@ auto GFX_StartUpdate(Bit8u*& pixels, Bitu& pitch) -> bool
 
 void GFX_EndUpdate(const Bit16u* const changedLines)
 {
+    if (retro_vkbd) {
+        dosbox_frontbuffer_uploaded = false;
+        dosbox_gfx_cb(GFX_CallBackRedraw);
+
+        if (!run_synced) {
+            std::swap(dosbox_frontbuffer, dosbox_backbuffer);
+        }
+        return;
+    }
+
     if (run_synced) {
         dosbox_frontbuffer_uploaded = !changedLines;
     } else if (dosbox_frontbuffer_uploaded && changedLines) {

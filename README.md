@@ -30,6 +30,10 @@ The core provides some improvements over the DOSBox-SVN core:
   is provided and as a result it is very slow. Most games will probably not be
   able to run at full speed yet.
 
+* An on-screen virtual keyboard, ported over from the
+  [UAE](https://github.com/libretro/libretro-uae) and
+  [VICE](https://github.com/libretro/vice-libretro) cores.
+
 * Other general, under-the-hood improvements and bugfixes.
 
 DOSBox-core was originally based on the https://github.com/libretro/dosbox-svn

@@ -6,10 +6,11 @@
 
 #ifndef __DOSBOX_PINHACK_H
 #define __DOSBOX_PINHACK_H
-#define PINHACKVERSION 3
+#define PINHACKVERSION 4
 
 extern struct scrollhack {
     bool enabled;
+    bool disabled;
     bool trigger;
     struct {
         int min, max;

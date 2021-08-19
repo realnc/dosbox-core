@@ -17,6 +17,11 @@ float dosbox_aspect_ratio = 0;
 unsigned RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_0RGB1555;
 static GFX_CallBack_t dosbox_gfx_cb = nullptr;
 
+#ifdef WITH_PINHACK
+bool request_VGA_SetupDrawing = false;
+extern void VGA_SetupDrawing(Bitu val);
+#endif
+
 auto GFX_GetBestMode(const Bitu /*flags*/) -> Bitu
 {
     return GFX_CAN_32 | GFX_RGBONLY;
@@ -63,6 +68,13 @@ void GFX_EndUpdate(const Bit16u* const changedLines)
         }
         return;
     }
+
+#ifdef WITH_PINHACK
+    if (request_VGA_SetupDrawing) {
+        request_VGA_SetupDrawing = false;
+        VGA_SetupDrawing(0);
+    }
+#endif
 
     if (run_synced) {
         dosbox_frontbuffer_uploaded = !changedLines;

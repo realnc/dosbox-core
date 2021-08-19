@@ -46,7 +46,8 @@
 #include "libretro.h"
 #include "midi_bassmidi.h"
 #include "midi_fluidsynth.h"
-#include "pinhacks.h"
+#ifdef WITH_PINHACK
+#include "pinhack.h"
 scrollhack pinhack;
 void parsetriggerrange(const char* &range, int &min, int &max, char delim) {
     char* range_delim = const_cast<char*>(strchr(range,delim));
@@ -74,6 +75,7 @@ static void PINHACK_Init(Section * sec) {
 		pinhack.triggerwidth.max=9999;
 	}
 }
+#endif // WITH_PINHACK
 #else
 MachineType machine;
 SVGACards svgaCard;
@@ -854,6 +856,7 @@ void DOSBOX_Init(void) {
 //	secprop->AddInitFunction(&CREDITS_Init);
 
 #ifdef __LIBRETRO__
+#ifdef WITH_PINHACK
 	// PINHACK: begin config file section
 	secprop=control->AddSection_prop("pinhack",&PINHACK_Init,true);
 
@@ -875,6 +878,7 @@ void DOSBOX_Init(void) {
 	Pint->SetMinMax(1,4000);
 	Pint->Set_help("The Y resolution (height) DOSBox will expand to if pinball hack is enabled and triggers.");
     // PINHACK: end config file section
+#endif
 #endif
 
 	//TODO ?

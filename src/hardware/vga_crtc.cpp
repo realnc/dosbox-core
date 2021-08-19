@@ -27,7 +27,9 @@
 #include "pic.h"
 
 #ifdef __LIBRETRO__
-#include "pinhacks.h"
+#ifdef WITH_PINHACK
+#include "pinhack.h"
+#endif
 #endif
 
 #define crtc(blah) vga.crtc.blah
@@ -195,7 +197,9 @@ void vga_write_p3d5(Bitu /*port*/,Bitu val,Bitu iolen) {
 		break;
 	case 0x0C:	/* Start Address High Register */
 #ifdef __LIBRETRO__
-		if (pinhack.trigger) val=0;
+#ifdef WITH_PINHACK
+		if (pinhack.trigger && !pinhack.disabled) val=0;
+#endif
 #endif
 		crtc(start_address_high)=val;
 		vga.config.display_start=(vga.config.display_start & 0xFF00FF)| (val << 8);
@@ -203,7 +207,9 @@ void vga_write_p3d5(Bitu /*port*/,Bitu val,Bitu iolen) {
 		break;
 	case 0x0D:	/* Start Address Low Register */
 #ifdef __LIBRETRO__
-		if (pinhack.trigger) val=0;
+#ifdef WITH_PINHACK
+		if (pinhack.trigger && !pinhack.disabled) val=0;
+#endif
 #endif
 		crtc(start_address_low)=val;
 		vga.config.display_start=(vga.config.display_start & 0xFFFF00)| val;

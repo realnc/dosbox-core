@@ -14,6 +14,11 @@
 #include <tuple>
 #include <vector>
 
+#ifdef WITH_PINHACK
+#include "pinhack.h"
+extern bool request_VGA_SetupDrawing;
+#endif
+
 #define RDEV(x) RETRO_DEVICE_##x
 #define RDIX(x) RETRO_DEVICE_INDEX_##x
 #define RDID(x) RETRO_DEVICE_ID_##x
@@ -479,6 +484,20 @@ static RETRO_CALLCONV void keyboardEventCb(
             return;
         }
     }
+
+#ifdef WITH_PINHACK
+    /* Sacrifice Insert for pinhack toggle */
+    if (pinhack.enabled) {
+        if (keycode == RETROK_INSERT) {
+            if (down && !keyboard_state[KBD_insert]) {
+                pinhack.disabled = !pinhack.disabled;
+                request_VGA_SetupDrawing = true;
+            }
+            keyboard_state[KBD_insert] = down;
+            return;
+        }
+    }
+#endif
 
     for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
         if (retro_id == keycode) {

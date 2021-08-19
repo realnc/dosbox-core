@@ -336,13 +336,101 @@ static void update_gfx_mode(const bool change_fps)
     current_aspect_ratio = dosbox_aspect_ratio;
 }
 
-static auto check_blaster_variables(const bool autoexec) -> bool
+static RETRO_CALLCONV auto update_core_option_visibility() -> bool
 {
     using namespace retro;
 
-    const auto& sb_type = core_options["sblaster_type"].toString();
+    bool updated = false;
+    const bool show_all = core_options["adv_options"].toBool();
 
-    update_dosbox_variable(autoexec, "sblaster", "sbtype", sb_type);
+    const auto& mode = core_options["cpu_cycles_mode"].toString();
+    updated |= core_options.setVisible("cpu_cycles_limit", mode == "max" || mode == "auto");
+    updated |= core_options.setVisible(
+        {"cpu_cycles_multiplier_realmode", "cpu_cycles_realmode",
+         "cpu_cycles_multiplier_fine_realmode", "cpu_cycles_fine_realmode"},
+        mode == "auto");
+
+    const auto& mpu_type = core_options["mpu_type"].toString();
+    updated |= core_options.setVisible("midi_driver", mpu_type != "none");
+
+    const auto& midi_driver = core_options["midi_driver"].toString();
+#ifdef WITH_BASSMIDI
+    const auto bassmidi_enabled = midi_driver == "bassmidi";
+    updated |= core_options.setVisible("bassmidi.soundfont", bassmidi_enabled);
+    updated |= core_options.setVisible("bassmidi.sfvolume", bassmidi_enabled);
+    updated |= core_options.setVisible("bassmidi.voices", bassmidi_enabled && show_all);
+#endif
+
+#ifdef WITH_FLUIDSYNTH
+    const auto fsynth_enabled = midi_driver == "fluidsynth";
+    for (const auto* name : {"fluid.soundfont", "fluid.gain", "fluid.polyphony", "fluid.cores"}) {
+        updated |= core_options.setVisible(name, fsynth_enabled);
+    }
+    for (const auto* name :
+         {"fluid.samplerate", "fluid.reverb", "fluid.reverb.roomsize", "fluid.reverb.damping",
+          "fluid.reverb.width", "fluid.reverb.level", "fluid.chorus", "fluid.chorus.number",
+          "fluid.chorus.level", "fluid.chorus.speed", "fluid.chorus.depth"})
+    {
+        updated |= core_options.setVisible(name, fsynth_enabled && show_all);
+    }
+#endif
+
+    const auto mt32_enabled = midi_driver == "mt32";
+    for (const auto* name : {"mt32.type", "mt32.thread", "mt32.partials", "mt32.analog"}) {
+        updated |= core_options.setVisible(name, mt32_enabled);
+    }
+    for (const auto* name :
+         {"mt32.reverse.stereo", "mt32.dac", "mt32.reverb.mode", "mt32.reverb.time",
+          "mt32.reverb.level", "mt32.rate", "mt32.src.quality", "mt32.niceampramp"})
+    {
+        updated |= core_options.setVisible(name, mt32_enabled && show_all);
+    }
+    const bool is_threaded = core_options["mt32.thread"].toBool();
+    for (const auto* name : {"mt32.chunk", "mt32.prebuffer"}) {
+        updated |= core_options.setVisible(name, mt32_enabled && is_threaded && show_all);
+    }
+
+#ifdef HAVE_ALSA
+    updated |= core_options.setVisible("midi_port", midi_driver == "alsa" && mpu_type != "none");
+#endif
+#ifdef __WIN32__
+    updated |= core_options.setVisible("midi_port", midi_driver == "win32" && mpu_type != "none");
+#endif
+
+    updated |=
+        core_options.setVisible("voodoo_memory_size", core_options["voodoo"].toString() != "false");
+
+    const auto& machine_type = core_options["machine_type"].toString();
+
+    updated |= core_options.setVisible(
+        {"machine_cga_composite_mode", "machine_cga_model"}, show_all && machine_type == "cga");
+
+    updated |=
+        core_options.setVisible("machine_hercules_palette", show_all && machine_type == "hercules");
+
+    const bool blaster_enabled = core_options["sblaster_type"].toString() != "none";
+    updated |= core_options.setVisible(
+        {"sblaster_base", "sblaster_irq", "sblaster_dma", "sblaster_hdma", "sblaster_opl_mode",
+         "sblaster_opl_emu"},
+        show_all && blaster_enabled);
+
+    auto gus_enabled = core_options["gus"].toBool();
+    updated |= core_options.setVisible({"gusbase", "gusirq", "gusdma"}, show_all && gus_enabled);
+
+    updated |= core_options.setVisible(
+        {"default_mount_freesize", "thread_sync", "cpu_type", "scaler", "mpu_type", "tandy",
+         "disney", "log_method", "log_level"},
+        show_all);
+
+    return updated;
+}
+
+static void check_blaster_variables(const bool autoexec)
+{
+    using namespace retro;
+
+    update_dosbox_variable(
+        autoexec, "sblaster", "sbtype", core_options["sblaster_type"].toString());
     update_dosbox_variable(
         autoexec, "sblaster", "sbbase", core_options["sblaster_base"].toString());
     update_dosbox_variable(autoexec, "sblaster", "irq", core_options["sblaster_irq"].toString());
@@ -352,20 +440,16 @@ static auto check_blaster_variables(const bool autoexec) -> bool
         autoexec, "sblaster", "oplmode", core_options["sblaster_opl_mode"].toString());
     update_dosbox_variable(
         autoexec, "sblaster", "oplemu", core_options["sblaster_opl_emu"].toString());
-    return sb_type != "none";
 }
 
-static auto check_gus_variables(const bool autoexec) -> bool
+static void check_gus_variables(const bool autoexec)
 {
     using namespace retro;
 
-    auto gus_value = core_options["gus"];
-
-    update_dosbox_variable(autoexec, "gus", "gus", gus_value.toString());
+    update_dosbox_variable(autoexec, "gus", "gus", core_options["gus"].toString());
     update_dosbox_variable(autoexec, "gus", "gusbase", core_options["gusbase"].toString());
     update_dosbox_variable(autoexec, "gus", "gusirq", core_options["gusirq"].toString());
     update_dosbox_variable(autoexec, "gus", "gusdma", core_options["gusdma"].toString());
-    return gus_value.toBool();
 }
 
 static void check_vkbd_variables()
@@ -440,84 +524,49 @@ static void check_cpu_cycle_variables()
         output += max_limits_str;
     }
     update_dosbox_variable(false, "cpu", "cycles", output);
-
-    core_options.setVisible("cpu_cycles_limit", mode == "max" || mode == "auto");
-    core_options.setVisible(
-        {"cpu_cycles_multiplier_realmode", "cpu_cycles_realmode",
-         "cpu_cycles_multiplier_fine_realmode", "cpu_cycles_fine_realmode"},
-        mode == "auto");
 }
 
-static void update_bassmidi_variables(const bool bassmidi_enabled, const bool show_all)
+static void update_bassmidi_variables()
 {
 #ifdef WITH_BASSMIDI
     const auto soundfont = retro_system_directory / "soundfonts"
         / retro::core_options["bassmidi.soundfont"].toString();
     update_dosbox_variable(false, "bassmidi", "bassmidi.soundfont", soundfont.u8string());
-    retro::core_options.setVisible("bassmidi.soundfont", bassmidi_enabled);
 
-    update_dosbox_variable(
-        false, "bassmidi", "bassmidi.sfvolume",
-        retro::core_options["bassmidi.sfvolume"].toString());
-    retro::core_options.setVisible("bassmidi.sfvolume", bassmidi_enabled);
-
-    update_dosbox_variable(
-        false, "bassmidi", "bassmidi.voices", retro::core_options["bassmidi.voices"].toString());
-    retro::core_options.setVisible("bassmidi.voices", bassmidi_enabled && show_all);
-#else
-    (void)bassmidi_enabled;
-    (void)show_all;
+    for (const auto* name : {"bassmidi.sfvolume", "bassmidi.voices"}) {
+        update_dosbox_variable(false, "bassmidi", name, retro::core_options[name].toString());
+    }
 #endif
 }
 
-static void update_fsynth_variables(const bool fsynth_enabled, const bool show_all)
+static void update_fsynth_variables()
 {
 #ifdef WITH_FLUIDSYNTH
     const auto soundfont =
         retro_system_directory / "soundfonts" / retro::core_options["fluid.soundfont"].toString();
     update_dosbox_variable(false, "midi", "fluid.soundfont", soundfont.u8string());
-    retro::core_options.setVisible("fluid.soundfont", fsynth_enabled);
-
-    for (const auto* name : {"fluid.gain", "fluid.polyphony", "fluid.cores"}) {
-        update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
-        retro::core_options.setVisible(name, fsynth_enabled);
-    }
 
     for (const auto* name :
-         {"fluid.samplerate", "fluid.reverb", "fluid.reverb.roomsize", "fluid.reverb.damping",
-          "fluid.reverb.width", "fluid.reverb.level", "fluid.chorus", "fluid.chorus.number",
-          "fluid.chorus.level", "fluid.chorus.speed", "fluid.chorus.depth"})
+         {"fluid.gain", "fluid.polyphony", "fluid.cores", "fluid.samplerate", "fluid.reverb",
+          "fluid.reverb.roomsize", "fluid.reverb.damping", "fluid.reverb.width",
+          "fluid.reverb.level", "fluid.chorus", "fluid.chorus.number", "fluid.chorus.level",
+          "fluid.chorus.speed", "fluid.chorus.depth"})
     {
         update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
-        retro::core_options.setVisible(name, fsynth_enabled && show_all);
     }
-#else
-    (void)fsynth_enabled;
-    (void)show_all;
 #endif
 }
 
-static void update_mt32_variables(const bool mt32_enabled, const bool show_all)
+static void update_mt32_variables()
 {
     update_dosbox_variable(false, "midi", "mt32.romdir", retro_system_directory.u8string());
 
-    for (const auto* name : {"mt32.type", "mt32.thread", "mt32.partials", "mt32.analog"}) {
-        update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
-        retro::core_options.setVisible(name, mt32_enabled);
-    }
-
     for (const auto* name :
-         {"mt32.reverse.stereo", "mt32.dac", "mt32.reverb.mode", "mt32.reverb.time",
-          "mt32.reverb.level", "mt32.rate", "mt32.src.quality", "mt32.niceampramp"})
+         {"mt32.type", "mt32.thread", "mt32.partials", "mt32.analog", "mt32.reverse.stereo",
+          "mt32.dac", "mt32.reverb.mode", "mt32.reverb.time", "mt32.reverb.level", "mt32.rate",
+          "mt32.src.quality", "mt32.niceampramp", "mt32.chunk", "mt32.prebuffer"})
     {
         update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
-        retro::core_options.setVisible(name, mt32_enabled && show_all);
-    }
-
-    const bool is_threaded = retro::core_options["mt32.thread"].toBool();
-    for (const auto* name : {"mt32.chunk", "mt32.prebuffer"}) {
-        update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
-        retro::core_options.setVisible(name, mt32_enabled && is_threaded && show_all);
     }
 }
 
@@ -560,11 +609,6 @@ static void check_variables()
 {
     using namespace retro;
 
-    std::string machine_type;
-
-    bool blaster = false;
-    bool gus = false;
-
     update_log_verbosity();
     update_libretro_log_interface();
 
@@ -587,11 +631,6 @@ static void check_variables()
         return;
     }
 
-    const auto adv_core_options = core_options["adv_options"].toBool();
-
-    /* save machine type for option hiding purpose */
-    machine_type = core_options["machine_type"].toString();
-
     if (!dosbox_initialiazed) {
         update_dosbox_variable(false, "dosbox", "memsize", core_options["memory_size"].toString());
 
@@ -599,6 +638,7 @@ static void check_variables()
         machine = MCH_VGA;
         int10.vesa_nolfb = false;
         int10.vesa_oldvbe = false;
+        const std::string& machine_type = core_options["machine_type"].toString();
         if (machine_type == "hercules") {
             machine = MCH_HERC;
         } else if (machine_type == "cga") {
@@ -651,8 +691,8 @@ static void check_variables()
             CGA_Model(core_options["machine_cga_model"].toInt());
         }
 
-        blaster = check_blaster_variables(false);
-        gus = check_gus_variables(false);
+        check_blaster_variables(false);
+        check_gus_variables(false);
 
         {
             const bool prev_force_2axis_joystick = force_2axis_joystick;
@@ -688,16 +728,15 @@ static void check_variables()
         {
             const auto& mpu_type = core_options["mpu_type"].toString();
             update_dosbox_variable(false, "midi", "mpu401", mpu_type);
-            core_options.setVisible("midi_driver", mpu_type != "none");
 
             const auto& midi_driver = core_options["midi_driver"].toString();
             use_retro_midi = midi_driver == "libretro";
             update_dosbox_variable(
                 false, "midi", "mididevice", use_retro_midi ? "none" : midi_driver);
 
-            update_bassmidi_variables(midi_driver == "bassmidi", adv_core_options);
-            update_fsynth_variables(midi_driver == "fluidsynth", adv_core_options);
-            update_mt32_variables(midi_driver == "mt32", adv_core_options);
+            update_bassmidi_variables();
+            update_fsynth_variables();
+            update_mt32_variables();
 
             if (use_retro_midi && !have_retro_midi) {
                 have_retro_midi =
@@ -714,12 +753,10 @@ static void check_variables()
                     break;
                 }
             }
-            core_options.setVisible("midi_port", midi_driver == "alsa" && mpu_type != "none");
 #endif
 #ifdef __WIN32__
             update_dosbox_variable(
                 false, "midi", "midiconfig", core_options["midi_port"].toString());
-            core_options.setVisible("midi_port", midi_driver == "win32" && mpu_type != "none");
 #endif
         }
 
@@ -737,32 +774,6 @@ static void check_variables()
 
         check_vkbd_variables();
     }
-
-    core_options.setVisible("voodoo_memory_size", core_options["voodoo"].toString() != "false");
-
-    /* show cga options only if machine is cga and advanced options is enabled */
-    core_options.setVisible(
-        {"machine_cga_composite_mode", "machine_cga_model"},
-        adv_core_options && machine_type == "cga");
-
-    /* show hercules options only if machine is hercules and advanced options is enabled */
-    core_options.setVisible(
-        "machine_hercules_palette", adv_core_options && machine_type == "hercules");
-
-    /* show blaster options only if soundblaster is enabled and advanced options is enabled */
-    core_options.setVisible(
-        {"sblaster_base", "sblaster_irq", "sblaster_dma", "sblaster_hdma", "sblaster_opl_mode",
-         "sblaster_opl_emu"},
-        adv_core_options && blaster);
-
-    /* show ultrasound options only if it's it enabled and advanced options is enabled */
-    core_options.setVisible({"gusbase", "gusirq", "gusdma"}, adv_core_options && gus);
-
-    /* show these only if advanced options is enabled */
-    core_options.setVisible(
-        {"default_mount_freesize", "thread_sync", "cpu_type", "scaler", "mpu_type", "tandy",
-         "disney", "log_method", "log_level"},
-        adv_core_options);
 }
 
 static void start_dosbox(const std::string cmd_line)
@@ -843,6 +854,9 @@ void retro_set_environment(const retro_environment_t cb)
         {},
     };
     environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, ports);
+
+    retro_core_options_update_display_callback display_cb{update_core_option_visibility};
+    environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK, &display_cb);
 }
 
 void retro_set_controller_port_device(const unsigned port, const unsigned device)
@@ -1000,6 +1014,7 @@ void retro_init()
 
     retro::core_options.setEnvironmentCallback(environ_cb);
     retro::core_options.updateFrontend();
+    update_core_option_visibility();
     disk_control::init(environ_cb);
 
     if (!environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb))
@@ -1103,6 +1118,7 @@ void retro_run()
 
     if (retro::core_options.changed()) {
         check_variables();
+        update_core_option_visibility();
     }
 
     /* Once C is mounted, mount the overlay */

@@ -67,23 +67,30 @@ void CoreOptions::updateFrontend()
     }
 }
 
-void CoreOptions::setVisible(const std::string_view key, const bool visible) const noexcept
+auto CoreOptions::setVisible(const std::string_view key, const bool visible) noexcept -> bool
 {
-    const auto* opt = option(key);
+    auto* const opt = option(key);
     if (!opt) {
         retro::logError("Tried to set visibility for non-existent core option \"{}\".", key);
-        return;
+        return false;
     }
+    if (opt->is_visible_ == visible) {
+        return false;
+    }
+    opt->is_visible_ = visible;
     retro_core_option_display option_display{opt->key().c_str(), visible};
     env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+    return true;
 }
 
-void CoreOptions::setVisible(
-    const std::initializer_list<const std::string_view> keys, const bool visible) const noexcept
+auto CoreOptions::setVisible(
+    const std::initializer_list<const std::string_view> keys, const bool visible) noexcept -> bool
 {
+    bool visibility_changed = false;
     for (const auto key : keys) {
-        setVisible(key, visible);
+        visibility_changed |= setVisible(key, visible);
     }
+    return visibility_changed;
 }
 
 void CoreOptions::setCurrentValue(std::string_view key, const CoreOptionValue& value)

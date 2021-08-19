@@ -202,10 +202,14 @@ public:
     void updateFrontend();
 
     /* Show/hide the specified option(s).
+     *
+     * Returns whether or not the visibility of any of the options has changed. That is, trying to
+     * show or hide options that are all already visible or hidden will return false. If any of the
+     * options had their visiblity status changed, true is returned.
      */
-    void setVisible(std::string_view key, bool visible) const noexcept;
-    void setVisible(
-        std::initializer_list<const std::string_view> keys, bool visible) const noexcept;
+    auto setVisible(std::string_view key, bool visible) noexcept -> bool;
+    auto setVisible(std::initializer_list<const std::string_view> keys, bool visible) noexcept
+        -> bool;
 
     /* Change the current value of the specified option. Note that the libretro API does not
      * actually provide a proper way to do this, so we instead rely on the frontend to correctly

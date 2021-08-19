@@ -8,6 +8,8 @@
 
 namespace retro {
 
+class CoreOptions;
+
 class CoreOptionDefinition final
 {
 public:
@@ -59,6 +61,9 @@ private:
     std::vector<CoreOptionValue> values_;
     int default_value_index_ = 0;
     CoreOptionValue invalid_value_{""};
+    bool is_visible_ = true;
+
+    friend CoreOptions;
 };
 
 inline CoreOptionDefinition::CoreOptionDefinition(

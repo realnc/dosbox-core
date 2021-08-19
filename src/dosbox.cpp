@@ -63,6 +63,7 @@ static void PINHACK_Init(Section * sec) {
 	Section_prop * section=static_cast<Section_prop *>(sec);
 	// PINHACK config file parsing
 	pinhack.enabled=(section->Get_bool("pinhack"));
+	pinhack.disabled=(section->Get_bool("pinhackdisabled"));
 	const char* pinhacktriggerwidthrange=section->Get_string("pinhacktriggerwidth");
 	const char* pinhacktriggerheightrange=section->Get_string("pinhacktriggerheight");
 	pinhack.expand.width=(section->Get_int("pinhackexpandwidth"));
@@ -862,6 +863,9 @@ void DOSBOX_Init(void) {
 
 	Pbool = secprop->Add_bool("pinhack",Property::Changeable::Always,false);
 	Pbool->Set_help("Boolean: Enable pinball hacks to display whole table at once. Not enabled per default.");
+
+	Pbool = secprop->Add_bool("pinhackdisabled",Property::Changeable::Always,false);
+	Pbool->Set_help("Boolean: Start in disabled mode. Not enabled per default.");
 
 	Pstring = secprop->Add_string("pinhacktriggerwidth",Property::Changeable::Always,"0");
 	Pstring->Set_help("The X resolution (width) the pinball hack should trigger at. It is not checked by default or if set to 0. Can be a range.");

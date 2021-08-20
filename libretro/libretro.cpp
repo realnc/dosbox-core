@@ -350,19 +350,19 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
          "cpu_cycles_multiplier_fine_realmode", "cpu_cycles_fine_realmode"},
         mode == "auto");
 
-    const auto& mpu_type = core_options["mpu_type"].toString();
-    updated |= core_options.setVisible("midi_driver", mpu_type != "none");
+    const bool mpu_enabled = core_options["mpu_type"].toString() != "none";
+    updated |= core_options.setVisible("midi_driver", mpu_enabled);
 
     const auto& midi_driver = core_options["midi_driver"].toString();
 #ifdef WITH_BASSMIDI
-    const auto bassmidi_enabled = midi_driver == "bassmidi";
-    updated |= core_options.setVisible("bassmidi.soundfont", bassmidi_enabled);
-    updated |= core_options.setVisible("bassmidi.sfvolume", bassmidi_enabled);
-    updated |= core_options.setVisible("bassmidi.voices", bassmidi_enabled && show_all);
+    const auto bassmidi_enabled = mpu_enabled && midi_driver == "bassmidi";
+    updated |=
+        core_options.setVisible({"bassmidi.soundfont", "bassmidi.sfvolume"}, bassmidi_enabled);
+    updated |= core_options.setVisible("bassmidi.voices", show_all && bassmidi_enabled);
 #endif
 
 #ifdef WITH_FLUIDSYNTH
-    const auto fsynth_enabled = midi_driver == "fluidsynth";
+    const auto fsynth_enabled = mpu_enabled && midi_driver == "fluidsynth";
     for (const auto* name : {"fluid.soundfont", "fluid.gain", "fluid.polyphony", "fluid.cores"}) {
         updated |= core_options.setVisible(name, fsynth_enabled);
     }
@@ -371,11 +371,11 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
           "fluid.reverb.width", "fluid.reverb.level", "fluid.chorus", "fluid.chorus.number",
           "fluid.chorus.level", "fluid.chorus.speed", "fluid.chorus.depth"})
     {
-        updated |= core_options.setVisible(name, fsynth_enabled && show_all);
+        updated |= core_options.setVisible(name, show_all && fsynth_enabled);
     }
 #endif
 
-    const auto mt32_enabled = midi_driver == "mt32";
+    const auto mt32_enabled = mpu_enabled && midi_driver == "mt32";
     for (const auto* name : {"mt32.type", "mt32.thread", "mt32.partials", "mt32.analog"}) {
         updated |= core_options.setVisible(name, mt32_enabled);
     }
@@ -383,18 +383,18 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
          {"mt32.reverse.stereo", "mt32.dac", "mt32.reverb.mode", "mt32.reverb.time",
           "mt32.reverb.level", "mt32.rate", "mt32.src.quality", "mt32.niceampramp"})
     {
-        updated |= core_options.setVisible(name, mt32_enabled && show_all);
+        updated |= core_options.setVisible(name, show_all && mt32_enabled);
     }
-    const bool is_threaded = core_options["mt32.thread"].toBool();
+    const bool mt32_is_threaded = core_options["mt32.thread"].toBool();
     for (const auto* name : {"mt32.chunk", "mt32.prebuffer"}) {
-        updated |= core_options.setVisible(name, mt32_enabled && is_threaded && show_all);
+        updated |= core_options.setVisible(name, show_all && mt32_enabled && mt32_is_threaded);
     }
 
 #ifdef HAVE_ALSA
-    updated |= core_options.setVisible("midi_port", midi_driver == "alsa" && mpu_type != "none");
+    updated |= core_options.setVisible("midi_port", midi_driver == "alsa" && mpu_enabled);
 #endif
 #ifdef __WIN32__
-    updated |= core_options.setVisible("midi_port", midi_driver == "win32" && mpu_type != "none");
+    updated |= core_options.setVisible("midi_port", midi_driver == "win32" && mpu_enabled);
 #endif
 
     updated |=
@@ -408,11 +408,15 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     updated |=
         core_options.setVisible("machine_hercules_palette", show_all && machine_type == "hercules");
 
-    const bool blaster_enabled = core_options["sblaster_type"].toString() != "none";
+    const auto& sb_type = core_options["sblaster_type"].toString();
+    const bool sb_enabled = sb_type != "none";
+    const bool sb_is_gameblaster = sb_type == "gb";
+    const bool sb_is_sb16 = sb_type == "sb16";
     updated |= core_options.setVisible(
-        {"sblaster_base", "sblaster_irq", "sblaster_dma", "sblaster_hdma", "sblaster_opl_mode",
-         "sblaster_opl_emu"},
-        show_all && blaster_enabled);
+        {"sblaster_base", "sblaster_opl_mode", "sblaster_opl_emu"}, show_all && sb_enabled);
+    updated |= core_options.setVisible(
+        {"sblaster_irq", "sblaster_dma"}, show_all && sb_enabled && !sb_is_gameblaster);
+    updated |= core_options.setVisible("sblaster_hdma", show_all && sb_is_sb16);
 
     auto gus_enabled = core_options["gus"].toBool();
     updated |= core_options.setVisible({"gusbase", "gusirq", "gusdma"}, show_all && gus_enabled);
@@ -421,6 +425,9 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
         {"default_mount_freesize", "thread_sync", "cpu_type", "scaler", "mpu_type", "tandy",
          "disney", "log_method", "log_level"},
         show_all);
+
+    updated |=
+        core_options.setVisible("emulated_mouse_deadzone", core_options["emulated_mouse"].toBool());
 
     return updated;
 }

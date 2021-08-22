@@ -429,6 +429,20 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     updated |=
         core_options.setVisible("emulated_mouse_deadzone", core_options["emulated_mouse"].toBool());
 
+    const auto pinhack_enabled = core_options["pinhack"].toBool();
+    const bool pinhack_expand_width_enabled =
+        core_options["pinhackexpandwidth_coarse"].toInt() != 0;
+    const bool pinhack_expand_height_enabled =
+        core_options["pinhackexpandheight_coarse"].toInt() != 0;
+    updated |= core_options.setVisible(
+        {"pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight",
+         "pinhackexpandwidth_coarse", "pinhackexpandheight_coarse"},
+        pinhack_enabled);
+    updated |= core_options.setVisible(
+        "pinhackexpandwidth_fine", pinhack_enabled && pinhack_expand_width_enabled);
+    updated |= core_options.setVisible(
+        "pinhackexpandheight_fine", pinhack_enabled && pinhack_expand_height_enabled);
+
     return updated;
 }
 
@@ -484,6 +498,32 @@ static void check_vkbd_variables()
         opt_vkbd_alpha = GRAPH_ALPHA_25;
     } else if (transparency == "100%") {
         opt_vkbd_alpha = GRAPH_ALPHA_0;
+    }
+}
+
+static void check_pinhack_variables()
+{
+    using namespace retro;
+
+    for (const auto* name :
+         {"pinhack", "pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight"}) {
+        update_dosbox_variable(false, "pinhack", name, core_options[name].toString());
+    }
+
+    const int expand_width_coarse = core_options["pinhackexpandwidth_coarse"].toInt();
+    if (expand_width_coarse > 0) {
+        const int expand_width_fine = core_options["pinhackexpandwidth_fine"].toInt();
+        update_dosbox_variable(
+            false, "pinhack", "pinhackexpandwidth",
+            std::to_string(expand_width_coarse + expand_width_fine));
+    }
+
+    const int expand_height_coarse = core_options["pinhackexpandheight_coarse"].toInt();
+    if (expand_height_coarse > 0) {
+        const int expand_height_fine = core_options["pinhackexpandheight_fine"].toInt();
+        update_dosbox_variable(
+            false, "pinhack", "pinhackexpandheight",
+            std::to_string(expand_height_coarse + expand_height_fine));
     }
 }
 
@@ -780,6 +820,7 @@ static void check_variables()
         }
 
         check_vkbd_variables();
+        check_pinhack_variables();
     }
 }
 

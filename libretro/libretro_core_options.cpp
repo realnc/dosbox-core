@@ -29,6 +29,13 @@
         "2.75", "3.00", "3.25", "3.50", "3.75", "4.00", "4.25", "4.50", "4.75", "5.00", \
     }
 
+#define PINHACK_EXPAND_FINE_VALUES \
+     0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, \
+    23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, \
+    46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, \
+    69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, \
+    92, 93, 94, 95, 96, 97, 98, 99
+
 namespace retro {
 
 #if 1
@@ -1585,6 +1592,169 @@ CoreOptions core_options {
             false,
         },
         false
+    },
+    CoreOptionCategory {
+        "pinhack",
+        "Pinhack",
+        "Pinhack configuration options. Pinhack is a no-scroll hack for some pinball games.",
+
+        CoreOptionDefinition {
+            "pinhack",
+            "Enable",
+            "A hack that allows some pinball games to display the whole table without scrolling. "
+                "Do not enable this unless you're playing a game that works with it. It will cause "
+                "severe issues with other games. See https://github.com/DeXteRrBDN/dosbox-pinhack "
+                "for more information.",
+            {
+                { true, "yes" },
+                { false, "no" },
+            },
+            false,
+        },
+        CoreOptionDefinition {
+            "pinhackactive",
+            "Initial mode",
+            "Whether or not to start with pinhack toggled on or off. It can be toggled on and off "
+                "at any point with the Insert key.",
+            {
+                { true, "activated" },
+                { false, "deactivated" },
+            },
+            false,
+        },
+        CoreOptionDefinition {
+            "pinhacktriggerwidth",
+            "Horizontal trigger range",
+            "The horizontal resolution range the pinball hack should trigger at. Usually not needed.",
+            {
+                { 0, "disabled" },
+                "300-310",
+                "311-320",
+                "321-330",
+                "331-340",
+                "341-350",
+                "351-360",
+                "361-370",
+                "371-380",
+                "381-390",
+                "391-400",
+                "401-410",
+                "411-420",
+                "421-430",
+                "431-440",
+                "441-450",
+                "451-460",
+                "461-470",
+                "471-480",
+                "481-490",
+                "491-500",
+                "501-510",
+                "511-520",
+                "521-530",
+                "531-540",
+                "541-550",
+                "551-560",
+                "561-570",
+                "571-580",
+                "581-590",
+                "591-600",
+                "601-610",
+                "611-620",
+                "621-630",
+                "631-640",
+            },
+            0
+        },
+        CoreOptionDefinition {
+            "pinhacktriggerheight",
+            "Vertical trigger range",
+            "The vertical resolution range the pinball hack should trigger at.",
+            {
+                0,
+                "200-210",
+                "211-220",
+                "221-230",
+                "231-240",
+                "241-250",
+                "251-260",
+                "261-270",
+                "271-280",
+                "281-290",
+                "291-300",
+                "301-310",
+                "311-320",
+                "321-330",
+                "331-340",
+                "341-350",
+                "351-360",
+                "361-370",
+                "371-380",
+                "381-390",
+                "391-400",
+                "401-410",
+                "411-420",
+                "421-430",
+                "431-440",
+                "441-450",
+                "451-460",
+                "461-470",
+                "471-480",
+            },
+            "341-350"
+        },
+        CoreOptionDefinition {
+            "pinhackexpandwidth_coarse",
+            "Coarse expand width",
+            "The coarse horizontal resolution to expand the game to. No game is known to need this, so it "
+                "should be left disabled.",
+            {
+                { 0, "disabled" },
+                300,
+                400,
+                500,
+                600,
+            },
+            0
+        },
+        CoreOptionDefinition {
+            "pinhackexpandwidth_fine",
+            "Fine expand width",
+            "Combine this with the coarse expand width to get a final value. For example setting "
+                "\"coarse\" to 300 and \"fine\" to 20 will result in an expand width of 320 "
+                "pixels.",
+            {
+                PINHACK_EXPAND_FINE_VALUES
+            },
+            0
+        },
+        CoreOptionDefinition {
+            "pinhackexpandheight_coarse",
+            "Coarse expand height",
+            "The coarse vertical resolution to expand the game to. You need the correct value for "
+                "each individual game.",
+            {
+                { 0, "disabled" },
+                300,
+                400,
+                500,
+                600,
+                700,
+                800,
+                900,
+                1000,
+            },
+            600
+        },
+        CoreOptionDefinition {
+            "pinhackexpandheight_fine",
+            "Fine expand height",
+            "Combine this with the coarse expand height to get a final value. For example setting "
+                "coarse to 600 and fine to 8 will result in an expand height of 608.",
+            {
+                PINHACK_EXPAND_FINE_VALUES
+            },
+            8
+        },
     },
     CoreOptionCategory {
         "logging",

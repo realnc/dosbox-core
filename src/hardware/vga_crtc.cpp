@@ -198,7 +198,7 @@ void vga_write_p3d5(Bitu /*port*/,Bitu val,Bitu iolen) {
 	case 0x0C:	/* Start Address High Register */
 #ifdef __LIBRETRO__
 #ifdef WITH_PINHACK
-		if (pinhack.trigger && !pinhack.disabled) val=0;
+		if (pinhack.trigger && pinhack.active) val=0;
 #endif
 #endif
 		crtc(start_address_high)=val;
@@ -208,7 +208,7 @@ void vga_write_p3d5(Bitu /*port*/,Bitu val,Bitu iolen) {
 	case 0x0D:	/* Start Address Low Register */
 #ifdef __LIBRETRO__
 #ifdef WITH_PINHACK
-		if (pinhack.trigger && !pinhack.disabled) val=0;
+		if (pinhack.trigger && pinhack.active) val=0;
 #endif
 #endif
 		crtc(start_address_low)=val;

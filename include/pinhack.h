@@ -10,7 +10,7 @@
 
 extern struct scrollhack {
     bool enabled;
-    bool disabled;
+    bool active;
     bool trigger;
     struct {
         int min, max;

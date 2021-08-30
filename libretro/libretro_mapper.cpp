@@ -490,7 +490,7 @@ static RETRO_CALLCONV void keyboardEventCb(
     if (pinhack.enabled) {
         if (keycode == RETROK_INSERT) {
             if (down && !keyboard_state[KBD_insert]) {
-                pinhack.disabled = !pinhack.disabled;
+                pinhack.active = !pinhack.active;
                 request_VGA_SetupDrawing = true;
             }
             keyboard_state[KBD_insert] = down;

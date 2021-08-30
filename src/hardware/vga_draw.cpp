@@ -728,7 +728,7 @@ static void VGA_DrawPart(Bitu lines) {
 		vga.draw.lines_done++;
 #ifdef __LIBRETRO__
 #ifdef WITH_PINHACK
-		if (!pinhack.trigger || pinhack.disabled) {
+		if (!pinhack.trigger || !pinhack.active) {
 #endif
 #endif
 		if (vga.draw.split_line==vga.draw.lines_done) {
@@ -1563,7 +1563,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		pinhack.trigger = false;
 		if ((height >= pinhack.triggerheight.min && height <= pinhack.triggerheight.max) &&
 			(width >= pinhack.triggerwidth.min && width <= pinhack.triggerwidth.max) &&
-			!pinhack.disabled) {
+			pinhack.active) {
 			pinhack.trigger = true;
 			// If width or height not set, do not expand!
 			if (pinhack.expand.height) height = pinhack.expand.height;

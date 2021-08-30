@@ -486,16 +486,9 @@ static RETRO_CALLCONV void keyboardEventCb(
     }
 
 #ifdef WITH_PINHACK
-    /* Sacrifice Insert for pinhack toggle */
-    if (pinhack.enabled) {
-        if (keycode == RETROK_INSERT) {
-            if (down && !keyboard_state[KBD_insert]) {
-                pinhack.active = !pinhack.active;
-                request_VGA_SetupDrawing = true;
-            }
-            keyboard_state[KBD_insert] = down;
-            return;
-        }
+    if (keycode == RETROK_INSERT && down && !keyboard_state[KBD_insert]) {
+        pinhack.active = !pinhack.active;
+        request_VGA_SetupDrawing = true;
     }
 #endif
 

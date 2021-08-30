@@ -1740,8 +1740,6 @@ CoreOptions core_options {
                 600,
                 700,
                 800,
-                900,
-                1000,
             },
             600
         },

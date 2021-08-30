@@ -44,6 +44,11 @@
 extern "C" Jit dynarec_jit;
 #endif
 
+#ifdef WITH_PINHACK
+#include "pinhack.h"
+extern bool request_VGA_SetupDrawing;
+#endif
+
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
 
 #define CORE_VERSION SVN_VERSION " " GIT_VERSION
@@ -504,26 +509,41 @@ static void check_vkbd_variables()
 static void check_pinhack_variables()
 {
     using namespace retro;
+    bool updated = false;
 
     for (const auto* name :
          {"pinhack", "pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight"}) {
-        update_dosbox_variable(false, "pinhack", name, core_options[name].toString());
+        if (update_dosbox_variable(
+                false, "pinhack", name, core_options[name].toString())) {
+            updated = true;
+        }
     }
 
     const int expand_width_coarse = core_options["pinhackexpandwidth_coarse"].toInt();
     if (expand_width_coarse > 0) {
         const int expand_width_fine = core_options["pinhackexpandwidth_fine"].toInt();
-        update_dosbox_variable(
-            false, "pinhack", "pinhackexpandwidth",
-            std::to_string(expand_width_coarse + expand_width_fine));
+        if (update_dosbox_variable(
+                false, "pinhack", "pinhackexpandwidth",
+                std::to_string(expand_width_coarse + expand_width_fine))) {
+            updated = true;
+        }
     }
 
     const int expand_height_coarse = core_options["pinhackexpandheight_coarse"].toInt();
     if (expand_height_coarse > 0) {
-        const int expand_height_fine = core_options["pinhackexpandheight_fine"].toInt();
-        update_dosbox_variable(
-            false, "pinhack", "pinhackexpandheight",
-            std::to_string(expand_height_coarse + expand_height_fine));
+        int expand_height_fine = core_options["pinhackexpandheight_fine"].toInt();
+        if (expand_height_coarse + expand_height_fine > 820) {
+            expand_height_fine = 20;
+        }
+        if (update_dosbox_variable(
+                false, "pinhack", "pinhackexpandheight",
+                std::to_string(expand_height_coarse + expand_height_fine))) {
+            updated = true;
+        }
+    }
+
+    if (updated) {
+        request_VGA_SetupDrawing = true;
     }
 }
 

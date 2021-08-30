@@ -1747,11 +1747,11 @@ CoreOptions core_options {
             "pinhackexpandheight_fine",
             "Fine expand height",
             "Combine this with the coarse expand height to get a final value. For example setting "
-                "coarse to 600 and fine to 8 will result in an expand height of 608.",
+                "coarse to 600 and fine to 9 will result in an expand height of 609 (Pinball Fantasies).",
             {
                 PINHACK_EXPAND_FINE_VALUES
             },
-            8
+            9
         },
     },
     CoreOptionCategory {

@@ -1704,31 +1704,6 @@ CoreOptions core_options {
             "341-350"
         },
         CoreOptionDefinition {
-            "pinhackexpandwidth_coarse",
-            "Coarse expand width",
-            "The coarse horizontal resolution to expand the game to. No game is known to need this, so it "
-                "should be left disabled.",
-            {
-                { 0, "disabled" },
-                300,
-                400,
-                500,
-                600,
-            },
-            0
-        },
-        CoreOptionDefinition {
-            "pinhackexpandwidth_fine",
-            "Fine expand width",
-            "Combine this with the coarse expand width to get a final value. For example setting "
-                "\"coarse\" to 300 and \"fine\" to 20 will result in an expand width of 320 "
-                "pixels.",
-            {
-                PINHACK_EXPAND_FINE_VALUES
-            },
-            0
-        },
-        CoreOptionDefinition {
             "pinhackexpandheight_coarse",
             "Coarse expand height",
             "The coarse vertical resolution to expand the game to. You need the correct value for "

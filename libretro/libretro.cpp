@@ -432,16 +432,12 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
 
 #ifdef WITH_PINHACK
     const auto pinhack_enabled = core_options["pinhack"].toBool();
-    const bool pinhack_expand_width_enabled =
-        core_options["pinhackexpandwidth_coarse"].toInt() != 0;
     const bool pinhack_expand_height_enabled =
         core_options["pinhackexpandheight_coarse"].toInt() != 0;
     updated |= core_options.setVisible(
         {"pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight",
-         "pinhackexpandwidth_coarse", "pinhackexpandheight_coarse"},
+         "pinhackexpandheight_coarse"},
         pinhack_enabled);
-    updated |= core_options.setVisible(
-        "pinhackexpandwidth_fine", pinhack_enabled && pinhack_expand_width_enabled);
     updated |= core_options.setVisible(
         "pinhackexpandheight_fine", pinhack_enabled && pinhack_expand_height_enabled);
 #endif
@@ -513,14 +509,6 @@ static void check_pinhack_variables()
     for (const auto* name :
          {"pinhack", "pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight"}) {
         updated |= update_dosbox_variable(false, "pinhack", name, core_options[name].toString());
-    }
-
-    const int expand_width_coarse = core_options["pinhackexpandwidth_coarse"].toInt();
-    if (expand_width_coarse > 0) {
-        const int expand_width_fine = core_options["pinhackexpandwidth_fine"].toInt();
-        updated |= update_dosbox_variable(
-            false, "pinhack", "pinhackexpandwidth",
-            std::to_string(expand_width_coarse + expand_width_fine));
     }
 
     const int expand_height_coarse = core_options["pinhackexpandheight_coarse"].toInt();

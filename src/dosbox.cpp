@@ -46,6 +46,37 @@
 #include "libretro.h"
 #include "midi_bassmidi.h"
 #include "midi_fluidsynth.h"
+#ifdef WITH_PINHACK
+#include "pinhack.h"
+scrollhack pinhack;
+void parsetriggerrange(const char* &range, int &min, int &max, char delim) {
+    char* range_delim = const_cast<char*>(strchr(range,delim));
+    if (range_delim && *range_delim) {
+        min = atoi(range);
+        max = atoi(range_delim + 1);
+    }
+    else if (!range_delim) { // single value given
+        max =  min = atoi(range);
+    }
+}
+static void PINHACK_Init(Section * sec) {
+	Section_prop * section=static_cast<Section_prop *>(sec);
+	// PINHACK config file parsing
+	pinhack.enabled=(section->Get_bool("pinhack"));
+	pinhack.active=(section->Get_bool("pinhackactive"));
+	const char* pinhacktriggerwidthrange=section->Get_string("pinhacktriggerwidth");
+	const char* pinhacktriggerheightrange=section->Get_string("pinhacktriggerheight");
+	pinhack.expand.width=(section->Get_int("pinhackexpandwidth"));
+	pinhack.expand.height=(section->Get_int("pinhackexpandheight"));
+
+	parsetriggerrange(pinhacktriggerwidthrange, pinhack.triggerwidth.min, pinhack.triggerwidth.max, '-');
+	parsetriggerrange(pinhacktriggerheightrange, pinhack.triggerheight.min, pinhack.triggerheight.max, '-');
+
+	if (pinhack.triggerwidth.min == 0 && pinhack.triggerwidth.max == 0) {
+		pinhack.triggerwidth.max=9999;
+	}
+}
+#endif // WITH_PINHACK
 #else
 MachineType machine;
 SVGACards svgaCard;
@@ -824,6 +855,33 @@ void DOSBOX_Init(void) {
 	Pbool->Set_help("Enable ipx over UDP/IP emulation.");
 #endif
 //	secprop->AddInitFunction(&CREDITS_Init);
+
+#if defined(__LIBRETRO__) && defined(WITH_PINHACK)
+	// PINHACK: begin config file section
+	secprop=control->AddSection_prop("pinhack",&PINHACK_Init,true);
+
+	Pbool = secprop->Add_bool("pinhack",Property::Changeable::Always,false);
+	Pbool->Set_help("Boolean: Enable pinball hacks to display whole table at once. Not enabled per default.");
+
+	Pbool = secprop->Add_bool("pinhackactive",Property::Changeable::Always,true);
+	Pbool->Set_help("Boolean: If pinhack is enabled, activate it on startup. Enabled per default.");
+
+	Pstring = secprop->Add_string("pinhacktriggerwidth",Property::Changeable::Always,"0");
+	Pstring->Set_help("The X resolution (width) the pinball hack should trigger at. It is not checked by default or if set to 0. Can be a range.");
+
+	Pstring = secprop->Add_string("pinhacktriggerheight",Property::Changeable::Always,"231-240");
+	Pstring->Set_help("The Y resolution (height) the pinball hack should trigger at. Default is 231-240 (good for Pinball Fantasies in low-res mode). Can be a range.");
+
+	Pint = secprop->Add_int("pinhackexpandwidth",Property::Changeable::Always,0);
+	Pint->SetMinMax(0,4000);
+	Pint->Set_help("The X resolution (width) DOSBox will expand to if pinball hack is enabled and triggers.\n"
+			"Not very useful probably, but provided here in case someone finds a game where it is useful!");
+
+	Pint = secprop->Add_int("pinhackexpandheight",Property::Changeable::Always,608);
+	Pint->SetMinMax(1,4000);
+	Pint->Set_help("The Y resolution (height) DOSBox will expand to if pinball hack is enabled and triggers.");
+    // PINHACK: end config file section
+#endif
 
 	//TODO ?
 	secline=control->AddSection_line("autoexec",&AUTOEXEC_Init);

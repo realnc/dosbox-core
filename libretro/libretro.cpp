@@ -18,6 +18,7 @@
 #include "midi_win32.h"
 #include "mixer.h"
 #include "pic.h"
+#include "pinhack.h"
 #include "programs.h"
 #include "render.h"
 #include "setup.h"
@@ -429,6 +430,18 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     updated |=
         core_options.setVisible("emulated_mouse_deadzone", core_options["emulated_mouse"].toBool());
 
+#ifdef WITH_PINHACK
+    const auto pinhack_enabled = core_options["pinhack"].toBool();
+    const bool pinhack_expand_height_enabled =
+        core_options["pinhackexpandheight_coarse"].toInt() != 0;
+    updated |= core_options.setVisible(
+        {"pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight",
+         "pinhackexpandheight_coarse"},
+        pinhack_enabled);
+    updated |= core_options.setVisible(
+        "pinhackexpandheight_fine", pinhack_enabled && pinhack_expand_height_enabled);
+#endif
+
     return updated;
 }
 
@@ -485,6 +498,34 @@ static void check_vkbd_variables()
     } else if (transparency == "100%") {
         opt_vkbd_alpha = GRAPH_ALPHA_0;
     }
+}
+
+static void check_pinhack_variables()
+{
+#ifdef WITH_PINHACK
+    using namespace retro;
+    bool updated = false;
+
+    for (const auto* name :
+         {"pinhack", "pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight"}) {
+        updated |= update_dosbox_variable(false, "pinhack", name, core_options[name].toString());
+    }
+
+    const int expand_height_coarse = core_options["pinhackexpandheight_coarse"].toInt();
+    if (expand_height_coarse > 0) {
+        int expand_height_fine = core_options["pinhackexpandheight_fine"].toInt();
+        if (expand_height_coarse + expand_height_fine > 820) {
+            expand_height_fine = 20;
+        }
+        updated |= update_dosbox_variable(
+            false, "pinhack", "pinhackexpandheight",
+            std::to_string(expand_height_coarse + expand_height_fine));
+    }
+
+    if (updated) {
+        request_VGA_SetupDrawing = true;
+    }
+#endif
 }
 
 void core_autoexec()
@@ -780,6 +821,7 @@ static void check_variables()
         }
 
         check_vkbd_variables();
+        check_pinhack_variables();
     }
 }
 
@@ -902,7 +944,7 @@ void retro_get_system_av_info(retro_system_av_info* const info)
     info->geometry.base_width = 320;
     info->geometry.base_height = 200;
     info->geometry.max_width = 1024;
-    info->geometry.max_height = 768;
+    info->geometry.max_height = 820;
     info->geometry.aspect_ratio = 4.0 / 3;
     info->timing.fps = currentFPS;
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();

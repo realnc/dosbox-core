@@ -15,6 +15,8 @@ BUNDLED_SDL ?= 0
 WITH_BASSMIDI ?= 1
 # Build with fluidsynth support
 WITH_FLUIDSYNTH ?= 1
+# Build with pinhack patch
+WITH_PINHACK ?= 1
 # Extra command-line flags to pass to pkg-config.
 PKG_CONFIG_FLAGS ?=
 # Link statically against some system-installed libraries (audio codecs and libsndfile.)
@@ -385,6 +387,9 @@ INCFLAGS += $(MUNT_INCFLAGS) -Ideps/fmt/include
 ifeq ($(WITH_BASSMIDI), 1)
 	COMMONFLAGS += -DWITH_BASSMIDI=1
 	LDFLAGS += -ldl
+endif
+ifeq ($(WITH_PINHACK), 1)
+	COMMONFLAGS += -DWITH_PINHACK=1
 endif
 CXXFLAGS += -D__LIBRETRO__ -MMD $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS += -D__LIBRETRO__ -MMD $(fpic) $(INCFLAGS) $(COMMONFLAGS)

@@ -9,6 +9,7 @@
 #include "log.h"
 #include "mapper.h"
 #include "mouse.h"
+#include "pinhack.h"
 #include <cmath>
 #include <memory>
 #include <tuple>
@@ -479,6 +480,13 @@ static RETRO_CALLCONV void keyboardEventCb(
             return;
         }
     }
+
+#ifdef WITH_PINHACK
+    if (keycode == RETROK_INSERT && down && !keyboard_state[KBD_insert]) {
+        pinhack.active = !pinhack.active;
+        request_VGA_SetupDrawing = true;
+    }
+#endif
 
     for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
         if (retro_id == keycode) {

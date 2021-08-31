@@ -18,6 +18,9 @@ extern Bit8u* dosbox_frontbuffer;
 extern bool dosbox_frontbuffer_uploaded;
 extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 extern unsigned RDOSGFXcolorMode;
+#ifdef WITH_PINHACK
+extern bool request_VGA_SetupDrawing;
+#endif
 extern bool dosbox_exit;
 extern bool frontend_exit;
 extern retro_midi_interface retro_midi_interface;

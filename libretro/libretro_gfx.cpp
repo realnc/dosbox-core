@@ -4,6 +4,7 @@
 #include "libretro_dosbox.h"
 #include "libretro-vkbd.h"
 #include "render.h"
+#include "vga.h"
 #include "video.h"
 #include <algorithm>
 #include <cstring>
@@ -16,6 +17,9 @@ Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 float dosbox_aspect_ratio = 0;
 unsigned RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_0RGB1555;
 static GFX_CallBack_t dosbox_gfx_cb = nullptr;
+#ifdef WITH_PINHACK
+bool request_VGA_SetupDrawing = false;
+#endif
 
 auto GFX_GetBestMode(const Bitu /*flags*/) -> Bitu
 {
@@ -38,7 +42,7 @@ auto GFX_SetSize(
     dosbox_aspect_ratio = (width * scalex) / (height * scaley);
     dosbox_gfx_cb = cb;
 
-    if (RDOSGFXwidth > 1024 || RDOSGFXheight > 768) {
+    if (RDOSGFXwidth > 1024 || RDOSGFXheight > 820) {
         return 0;
     }
 
@@ -63,6 +67,13 @@ void GFX_EndUpdate(const Bit16u* const changedLines)
         }
         return;
     }
+
+#ifdef WITH_PINHACK
+    if (request_VGA_SetupDrawing) {
+        request_VGA_SetupDrawing = false;
+        VGA_SetupDrawing(0);
+    }
+#endif
 
     if (run_synced) {
         dosbox_frontbuffer_uploaded = !changedLines;

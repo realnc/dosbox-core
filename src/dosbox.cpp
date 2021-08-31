@@ -856,8 +856,7 @@ void DOSBOX_Init(void) {
 #endif
 //	secprop->AddInitFunction(&CREDITS_Init);
 
-#ifdef __LIBRETRO__
-#ifdef WITH_PINHACK
+#if defined(__LIBRETRO__) && defined(WITH_PINHACK)
 	// PINHACK: begin config file section
 	secprop=control->AddSection_prop("pinhack",&PINHACK_Init,true);
 
@@ -882,7 +881,6 @@ void DOSBOX_Init(void) {
 	Pint->SetMinMax(1,4000);
 	Pint->Set_help("The Y resolution (height) DOSBox will expand to if pinball hack is enabled and triggers.");
     // PINHACK: end config file section
-#endif
 #endif
 
 	//TODO ?

@@ -27,9 +27,7 @@
 #include "pic.h"
 
 #ifdef __LIBRETRO__
-#ifdef WITH_PINHACK
 #include "pinhack.h"
-#endif
 #endif
 
 //#undef C_DEBUG
@@ -726,10 +724,8 @@ static void VGA_DrawPart(Bitu lines) {
 			vga.draw.address+=vga.draw.address_add;
 		}
 		vga.draw.lines_done++;
-#ifdef __LIBRETRO__
-#ifdef WITH_PINHACK
+#if defined(__LIBRETRO__) && defined(WITH_PINHACK)
 		if (!pinhack.trigger || !pinhack.active) {
-#endif
 #endif
 		if (vga.draw.split_line==vga.draw.lines_done) {
 #ifdef VGA_KEEP_CHANGES
@@ -740,10 +736,8 @@ static void VGA_DrawPart(Bitu lines) {
 			vga.changes.start = vga.draw.address >> VGA_CHANGE_SHIFT;
 #endif
 		}
-#ifdef __LIBRETRO__
-#ifdef WITH_PINHACK
+#if defined(__LIBRETRO__) && defined(WITH_PINHACK)
 		}
-#endif
 #endif
 	}
 	if (--vga.draw.parts_left) {
@@ -1557,8 +1551,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		}
 	}
 
-#ifdef __LIBRETRO__
-#ifdef WITH_PINHACK
+#if defined(__LIBRETRO__) && defined(WITH_PINHACK)
 	if (pinhack.enabled) {
 		pinhack.trigger = false;
 		if ((height >= pinhack.triggerheight.min && height <= pinhack.triggerheight.max) &&
@@ -1570,7 +1563,6 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 			if (pinhack.expand.width)  width  = pinhack.expand.width;
 		}
 	}
-#endif
 #endif
 
 	vga.draw.lines_total=height;

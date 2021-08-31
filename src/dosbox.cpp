@@ -869,8 +869,8 @@ void DOSBOX_Init(void) {
 	Pstring = secprop->Add_string("pinhacktriggerwidth",Property::Changeable::Always,"0");
 	Pstring->Set_help("The X resolution (width) the pinball hack should trigger at. It is not checked by default or if set to 0. Can be a range.");
 
-	Pstring = secprop->Add_string("pinhacktriggerheight",Property::Changeable::Always,"350");
-	Pstring->Set_help("The Y resolution (height) the pinball hack should trigger at. Default is 350 (good for Pinball Fantasies). Can be a range.");
+	Pstring = secprop->Add_string("pinhacktriggerheight",Property::Changeable::Always,"231-240");
+	Pstring->Set_help("The Y resolution (height) the pinball hack should trigger at. Default is 231-240 (good for Pinball Fantasies in low-res mode). Can be a range.");
 
 	Pint = secprop->Add_int("pinhackexpandwidth",Property::Changeable::Always,0);
 	Pint->SetMinMax(0,4000);

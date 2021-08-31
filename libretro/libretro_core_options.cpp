@@ -1701,7 +1701,7 @@ CoreOptions core_options {
                 "461-470",
                 "471-480",
             },
-            "341-350"
+            "231-240"
         },
         CoreOptionDefinition {
             "pinhackexpandheight_coarse",

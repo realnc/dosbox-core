@@ -9,15 +9,11 @@
 #include "log.h"
 #include "mapper.h"
 #include "mouse.h"
+#include "pinhack.h"
 #include <cmath>
 #include <memory>
 #include <tuple>
 #include <vector>
-
-#ifdef WITH_PINHACK
-#include "pinhack.h"
-extern bool request_VGA_SetupDrawing;
-#endif
 
 #define RDEV(x) RETRO_DEVICE_##x
 #define RDIX(x) RETRO_DEVICE_INDEX_##x

@@ -18,6 +18,7 @@
 #include "midi_win32.h"
 #include "mixer.h"
 #include "pic.h"
+#include "pinhack.h"
 #include "programs.h"
 #include "render.h"
 #include "setup.h"
@@ -42,11 +43,6 @@
 #ifdef HAVE_LIBNX
     #include <switch.h>
 extern "C" Jit dynarec_jit;
-#endif
-
-#ifdef WITH_PINHACK
-#include "pinhack.h"
-extern bool request_VGA_SetupDrawing;
 #endif
 
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
@@ -513,20 +509,15 @@ static void check_pinhack_variables()
 
     for (const auto* name :
          {"pinhack", "pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight"}) {
-        if (update_dosbox_variable(
-                false, "pinhack", name, core_options[name].toString())) {
-            updated = true;
-        }
+        updated |= update_dosbox_variable(false, "pinhack", name, core_options[name].toString());
     }
 
     const int expand_width_coarse = core_options["pinhackexpandwidth_coarse"].toInt();
     if (expand_width_coarse > 0) {
         const int expand_width_fine = core_options["pinhackexpandwidth_fine"].toInt();
-        if (update_dosbox_variable(
-                false, "pinhack", "pinhackexpandwidth",
-                std::to_string(expand_width_coarse + expand_width_fine))) {
-            updated = true;
-        }
+        updated |= update_dosbox_variable(
+            false, "pinhack", "pinhackexpandwidth",
+            std::to_string(expand_width_coarse + expand_width_fine));
     }
 
     const int expand_height_coarse = core_options["pinhackexpandheight_coarse"].toInt();
@@ -535,11 +526,9 @@ static void check_pinhack_variables()
         if (expand_height_coarse + expand_height_fine > 820) {
             expand_height_fine = 20;
         }
-        if (update_dosbox_variable(
-                false, "pinhack", "pinhackexpandheight",
-                std::to_string(expand_height_coarse + expand_height_fine))) {
-            updated = true;
-        }
+        updated |= update_dosbox_variable(
+            false, "pinhack", "pinhackexpandheight",
+            std::to_string(expand_height_coarse + expand_height_fine));
     }
 
     if (updated) {

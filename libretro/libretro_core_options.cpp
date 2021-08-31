@@ -1601,14 +1601,14 @@ CoreOptions core_options {
 
         CoreOptionDefinition {
             "pinhack",
-            "Enable",
+            "Pinhack",
             "A hack that allows some pinball games to display the whole table without scrolling. "
                 "Do not enable this unless you're playing a game that works with it. It will cause "
                 "severe issues with other games. See https://github.com/DeXteRrBDN/dosbox-pinhack "
                 "for more information.",
             {
-                { true, "yes" },
-                { false, "no" },
+                { true, "on" },
+                { false, "off" },
             },
             false,
         },

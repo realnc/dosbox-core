@@ -430,6 +430,7 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     updated |=
         core_options.setVisible("emulated_mouse_deadzone", core_options["emulated_mouse"].toBool());
 
+#ifdef WITH_PINHACK
     const auto pinhack_enabled = core_options["pinhack"].toBool();
     const bool pinhack_expand_width_enabled =
         core_options["pinhackexpandwidth_coarse"].toInt() != 0;
@@ -443,6 +444,7 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
         "pinhackexpandwidth_fine", pinhack_enabled && pinhack_expand_width_enabled);
     updated |= core_options.setVisible(
         "pinhackexpandheight_fine", pinhack_enabled && pinhack_expand_height_enabled);
+#endif
 
     return updated;
 }
@@ -504,6 +506,7 @@ static void check_vkbd_variables()
 
 static void check_pinhack_variables()
 {
+#ifdef WITH_PINHACK
     using namespace retro;
     bool updated = false;
 
@@ -534,6 +537,7 @@ static void check_pinhack_variables()
     if (updated) {
         request_VGA_SetupDrawing = true;
     }
+#endif
 }
 
 void core_autoexec()

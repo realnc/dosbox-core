@@ -1593,6 +1593,7 @@ CoreOptions core_options {
         },
         false
     },
+    #ifdef WITH_PINHACK
     CoreOptionCategory {
         "pinhack",
         "Pinhack",
@@ -1754,6 +1755,7 @@ CoreOptions core_options {
             9
         },
     },
+    #endif
     CoreOptionCategory {
         "logging",
         "Logging",

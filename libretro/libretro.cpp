@@ -57,6 +57,8 @@ bool startup_state_numlock;
 bool autofire;
 static bool dosbox_initialiazed = false;
 
+std::vector<std::string> locked_dosbox_variable;
+
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
 
@@ -269,6 +271,13 @@ auto update_dosbox_variable(
     bool ret = false;
     if (dosbox_initialiazed && compare_dosbox_variable(section_string, var_string, val_string)) {
         return false;
+    }
+
+    /* Skip variables that are set via 'config -set' */
+    for (auto i : locked_dosbox_variable) {
+        if (i == var_string) {
+            return false;
+        }
     }
 
     Section* section = control->GetSection(section_string);

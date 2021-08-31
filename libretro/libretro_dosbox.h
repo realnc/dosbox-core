@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 #define RETRO_DEVICES 5
 
@@ -46,3 +47,5 @@ void core_autoexec();
 auto update_dosbox_variable(
     bool autoexec, const std::string& section_string, const std::string& var_string,
     const std::string& val_string) -> bool;
+
+extern std::vector<std::string> locked_dosbox_variable;

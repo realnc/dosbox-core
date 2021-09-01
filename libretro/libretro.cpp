@@ -57,7 +57,7 @@ bool startup_state_numlock;
 bool autofire;
 static bool dosbox_initialiazed = false;
 
-std::vector<std::string> locked_dosbox_variable;
+std::vector<std::string> locked_dosbox_variables;
 
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
@@ -273,8 +273,8 @@ auto update_dosbox_variable(
         return false;
     }
 
-    /* Skip variables that are set via 'config -set' */
-    for (auto i : locked_dosbox_variable) {
+    // Skip variables that are set via 'config -set'.
+    for (auto i : locked_dosbox_variables) {
         if (i == var_string) {
             return false;
         }

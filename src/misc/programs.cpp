@@ -756,8 +756,8 @@ void CONFIG::Run(void) {
 			std::string inputline = pvars[1] + "=" + value;
 			
 #ifdef __LIBRETRO__
-			/* Store variables for core option skipping */
-			locked_dosbox_variable.push_back(pvars[1]);
+			// Store variables for core option skipping.
+			locked_dosbox_variables.emplace_back(pvars[1]);
 #endif
 
 			tsec->ExecuteDestroy(false);

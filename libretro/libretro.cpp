@@ -274,8 +274,9 @@ auto update_dosbox_variable(
         return false;
     }
 
-    // Skip variables that are set via 'config -set'.
-    if (locked_dosbox_variables.count(var_string) != 0) {
+    if (locked_dosbox_variables.count(var_string) != 0
+        && retro::core_options["option_handling"].toString() == "disable changed")
+    {
         return false;
     }
 
@@ -683,7 +684,7 @@ static void check_variables()
     use_spinlock = core_options["thread_sync"].toString() == "spin";
     useSpinlockThreadSync(use_spinlock);
 
-    if (!core_options["use_options"].toBool()) {
+    if (core_options["option_handling"].toString() == "all off") {
         return;
     }
 

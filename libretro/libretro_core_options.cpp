@@ -43,17 +43,20 @@ CoreOptions core_options {
     "dosbox_core_",
 
     CoreOptionDefinition {
-        "use_options",
-        "Enable core options (restart)",
-        "Disabling core options can be useful if you prefer to use dosbox .conf files to set "
-            "configuration settings. Note that you can still use core options together with "
-            ".conf files, for example if your .conf files only contain an [autoexec] section, "
-            "or dosbox settings not yet available as core options.",
+        "option_handling",
+        "Core option handling",
+        "Disabling all core options can be useful if you prefer to use dosbox .conf files to set "
+            "configuration settings. Note that you don't need to disable all options if your .conf "
+            "file only contains an [autoexec] section. Disabling only core options that have been "
+            "changed within dosbox (using the 'config -set' DOS command, for example) prevents "
+            "those changes from getting reverted to the values set in the core options. This is "
+            "the default and recommended setting.",
         {
-            true,
-            false,
+            {"disable changed", "disable options changed within dosbox"},
+            {"all on", "enable all options (restart)"},
+            {"all off", "disable all options (restart)"},
         },
-        true
+        "disable changed"
     },
     CoreOptionDefinition {
         "adv_options",

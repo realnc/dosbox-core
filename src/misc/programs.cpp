@@ -40,6 +40,10 @@ Bitu call_program;
 #include "nonlibc.h"
 #endif
 
+#ifdef __LIBRETRO__
+#include "libretro_dosbox.h"
+#endif
+
 /* This registers a file on the virtual drive and creates the correct structure for it*/
 
 static Bit8u exe_block[]={
@@ -751,6 +755,11 @@ void CONFIG::Run(void) {
 			}
 			std::string inputline = pvars[1] + "=" + value;
 			
+#ifdef __LIBRETRO__
+			// Store variables for core option skipping.
+			locked_dosbox_variables.insert(pvars[1]);
+#endif
+
 			tsec->ExecuteDestroy(false);
 			bool change_success = tsec->HandleInputline(inputline.c_str());
 			if (!change_success) WriteOut(MSG_Get("PROGRAM_CONFIG_VALUE_ERROR"),

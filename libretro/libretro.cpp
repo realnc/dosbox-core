@@ -33,6 +33,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <memory>
+#include <set>
 #include <string>
 #include <thread>
 #ifdef _WIN32
@@ -56,6 +57,8 @@ bool startup_state_numlock;
 
 bool autofire;
 static bool dosbox_initialiazed = false;
+
+std::set<std::string> locked_dosbox_variables;
 
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
@@ -268,6 +271,12 @@ auto update_dosbox_variable(
 {
     bool ret = false;
     if (dosbox_initialiazed && compare_dosbox_variable(section_string, var_string, val_string)) {
+        return false;
+    }
+
+    if (locked_dosbox_variables.count(var_string) != 0
+        && retro::core_options["option_handling"].toString() == "disable changed")
+    {
         return false;
     }
 
@@ -675,7 +684,7 @@ static void check_variables()
     use_spinlock = core_options["thread_sync"].toString() == "spin";
     useSpinlockThreadSync(use_spinlock);
 
-    if (!core_options["use_options"].toBool()) {
+    if (core_options["option_handling"].toString() == "all off") {
         return;
     }
 

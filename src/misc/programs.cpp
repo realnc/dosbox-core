@@ -757,7 +757,7 @@ void CONFIG::Run(void) {
 			
 #ifdef __LIBRETRO__
 			// Store variables for core option skipping.
-			locked_dosbox_variables.emplace_back(pvars[1]);
+			locked_dosbox_variables.insert(pvars[1]);
 #endif
 
 			tsec->ExecuteDestroy(false);

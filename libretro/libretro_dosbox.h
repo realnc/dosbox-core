@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
-#include <vector>
+#include <set>
 
 #define RETRO_DEVICES 5
 
@@ -37,7 +37,7 @@ extern float mouse_speed_factor_y;
 extern std::array<bool, 16> connected;
 extern bool gamepad[16];
 extern bool emulated_mouse;
-extern std::vector<std::string> locked_dosbox_variables;
+extern std::set<std::string> locked_dosbox_variables;
 
 namespace retro {
 class CoreOptions;

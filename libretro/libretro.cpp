@@ -408,8 +408,10 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     updated |= core_options.setVisible("midi_port", midi_driver == "win32" && mpu_enabled);
 #endif
 
+#ifdef WITH_VOODOO
     updated |=
         core_options.setVisible("voodoo_memory_size", core_options["voodoo"].toString() != "false");
+#endif
 
     const auto& machine_type = core_options["machine_type"].toString();
 
@@ -734,9 +736,12 @@ static void check_variables()
         update_dosbox_variable(false, "dosbox", "machine", machine_type);
         update_dosbox_variable(false, "mixer", "blocksize", core_options["blocksize"].toString());
         update_dosbox_variable(false, "mixer", "prebuffer", core_options["prebuffer"].toString());
+
+#ifdef WITH_VOODOO
         update_dosbox_variable(false, "pci", "voodoo", core_options["voodoo"].toString());
         update_dosbox_variable(
             false, "pci", "voodoomem", core_options["voodoo_memory_size"].toString());
+#endif
 
         mount_overlay = core_options["save_overlay"].toBool();
     } else {

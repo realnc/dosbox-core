@@ -246,7 +246,8 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
     overlay->dirCache.SetLabel((drive + std::string("_OVERLAY")).c_str(), false, false);
     // Preserve current working directory if not marked as deleted.
     if (overlay->TestDir(base_drive->curdir)) {
-        strcpy(overlay->curdir, base_drive->curdir);
+        std::strncpy(overlay->curdir, base_drive->curdir, DOS_PATHLENGTH);
+        overlay->curdir[DOS_PATHLENGTH - 1] = '\0';
     }
     Drives[drive - 'A'] = overlay.release();
     delete base_drive;

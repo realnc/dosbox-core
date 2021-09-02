@@ -56,9 +56,9 @@ static int linesurf32_h        = 0;
 void draw_fbox(int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
 {
    if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_fbox_bmp32((uint32_t *)dosbox_frontbuffer, x, y, dx, dy, color, alpha);
+      draw_fbox_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color, alpha);
    else
-      draw_fbox_bmp((unsigned short *)dosbox_frontbuffer, x, y, dx, dy, color, alpha);
+      draw_fbox_bmp((unsigned short *)dosbox_frontbuffer->data(), x, y, dx, dy, color, alpha);
 }
 
 void draw_fbox_bmp(unsigned short *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
@@ -238,9 +238,9 @@ void draw_point_bmp(unsigned short *buffer, int x, int y, unsigned short color)
 void draw_hline(int x, int y, int dx, int dy, uint32_t color)
 {
    if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_hline_bmp32((uint32_t *)dosbox_frontbuffer, x, y, dx, dy, color);
+      draw_hline_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
    else
-      draw_hline_bmp((unsigned short *)dosbox_frontbuffer, x, y, dx, dy, color);
+      draw_hline_bmp((unsigned short *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
 }
 
 void draw_hline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
@@ -272,9 +272,9 @@ void draw_hline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t c
 void draw_vline(int x, int y, int dx, int dy, uint32_t color)
 {
    if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_vline_bmp32((uint32_t *)dosbox_frontbuffer, x, y, dx, dy, color);
+      draw_vline_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
    else
-      draw_vline_bmp((unsigned short *)dosbox_frontbuffer, x, y, dx, dy, color);
+      draw_vline_bmp((unsigned short *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
 }
 
 void draw_vline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color)
@@ -829,9 +829,9 @@ void draw_text(unsigned short int x, unsigned short int y,
       unsigned short int scalex, unsigned short int scaley, unsigned short int max, const char *string)
 {
    if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_text_bmp32((uint32_t *)dosbox_frontbuffer, x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
+      draw_text_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
    else
-      draw_text_bmp((unsigned short *)dosbox_frontbuffer, x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
+      draw_text_bmp((unsigned short *)dosbox_frontbuffer->data(), x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
 }
 
 void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short int y,

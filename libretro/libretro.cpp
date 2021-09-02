@@ -1208,9 +1208,9 @@ void retro_run()
     if (dosbox_frontbuffer_uploaded) {
         video_cb(nullptr, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
     } else if (run_synced) {
-        video_cb(dosbox_framebuffers[0], RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+        video_cb(dosbox_framebuffers[0].data(), RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
     } else {
-        video_cb(dosbox_frontbuffer, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+        video_cb(dosbox_frontbuffer->data(), RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
     }
     dosbox_frontbuffer_uploaded = true;
 

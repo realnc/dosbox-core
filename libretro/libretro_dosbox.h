@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <string>
 #include <set>
+#include <vector>
 
 #define RETRO_DEVICES 5
 
@@ -14,8 +15,8 @@ extern retro_input_state_t input_cb;
 extern retro_environment_t environ_cb;
 extern bool run_synced;
 extern float dosbox_aspect_ratio;
-extern Bit8u dosbox_framebuffers[2][1024 * 768 * 4];
-extern Bit8u* dosbox_frontbuffer;
+extern std::array<std::vector<Bit8u>, 2> dosbox_framebuffers;
+extern std::vector<Bit8u>* dosbox_frontbuffer;
 extern bool dosbox_frontbuffer_uploaded;
 extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 extern unsigned RDOSGFXcolorMode;

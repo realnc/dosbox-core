@@ -3,15 +3,16 @@
 #include "libretro.h"
 #include "libretro_dosbox.h"
 #include "libretro-vkbd.h"
+#include "log.h"
 #include "render.h"
 #include "vga.h"
 #include "video.h"
 #include <algorithm>
 #include <cstring>
 
-Bit8u dosbox_framebuffers[2][1024 * 768 * 4] = {{0}};
-Bit8u* dosbox_frontbuffer = dosbox_framebuffers[0];
-static Bit8u* dosbox_backbuffer = dosbox_framebuffers[1];
+std::array<std::vector<Bit8u>, 2> dosbox_framebuffers;
+std::vector<Bit8u>* dosbox_frontbuffer = &dosbox_framebuffers[0];
+static std::vector<Bit8u>* dosbox_backbuffer = &dosbox_framebuffers[1];
 bool dosbox_frontbuffer_uploaded = false;
 Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
 float dosbox_aspect_ratio = 0;
@@ -35,7 +36,9 @@ auto GFX_SetSize(
     const Bitu width, const Bitu height, const Bitu /*flags*/, const double scalex,
     const double scaley, const GFX_CallBack_t cb) -> Bitu
 {
-    memset(dosbox_framebuffers, 0, sizeof(dosbox_framebuffers));
+    for (auto& buf : dosbox_framebuffers) {
+        std::fill(buf.begin(), buf.end(), 0);
+    }
     RDOSGFXwidth = width;
     RDOSGFXheight = height;
     RDOSGFXpitch = width * 4;
@@ -46,12 +49,19 @@ auto GFX_SetSize(
         return 0;
     }
 
+    const auto fb_size = RDOSGFXwidth * RDOSGFXheight * 4;
+    if (fb_size > dosbox_framebuffers[0].size()) {
+        retro::logDebug("Increasing max framebuffer size to {}x{}", RDOSGFXwidth, RDOSGFXheight);
+        for (auto& buf : dosbox_framebuffers) {
+            buf.resize(fb_size);
+        }
+    }
     return GFX_GetBestMode(0);
 }
 
 auto GFX_StartUpdate(Bit8u*& pixels, Bitu& pitch) -> bool
 {
-    pixels = run_synced ? dosbox_framebuffers[0] : dosbox_backbuffer;
+    pixels = run_synced ? dosbox_framebuffers[0].data() : dosbox_backbuffer->data();
     pitch = RDOSGFXpitch;
     return true;
 }

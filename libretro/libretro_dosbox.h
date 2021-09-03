@@ -9,6 +9,8 @@
 #include <vector>
 
 #define RETRO_DEVICES 5
+constexpr int GFX_MAX_WIDTH = 1280;
+constexpr int GFX_MAX_HEIGHT = 1024;
 
 extern retro_input_poll_t poll_cb;
 extern retro_input_state_t input_cb;

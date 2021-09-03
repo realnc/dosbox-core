@@ -45,7 +45,7 @@ auto GFX_SetSize(
     dosbox_aspect_ratio = (width * scalex) / (height * scaley);
     dosbox_gfx_cb = cb;
 
-    if (RDOSGFXwidth > 1024 || RDOSGFXheight > 820) {
+    if (RDOSGFXwidth > GFX_MAX_WIDTH || RDOSGFXheight > GFX_MAX_HEIGHT) {
         return 0;
     }
 

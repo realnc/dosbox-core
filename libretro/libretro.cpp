@@ -525,10 +525,7 @@ static void check_pinhack_variables()
 
     const int expand_height_coarse = core_options["pinhackexpandheight_coarse"].toInt();
     if (expand_height_coarse > 0) {
-        int expand_height_fine = core_options["pinhackexpandheight_fine"].toInt();
-        if (expand_height_coarse + expand_height_fine > 820) {
-            expand_height_fine = 20;
-        }
+        const int expand_height_fine = core_options["pinhackexpandheight_fine"].toInt();
         updated |= update_dosbox_variable(
             false, "pinhack", "pinhackexpandheight",
             std::to_string(expand_height_coarse + expand_height_fine));

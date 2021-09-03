@@ -334,9 +334,9 @@ void print_vkbd(void)
    {
       default:
       case 1: /* Light */
-         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_200_32 : COLOR_200_16;
+         BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_220_32 : COLOR_220_16;
          BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_160_32 : COLOR_160_16;
-         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_128_32 : COLOR_128_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_100_32 : COLOR_100_16;
          BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_40_32 : COLOR_40_16;
          BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_250_32 : COLOR_250_16;
          FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
@@ -346,9 +346,9 @@ void print_vkbd(void)
       case 2: /* Dark */
          BKG_COLOR_NORMAL  = (pix_bytes == 4) ? COLOR_32_32 : COLOR_32_16;
          BKG_COLOR_ALT     = (pix_bytes == 4) ? COLOR_64_32 : COLOR_64_16;
-         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_10_32 : COLOR_10_16;
-         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_140_32 : COLOR_140_16;
-         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_16_32 : COLOR_16_16;
+         BKG_COLOR_EXTRA   = (pix_bytes == 4) ? COLOR_16_32 : COLOR_16_16;
+         BKG_COLOR_SEL     = (pix_bytes == 4) ? COLOR_180_32 : COLOR_180_16;
+         BKG_COLOR_ACTIVE  = (pix_bytes == 4) ? COLOR_10_32 : COLOR_10_16;
          FONT_COLOR_NORMAL = (pix_bytes == 4) ? COLOR_WHITE_32 : COLOR_WHITE_16;
          FONT_COLOR_SEL    = (pix_bytes == 4) ? COLOR_BLACK_32 : COLOR_BLACK_16;
          break;

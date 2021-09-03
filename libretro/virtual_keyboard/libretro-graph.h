@@ -23,14 +23,14 @@
 #define COLOR_40_32        ARGB888(255,  40,  40,  40)
 #define COLOR_64_16              RGB565( 64,  64,  64)
 #define COLOR_64_32        ARGB888(255,  64,  64,  64)
-#define COLOR_128_16             RGB565(128, 128, 128)
-#define COLOR_128_32       ARGB888(255, 128, 128, 128)
-#define COLOR_140_16             RGB565(140, 140, 140)
-#define COLOR_140_32       ARGB888(255, 140, 140, 140)
+#define COLOR_100_16             RGB565(100, 100, 100)
+#define COLOR_100_32       ARGB888(255, 100, 100, 100)
 #define COLOR_160_16             RGB565(160, 160, 160)
 #define COLOR_160_32       ARGB888(255, 160, 160, 160)
-#define COLOR_200_16             RGB565(200, 200, 200)
-#define COLOR_200_32       ARGB888(255, 200, 200, 200)
+#define COLOR_180_16             RGB565(180, 180, 180)
+#define COLOR_180_32       ARGB888(255, 180, 180, 180)
+#define COLOR_220_16             RGB565(220, 220, 220)
+#define COLOR_220_32       ARGB888(255, 220, 220, 220)
 #define COLOR_250_16             RGB565(250, 250, 250)
 #define COLOR_250_32       ARGB888(255, 250, 250, 250)
 
@@ -50,40 +50,39 @@ typedef enum {
 } libretro_graph_bg_t;
 
 void draw_fbox(int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha);
-void draw_fbox_bmp(unsigned short *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha);
+void draw_fbox_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color, libretro_graph_alpha_t alpha);
 void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha);
 
-void draw_box_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
+void draw_box(int x, int y, int dx, int dy, uint32_t color);
+void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color);
 void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
 
-void draw_point_bmp(unsigned short *buffer, int x, int y, unsigned short color);
-
 void draw_hline(int x, int y, int dx, int dy, uint32_t color);
-void draw_hline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
+void draw_hline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color);
 void draw_hline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
 
 void draw_vline(int x, int y, int dx, int dy, uint32_t color);
-void draw_vline_bmp(unsigned short *buffer, int x, int y, int dx, int dy, unsigned short color);
+void draw_vline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color);
 void draw_vline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t color);
 
-void draw_string(unsigned short *surf, unsigned short int x, unsigned short int y,
-      const char *string, unsigned short int maxstrlen,
-      unsigned short int xscale, unsigned short int yscale,
-      unsigned short int fg, unsigned short int bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg);
-void draw_string32(uint32_t *surf, unsigned short int x, unsigned short int y,
-      const char *string, unsigned short int maxstrlen,
-      unsigned short int xscale, unsigned short int yscale,
-      uint32_t fg, uint32_t bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg);
+void draw_text(uint16_t x, uint16_t y,
+      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
+      uint8_t scalex, uint8_t scaley, uint16_t max, const char *string);
+void draw_text_bmp16(uint16_t *buffer, uint16_t x, uint16_t y,
+      uint16_t fgcol, uint16_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
+      uint8_t scalex, uint8_t scaley, uint16_t max, const char *string);
+void draw_text_bmp32(uint32_t *buffer, uint16_t x, uint16_t y,
+      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
+      uint8_t scalex, uint8_t scaley, uint16_t max, const char *string);
 
-void draw_text(unsigned short int x, unsigned short int y,
-      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const char *string);
-void draw_text_bmp(unsigned short *buffer, unsigned short int x, unsigned short int y,
-      unsigned short int fgcol, unsigned short int bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const char *string);
-void draw_text_bmp32(uint32_t *buffer, unsigned short int x, unsigned short int y,
-      uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
-      unsigned short int scalex, unsigned short int scaley, unsigned short int max, const char *string);
+void draw_string16(uint16_t *surf, uint16_t x, uint16_t y,
+      const char *string, uint16_t maxstrlen,
+      uint16_t xscale, uint16_t yscale,
+      uint16_t fg, uint16_t bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg);
+void draw_string32(uint32_t *surf, uint16_t x, uint16_t y,
+      const char *string, uint16_t maxstrlen,
+      uint16_t xscale, uint16_t yscale,
+      uint32_t fg, uint32_t bg, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg);
 
 void libretro_graph_free(void);
 

@@ -1095,6 +1095,8 @@ void retro_deinit()
 #ifdef HAVE_LIBNX
     jitClose(&dynarec_jit);
 #endif
+
+    libretro_graph_free();
 }
 
 auto retro_load_game(const retro_game_info* const game) -> bool

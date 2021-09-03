@@ -355,7 +355,15 @@ void print_vkbd(void)
    }
 
    /* Resolution scaling */
-   if (retrow >= 1024 && retroh >= 768)
+   if (retrow >= 1280 && retroh >= 1024)
+   {
+      FONT_WIDTH     *= 4;
+      FONT_HEIGHT    *= 4;
+      XKEYSPACING    *= 4;
+      YKEYSPACING    *= 4;
+      YPADDING       *= 4;
+   }
+   else if (retrow >= 1024 && retroh >= 768)
    {
       FONT_WIDTH     *= 3;
       FONT_HEIGHT    *= 3;

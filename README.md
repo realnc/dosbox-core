@@ -30,9 +30,17 @@ The core provides some improvements over the DOSBox-SVN core:
   is provided and as a result it is very slow. Most games will probably not be
   able to run at full speed yet.
 
-* An on-screen virtual keyboard, ported over from the
+* On-screen virtual keyboard.  
+  Ported over by [sonninnos](https://github.com/sonninnos) from the
   [UAE](https://github.com/libretro/libretro-uae) and
   [VICE](https://github.com/libretro/vice-libretro) cores.
+
+* Pinhack support.  
+  A [patch by Felipe Sanches](https://github.com/DeXteRrBDN/dosbox-pinhack)
+  that allows some pinball games (like Pinball Dreams, Pinball Fantasies and
+  others) to show the whole table at once without scrolling. There is a
+  [discussion thread over at Vogons](https://www.vogons.org/viewtopic.php?f=41&t=12424)
+  about this patch.
 
 * Other general, under-the-hood improvements and bugfixes.
 

@@ -383,7 +383,7 @@ include Makefile.common
 
 OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 OBJECT_DEPS = $(OBJECTS:.o=.d)
-INCFLAGS += $(MUNT_INCFLAGS) -Ideps/fmt/include
+INCFLAGS += -Ideps/fmt/include
 ifeq ($(WITH_BASSMIDI), 1)
 	COMMONFLAGS += -DWITH_BASSMIDI=1
 	LDFLAGS += -ldl
@@ -398,7 +398,6 @@ ifeq ($(STATIC_PACKAGES), 1)
 	LDFLAGS += -Wl,-Bstatic
 	PKG_CONFIG_FLAGS += --static
 endif
-LDFLAGS += $(MUNT_LDFLAGS)
 ifdef EXTRA_PACKAGES
 	LDFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs $(EXTRA_PACKAGES)`
 	INCFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --cflags-only-I $(EXTRA_PACKAGES)`
@@ -422,7 +421,6 @@ $(OBJECTS): $(FLUIDSYNTH) $(MUNT) $(SDLNET)
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)
 	$(AR) rcs $@ $(OBJECTS)
-	./merge_static.sh $(AR) $@ $@ deps_bin/munt_build/libmt32emu.a
 else
 	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
 endif

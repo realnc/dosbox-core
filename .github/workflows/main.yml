@@ -209,8 +209,8 @@ jobs:
     runs-on: macos-10.15
 
     env:
-      CC: gcc-9
-      CXX: g++-9
+      CC: gcc-11
+      CXX: g++-11
       platform: osx
       WITH_DYNAREC: x86_64
       STATIC_LIBCXX: 1
@@ -224,12 +224,16 @@ jobs:
 
     steps:
     - name: Replace homebrew
-      working-directory: /usr/local
       run: |
+        cd ~
+        mkdir newbrew
+        cd newbrew
+        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-10.13.tar.zst' | sudo gtar x --zstd
+        rm -f bin/brew
         sudo mkdir ~/oldbrew
-        sudo mv * ~/oldbrew
-        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-10.13.tar.xz' | sudo tar xJ
-        rm bin/brew
+        sudo mv /usr/local/* ~/oldbrew
+        sudo mv * /usr/local/
+        sudo rm -f /usr/local/lib/libfluidsynth.*
 
     - name: Install 10.14 SDK
       working-directory: /usr/local

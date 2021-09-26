@@ -30,12 +30,10 @@
 	url = https://github.com/xiph/opus.git
 [submodule "libretro/deps/sdl"]
 	path = libretro/deps/sdl
-	url = https://github.com/SDL-mirror/SDL.git
-	branch = SDL-1.2
+	url = https://github.com/libsdl-org/SDL-1.2.git
 [submodule "libretro/deps/sdl_net"]
 	path = libretro/deps/sdl_net
-	url = https://github.com/SDL-mirror/SDL_net.git
-	branch = SDL-1.2
+	url = https://github.com/libsdl-org/SDL_net.git
 [submodule "libretro/deps/fmt"]
 	path = libretro/deps/fmt
 	url = https://github.com/fmtlib/fmt.git

@@ -7,7 +7,7 @@ EXTRA_PACKAGES := fluidsynth $(EXTRA_PACKAGES)
 COMMONFLAGS += -DWITH_FLUIDSYNTH
 
 # Always a release build because debug build creates broken .pc file with mingw.
-$(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH) $(GLIB)
+$(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATCH)) $(GLIB)
 	mkdir -p "$(FLUIDSYNTH_BUILD_DIR)"
 	cd "$(FLUIDSYNTH_BUILD_DIR)" \
 	&& $(CMAKE) \
@@ -25,7 +25,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(LIBINSTPATCH) $(GLIB)
 	    -Denable-jack=OFF \
 	    -Denable-ladspa=OFF \
 	    -Denable-lash=OFF \
-	    -Denable-libinstpatch=ON \
+	    -Denable-libinstpatch=$(if $(filter $(WITH_LIBINSTPATCH),1),ON,OFF) \
 	    -Denable-libsndfile=ON \
 	    -Denable-midishare=OFF \
 	    -Denable-network=OFF \

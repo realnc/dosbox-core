@@ -13,6 +13,7 @@ $(FLAC): $(OGG)
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-shared \
 	    --enable-static \
+	    --enable-debug=$(AUTOCONF_DEBUG_FLAG) \
 	    --disable-doxygen-docs \
 	    --disable-xmms-plugin \
 	    --disable-cpplibs \

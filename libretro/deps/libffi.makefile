@@ -14,6 +14,7 @@ $(LIBFFI):
 	    --disable-dependency-tracking \
 	    --disable-shared \
 	    --enable-static \
+	    --enable-debug=$(AUTOCONF_DEBUG_FLAG) \
 	    --enable-portable-binary \
 	    --disable-docs \
 	    --with-pic \

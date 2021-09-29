@@ -167,8 +167,43 @@ libretro-build-osx-x64:
   extends:
     - .libretro-osx-x64-make-default
     - .core-defs
+  variables:
+    CC: gcc-11
+    CXX: g++-11
+    platform: osx
+    WITH_DYNAREC: x86_64
+    STATIC_LIBCXX: 1
+    BUNDLED_AUDIO_CODECS: 0
+    BUNDLED_LIBSNDFILE: 0
+    BUNDLED_SDL: 0
+    PKG_CONFIG_FLAGS: --static
+    MACOS_SDK_PATH: /private/var/tmp/homebrew_dosbox_core/MacOSX10.13.sdk
+    MACOS_DEPLOYMENT_TARGET: '10.12'
+    EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_SYSROOT=/private/var/tmp/homebrew_dosbox_core/MacOSX10.13.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12
+    HOMEBREW_PREFIX: /private/var/tmp/homebrew_dosbox_core
+    HOMEBREW_CELLAR: /private/var/tmp/homebrew_dosbox_core/Cellar
+    HOMEBREW_SHELLENV_PREFIX: /private/var/tmp/homebrew_dosbox_core
   script:
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} download_github_macos
+    - export PATH="/private/var/tmp/homebrew_dosbox_core/bin:/private/var/tmp/homebrew_dosbox_core/sbin:$PATH"
+    - pushd .
+    - cd /private/var/tmp
+    - rm -rf homebrew_dosbox_core
+    - mkdir homebrew_dosbox_core
+    - cd homebrew_dosbox_core
+    - curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/zstd-macos.tar.xz' | tar x
+    - curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-10.12-dosbox-core.tar.zst' | ./zstd -d | tar x
+    - rm -rf include/fluidsynth*
+    - rm -f lib/libfluidsynth.*
+    - rm -f lib/pkgconfig/fluidsynth.pc
+    - mkdir static_libs
+    - ln -s /private/var/tmp/homebrew_dosbox_core/{lib,opt/libffi/lib}/*.a static_libs/
+    - curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/MacOSX10.13.sdk.tar.zst' | ./zstd -d | tar x
+    - popd
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - export LDFLAGS="-L /private/var/tmp/homebrew_dosbox_core/static_libs"
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - strip -u -r -S ${MAKEFILE_PATH}/${CORENAME}_libretro.dylib
+    - rm -rf /private/var/tmp/homebrew_dosbox_core
 
 ################################### CELLULAR #################################
 # Android ARMv7a

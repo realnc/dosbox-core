@@ -3,18 +3,29 @@ name: CI
 on:
   workflow_dispatch:
   push:
+    paths-ignore:
+      - '.gitlab-ci.yml'
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'ChangeLog'
+      - 'INSTALL'
+      - 'NEWS'
+      - 'README'
+      - 'README.md'
+      - 'THANKS'
+      - 'docs/**'
   pull_request:
-  paths-ignore:
-    - '.gitlab-ci.yml'
-    - 'AUTHORS'
-    - 'COPYING'
-    - 'ChangeLog'
-    - 'INSTALL'
-    - 'NEWS'
-    - 'README'
-    - 'README.md'
-    - 'THANKS'
-    - 'docs/**'
+    paths-ignore:
+      - '.gitlab-ci.yml'
+      - 'AUTHORS'
+      - 'COPYING'
+      - 'ChangeLog'
+      - 'INSTALL'
+      - 'NEWS'
+      - 'README'
+      - 'README.md'
+      - 'THANKS'
+      - 'docs/**'
 
 jobs:
 #  build_libnx:
@@ -239,35 +250,38 @@ jobs:
       BUNDLED_LIBSNDFILE: 0
       BUNDLED_SDL: 0
       PKG_CONFIG_FLAGS: --static
-      MACOS_SDK_PATH: /usr/local/MacOSX10.14.sdk
-      MACOS_DEPLOYMENT_TARGET: 10.13
-      EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_SYSROOT=/usr/local/MacOSX10.14.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
+      MACOS_SDK_PATH: /usr/local/MacOSX10.13.sdk
+      MACOS_DEPLOYMENT_TARGET: 10.12
+      EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_SYSROOT=/usr/local/MacOSX10.13.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12
+      HOMEBREW_PREFIX: /private/var/tmp/homebrew_dosbox_core
+      HOMEBREW_CELLAR: /private/var/tmp/homebrew_dosbox_core/Cellar
+      HOMEBREW_SHELLENV_PREFIX: /private/var/tmp/homebrew_dosbox_core
 
     steps:
-    - name: Replace homebrew
-      run: |
-        cd ~
-        mkdir newbrew
-        cd newbrew
-        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-10.13.tar.zst' | sudo gtar x --zstd
-        rm -f bin/brew
-        sudo mkdir ~/oldbrew
-        sudo mv /usr/local/* ~/oldbrew
-        sudo mv * /usr/local/
-        sudo rm -f /usr/local/lib/libfluidsynth.*
+    - run: echo "/private/var/tmp/homebrew_dosbox_core/bin:/private/var/tmp/homebrew_dosbox_core/sbin:${PATH}" >> $GITHUB_PATH
 
-    - name: Install 10.14 SDK
+    - name: Install custom homebrew
+      working-directory: /private/var/tmp
+      run: |
+        mkdir homebrew_dosbox_core
+        cd homebrew_dosbox_core
+        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-10.12-dosbox-core.tar.zst' | zstd -d | sudo tar x
+        sudo rm -rf include/fluidsynth*
+        sudo rm -f lib/libfluidsynth.*
+        sudo rm -f lib/pkgconfig/fluidsynth.pc
+
+    - name: Install 10.13 SDK
       working-directory: /usr/local
       run: |
-        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/MacOSX10.14.sdk.tar.xz' | sudo tar xJ
+        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/MacOSX10.13.sdk.tar.zst' | zstd -d | sudo tar x
 
     # Since macOS is developed by monkeys, we have to do this shit to get static linking against
     # homebrew-installed libraries.
     - name: Symlink static homebrew libs
-      working-directory: /usr/local
+      working-directory: /private/var/tmp/homebrew_dosbox_core
       run: |
         sudo mkdir static_libs
-        sudo ln -s /usr/local/{lib,opt/libffi/lib}/*.a static_libs/
+        sudo ln -s /private/var/tmp/homebrew_dosbox_core/{lib,opt/libffi/lib}/*.a static_libs/
 
     - uses: actions/checkout@v2
       with:
@@ -277,7 +291,8 @@ jobs:
       working-directory: ./libretro
       run: |
         make deps
-        export LDFLAGS="-L /usr/local/static_libs"
+        export LDFLAGS="-L /private/var/tmp/homebrew_dosbox_core/static_libs"
+
         make -j`sysctl -n hw.ncpu`
         strip -u -r -S dosbox_core_libretro.dylib
         zip -9 macOS-x64.zip dosbox_core_libretro.dylib

@@ -169,8 +169,6 @@ libretro-build-osx-x64:
     - .core-defs
   script:
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} download_github_macos
-    - rm macOS-x64.zip
-    - strip -u -r -S ${MAKEFILE_PATH}/${CORENAME}_libretro.so
 
 ################################### CELLULAR #################################
 # Android ARMv7a

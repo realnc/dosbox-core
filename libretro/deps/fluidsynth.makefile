@@ -21,6 +21,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATC
 	    -Denable-aufile=OFF \
 	    -Denable-dbus=OFF \
 	    -Denable-dsound=OFF \
+	    -Denable-wasapi=OFF \
 	    -Denable-ipv6=OFF \
 	    -Denable-jack=OFF \
 	    -Denable-ladspa=OFF \
@@ -39,6 +40,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATC
 	    -Denable-sdl2=OFF \
 	    -Denable-systemd=OFF \
 	    -Denable-threads=ON \
+	    -Denable-openmp=OFF \
 	    -Denable-waveout=OFF \
 	    -Denable-winmidi=OFF \
 	    -Denable-coreaudio=OFF \

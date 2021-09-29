@@ -52,7 +52,7 @@ as other contributors (the full commit history has been preserved.)
 
 * Linux (x86-64, ARMv7 (armhf))
 * Windows 7 or later
-* macOS 10.13 (High Sierra) or later
+* macOS 10.12 (Sierra) or later
 * Android
 
 It may work on other platforms as well if you build from source.

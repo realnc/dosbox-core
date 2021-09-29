@@ -1,8 +1,20 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
   pull_request:
+  paths-ignore:
+    - '.gitlab-ci.yml'
+    - 'AUTHORS'
+    - 'COPYING'
+    - 'ChangeLog'
+    - 'INSTALL'
+    - 'NEWS'
+    - 'README'
+    - 'README.md'
+    - 'THANKS'
+    - 'docs/**'
 
 jobs:
 #  build_libnx:

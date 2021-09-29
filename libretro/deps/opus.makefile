@@ -16,6 +16,7 @@ $(OPUS):
 	    -DOPUS_BUILD_SHARED_LIBRARY=OFF \
 	    -DOPUS_INSTALL_PKG_CONFIG_MODULE=ON \
 	    -DOPUS_STACK_PROTECTOR=OFF \
+	    -DOPUS_DISABLE_INTRINSICS=ON \
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/opus" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)

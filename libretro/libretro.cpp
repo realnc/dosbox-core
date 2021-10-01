@@ -454,6 +454,9 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
         "pinhackexpandheight_fine", pinhack_enabled && pinhack_expand_height_enabled);
 #endif
 
+    static const std::regex pad_map_regex{"^pad(0|1)_map_"};
+    core_options.setVisible(pad_map_regex, core_options["show_kb_map_options"].toBool());
+
     return updated;
 }
 
@@ -1182,6 +1185,7 @@ void retro_run()
     if (retro::core_options.changed()) {
         check_variables();
         update_core_option_visibility();
+        MAPPER_Init();
     }
 
     /* Once C is mounted, mount the overlay */

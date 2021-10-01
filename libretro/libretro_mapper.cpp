@@ -345,6 +345,98 @@ private:
     InputItem<JoystickButton> item_;
 };
 
+class GamepadToKeyboard final: public Processable
+{
+public:
+    GamepadToKeyboard(
+        const unsigned retro_port, const unsigned from_retropad_id, const unsigned to_retro_kb_id)
+        : retro_port_(retro_port)
+        , from_retropad_id_(from_retropad_id)
+        , to_retro_kb_id_(to_retro_kb_id)
+    { }
+
+    void process() override
+    {
+        item_.process(*this, joypad_bits[retro_port_] & (1 << from_retropad_id_));
+    }
+
+    void press() const
+    {
+        if (retro_vkbd) {
+            return;
+        }
+        retro_key_down(to_retro_kb_id_);
+    }
+
+    void release() const
+    {
+        retro_key_up(to_retro_kb_id_);
+    }
+
+private:
+    unsigned retro_port_;
+    unsigned from_retropad_id_;
+    unsigned to_retro_kb_id_;
+    InputItem<GamepadToKeyboard> item_;
+};
+
+enum class AnalogDirection
+{
+    Up,
+    Down,
+    Left,
+    Right
+};
+
+class AnalogToKeyboard final: public Processable
+{
+public:
+    AnalogToKeyboard(
+        const unsigned retro_port, const unsigned from_analog_stick,
+        const AnalogDirection direction, const unsigned to_retro_kb_id)
+        : retro_port_(retro_port)
+        , from_analog_stick_(from_analog_stick)
+        , direction_(direction)
+        , to_retro_kb_id_(to_retro_kb_id)
+    { }
+
+    void process() override
+    {
+        const unsigned axis =
+            (direction_ == AnalogDirection::Up || direction_ == AnalogDirection::Down)
+            ? RETRO_DEVICE_ID_ANALOG_Y
+            : RETRO_DEVICE_ID_ANALOG_X;
+        const float value = input_cb(retro_port_, RDEV(ANALOG), from_analog_stick_, axis);
+        const bool is_down_or_right =
+            (direction_ == AnalogDirection::Down || direction_ == AnalogDirection::Right)
+            && value > 30000.0f;
+        const bool is_up_or_left =
+            (direction_ == AnalogDirection::Up || direction_ == AnalogDirection::Left)
+            && value < -30000.0f;
+        item_.process(*this, is_up_or_left || is_down_or_right);
+    }
+
+    void press() const
+    {
+        if (retro_vkbd) {
+            return;
+        }
+        retro_key_down(to_retro_kb_id_);
+    }
+
+    void release() const
+    {
+        retro_key_up(to_retro_kb_id_);
+    }
+
+private:
+    unsigned retro_port_;
+    unsigned from_analog_stick_;
+    AnalogDirection direction_;
+    unsigned to_retro_kb_id_;
+    InputItem<AnalogToKeyboard> item_;
+};
+
 class JoystickAxis final: public Processable
 {
 public:
@@ -772,6 +864,103 @@ void MAPPER_Init()
     addToRetroDesc(makeVKBDDescArray(0));
     addVKBDButton(1);
     addToRetroDesc(makeVKBDDescArray(1));
+
+    static constexpr std::tuple<unsigned int, const char*> dev_id_option_name_map_p1[]{
+        {RETRO_DEVICE_ID_JOYPAD_UP, "pad0_map_up"},
+        {RETRO_DEVICE_ID_JOYPAD_DOWN, "pad0_map_down"},
+        {RETRO_DEVICE_ID_JOYPAD_LEFT, "pad0_map_left"},
+        {RETRO_DEVICE_ID_JOYPAD_RIGHT, "pad0_map_right"},
+        {RETRO_DEVICE_ID_JOYPAD_B, "pad0_map_b"},
+        {RETRO_DEVICE_ID_JOYPAD_A, "pad0_map_a"},
+        {RETRO_DEVICE_ID_JOYPAD_Y, "pad0_map_y"},
+        {RETRO_DEVICE_ID_JOYPAD_X, "pad0_map_x"},
+        {RETRO_DEVICE_ID_JOYPAD_SELECT, "pad0_map_select"},
+        {RETRO_DEVICE_ID_JOYPAD_START, "pad0_map_start"},
+        {RETRO_DEVICE_ID_JOYPAD_L, "pad0_map_lbump"},
+        {RETRO_DEVICE_ID_JOYPAD_R, "pad0_map_rbump"},
+        {RETRO_DEVICE_ID_JOYPAD_L2, "pad0_map_ltrig"},
+        {RETRO_DEVICE_ID_JOYPAD_R2, "pad0_map_rtrig"},
+        {RETRO_DEVICE_ID_JOYPAD_L3, "pad0_map_lthumb"},
+        {RETRO_DEVICE_ID_JOYPAD_R3, "pad0_map_rthumb"},
+    };
+
+    static constexpr std::tuple<unsigned int, const char*> dev_id_option_name_map_p2[]{
+        {RETRO_DEVICE_ID_JOYPAD_UP, "pad1_map_up"},
+        {RETRO_DEVICE_ID_JOYPAD_DOWN, "pad1_map_down"},
+        {RETRO_DEVICE_ID_JOYPAD_LEFT, "pad1_map_left"},
+        {RETRO_DEVICE_ID_JOYPAD_RIGHT, "pad1_map_right"},
+        {RETRO_DEVICE_ID_JOYPAD_B, "pad1_map_b"},
+        {RETRO_DEVICE_ID_JOYPAD_A, "pad1_map_a"},
+        {RETRO_DEVICE_ID_JOYPAD_Y, "pad1_map_y"},
+        {RETRO_DEVICE_ID_JOYPAD_X, "pad1_map_x"},
+        {RETRO_DEVICE_ID_JOYPAD_SELECT, "pad1_map_select"},
+        {RETRO_DEVICE_ID_JOYPAD_START, "pad1_map_start"},
+        {RETRO_DEVICE_ID_JOYPAD_L, "pad1_map_lbump"},
+        {RETRO_DEVICE_ID_JOYPAD_R, "pad1_map_rbump"},
+        {RETRO_DEVICE_ID_JOYPAD_L2, "pad1_map_ltrig"},
+        {RETRO_DEVICE_ID_JOYPAD_R2, "pad1_map_rtrig"},
+        {RETRO_DEVICE_ID_JOYPAD_L3, "pad1_map_lthumb"},
+        {RETRO_DEVICE_ID_JOYPAD_R3, "pad1_map_rthumb"},
+    };
+
+    static constexpr std::tuple<unsigned int, AnalogDirection, std::string_view>
+        analog_option_name_map_p1[]{
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Up, "pad0_map_laup"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Down, "pad0_map_ladown"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Left, "pad0_map_laleft"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Right, "pad0_map_laright"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Up, "pad0_map_raup"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Down, "pad0_map_radown"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Left, "pad0_map_raleft"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Right, "pad0_map_raright"},
+        };
+
+    static constexpr std::tuple<unsigned int, AnalogDirection, std::string_view>
+        analog_option_name_map_p2[]{
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Up, "pad1_map_laup"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Down, "pad1_map_ladown"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Left, "pad1_map_laleft"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Right, "pad1_map_laright"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Up, "pad1_map_raup"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Down, "pad1_map_radown"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Left, "pad1_map_raleft"},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Right, "pad1_map_raright"},
+        };
+
+    if (active_port_count > 0) {
+        for (const auto& [dev_id, option_name] : dev_id_option_name_map_p1) {
+            const auto kb_id = retro::core_options[option_name].toInt();
+            if (kb_id != RETROK_UNKNOWN) {
+                input_list.push_back(
+                    std::make_unique<GamepadToKeyboard>(first_retro_port, dev_id, kb_id));
+            }
+        }
+
+        for (const auto& [analog_index, direction, option_name] : analog_option_name_map_p1) {
+            const auto kb_id = retro::core_options[option_name].toInt();
+            if (kb_id != RETROK_UNKNOWN) {
+                input_list.push_back(std::make_unique<AnalogToKeyboard>(
+                    first_retro_port, analog_index, direction, kb_id));
+            }
+        }
+
+        if (active_port_count == 2) {
+            for (const auto& [dev_id, option_name] : dev_id_option_name_map_p2) {
+                const auto kb_id = retro::core_options[option_name].toInt();
+                if (kb_id != RETROK_UNKNOWN) {
+                    input_list.push_back(
+                        std::make_unique<GamepadToKeyboard>(second_retro_port, dev_id, kb_id));
+                }
+            }
+            for (const auto& [analog_index, direction, option_name] : analog_option_name_map_p2) {
+                const auto kb_id = retro::core_options[option_name].toInt();
+                if (kb_id != RETROK_UNKNOWN) {
+                    input_list.push_back(std::make_unique<AnalogToKeyboard>(
+                        second_retro_port, analog_index, direction, kb_id));
+                }
+            }
+        }
+    }
 
     retro_desc.push_back({}); // null terminator
     environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, retro_desc.data());

@@ -93,6 +93,17 @@ auto CoreOptions::setVisible(
     return visibility_changed;
 }
 
+auto CoreOptions::setVisible(const std::regex& exp, bool visible) noexcept -> bool
+{
+    bool visibility_changed = false;
+    for (const auto& i : options_map_) {
+        if (std::regex_search(i.first, exp)) {
+            visibility_changed |= setVisible(i.first, visible);
+        }
+    }
+    return visibility_changed;
+}
+
 void CoreOptions::setCurrentValue(std::string_view key, const CoreOptionValue& value)
 {
     auto* option = this->option(key);

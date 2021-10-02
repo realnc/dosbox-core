@@ -5,6 +5,7 @@
 #include "libretro.h"
 #include <initializer_list>
 #include <map>
+#include <regex>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -210,6 +211,7 @@ public:
     auto setVisible(std::string_view key, bool visible) noexcept -> bool;
     auto setVisible(std::initializer_list<const std::string_view> keys, bool visible) noexcept
         -> bool;
+    auto setVisible(const std::regex& exp, bool visible) noexcept -> bool;
 
     /* Change the current value of the specified option. Note that the libretro API does not
      * actually provide a proper way to do this, so we instead rely on the frontend to correctly

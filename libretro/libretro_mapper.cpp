@@ -536,7 +536,7 @@ private:
 
 void retro_key_down(const int keycode)
 {
-    for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
+    for (const auto& [retro_id, dosbox_id] : retro_dosbox_map) {
         if (retro_id == keycode) {
             KEYBOARD_AddKey(dosbox_id, 1);
             return;
@@ -546,7 +546,7 @@ void retro_key_down(const int keycode)
 
 void retro_key_up(const int keycode)
 {
-    for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
+    for (const auto& [retro_id, dosbox_id] : retro_dosbox_map) {
         if (retro_id == keycode) {
             KEYBOARD_AddKey(dosbox_id, 0);
             return;
@@ -580,7 +580,7 @@ static RETRO_CALLCONV void keyboardEventCb(
     }
 #endif
 
-    for (const auto [retro_id, dosbox_id] : retro_dosbox_map) {
+    for (const auto& [retro_id, dosbox_id] : retro_dosbox_map) {
         if (retro_id == keycode) {
             if (keyboard_state[dosbox_id] != down) {
                 keyboard_state[dosbox_id] = down;

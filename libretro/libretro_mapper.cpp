@@ -807,10 +807,8 @@ void MAPPER_Init()
                 addToRetroDesc(make2buttonJoystickDescArray(retro_port));
             }
             add2Buttons(retro_port, dos_port);
-            if (emulated_mouse) {
-                addMouseEmulationButtons(retro_port);
-                addToRetroDesc(makeEmulatedMouseDescArray(retro_port));
-            }
+            addMouseEmulationButtons(retro_port);
+            addToRetroDesc(makeEmulatedMouseDescArray(retro_port));
             ++dos_port;
         }
     } else if (active_port_count == 1) {
@@ -850,10 +848,8 @@ void MAPPER_Init()
         } else {
             add4Buttons(first_retro_port);
         }
-        if (emulated_mouse) {
-            addMouseEmulationButtons(first_retro_port);
-            addToRetroDesc(makeEmulatedMouseDescArray(first_retro_port));
-        }
+        addMouseEmulationButtons(first_retro_port);
+        addToRetroDesc(makeEmulatedMouseDescArray(first_retro_port));
     } else {
         update_dosbox_variable(false, "joystick", "joysticktype", "none");
         JOYSTICK_Enable(0, false);
@@ -1019,13 +1015,11 @@ void MAPPER_Run(const bool /*pressed*/)
     // Virtual keyboard for ports 1 & 2.
     input_vkbd();
 
-    if (emulated_mouse) {
-        if (connected[0]) {
-            runMouseEmulation(0);
-        }
-        if (connected[1]) {
-            runMouseEmulation(1);
-        }
+    if (connected[0]) {
+        runMouseEmulation(0);
+    }
+    if (connected[1]) {
+        runMouseEmulation(1);
     }
 
     int16_t mouse_x = input_cb(0, RDEV(MOUSE), 0, RDID(MOUSE_X));

@@ -600,16 +600,6 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "emulated_mouse",
-            "Enable gamepad emulated mouse",
-            "Enable mouse emulation via the right stick on your gamepad.",
-            {
-                true,
-                false,
-            },
-            false
-        },
-        CoreOptionDefinition {
             "emulated_mouse_deadzone",
             "Gamepad emulated mouse deadzone",
             "Deadzone of the gamepad emulated mouse. Experiment with this value if the mouse "

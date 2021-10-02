@@ -71,7 +71,6 @@ SVGACards svgaCard = SVGA_None;
 bool gamepad[16]; /* true means gamepad, false means joystick */
 std::array<bool, 16> connected;
 static bool force_2axis_joystick = false;
-bool emulated_mouse = false;
 int mouse_emu_deadzone = 0;
 float mouse_speed_factor_x = 1.0;
 float mouse_speed_factor_y = 1.0;
@@ -439,9 +438,6 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
          "disney", "log_method", "log_level"},
         show_all);
 
-    updated |=
-        core_options.setVisible("emulated_mouse_deadzone", core_options["emulated_mouse"].toBool());
-
 #ifdef WITH_PINHACK
     const auto pinhack_enabled = core_options["pinhack"].toBool();
     const bool pinhack_expand_height_enabled =
@@ -759,14 +755,11 @@ static void check_variables()
 
         {
             const bool prev_force_2axis_joystick = force_2axis_joystick;
-            const bool prev_emulated_mouse = emulated_mouse;
             const int prev_mouse_emu_deadzone = mouse_emu_deadzone;
 
             force_2axis_joystick = core_options["joystick_force_2axis"].toBool();
-            emulated_mouse = core_options["emulated_mouse"].toBool();
             mouse_emu_deadzone = core_options["emulated_mouse_deadzone"].toInt();
             if (prev_force_2axis_joystick != force_2axis_joystick
-                || prev_emulated_mouse != emulated_mouse
                 || prev_mouse_emu_deadzone != mouse_emu_deadzone)
             {
                 MAPPER_Init();

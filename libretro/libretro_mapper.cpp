@@ -608,11 +608,13 @@ static RETRO_CALLCONV void keyboardEventCb(
 }
 
 [[nodiscard]] static constexpr auto make2ButtonsDescArray(const unsigned int port)
-    -> std::array<retro_input_descriptor, 2>
+    -> std::array<retro_input_descriptor, 4>
 {
     return {{
-        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 1"},
-        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 2"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "DOS Button 1"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "DOS Button 2"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "[Core] Button Y"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "[Core] Button X"},
     }};
 }
 
@@ -620,37 +622,55 @@ static RETRO_CALLCONV void keyboardEventCb(
     -> std::array<retro_input_descriptor, 4>
 {
     return {{
-        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Button 1"},
-        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "Button 2"},
-        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Button 3"},
-        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Button 4"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "DOS Button 1"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "DOS Button 2"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "DOS Button 3"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "DOS Button 4"},
     }};
 }
 
 [[nodiscard]] static constexpr auto makeLeftAnalogDescArray(const unsigned int port)
-    -> std::array<retro_input_descriptor, 2>
+    -> std::array<retro_input_descriptor, 3>
 {
     return {{
         {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
          "Left Analog X"},
         {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
          "Left Analog Y"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "[Core] Left Thumb"},
+    }};
+}
+
+[[nodiscard]] static constexpr auto makeLeftAnalogCustomDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 3>
+{
+    return {{
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
+         "[Core] Left Analog X"},
+        {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
+         "[Core] Left Analog Y"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "[Core] Left Thumb"},
     }};
 }
 
 [[nodiscard]] static constexpr auto makeRightAnalogDescArray(const unsigned int port)
-    -> std::array<retro_input_descriptor, 2>
+    -> std::array<retro_input_descriptor, 7>
 {
     return {{
         {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X,
          "Right Analog X"},
         {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y,
          "Right Analog Y"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "[Core] Right Bumper"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "[Core] Left Bumper"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "[Core] Right Trigger"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "[Core] Left Trigger"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "[Core] Right Thumb"},
     }};
 }
 
 [[nodiscard]] static constexpr auto makeAnalogEmulatedMouseDescArray(const unsigned int port)
-    -> std::array<retro_input_descriptor, 6>
+    -> std::array<retro_input_descriptor, 7>
 {
     return {{
         {port, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X,
@@ -661,6 +681,7 @@ static RETRO_CALLCONV void keyboardEventCb(
         {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Emulated Mouse Right Click"},
         {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Emulated Mouse Slow Down"},
         {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Emulated Mouse Speed Up"},
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "[Core] Right Thumb"},
     }};
 }
 
@@ -676,6 +697,22 @@ static RETRO_CALLCONV void keyboardEventCb(
         {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Emulated Mouse Right Click"},
         {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Emulated Mouse Slow Down"},
         {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Emulated Mouse Speed Up"},
+    }};
+}
+
+[[nodiscard]] static constexpr auto makeSelectDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 1>
+{
+    return {{
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "[Core] Select"},
+    }};
+}
+
+[[nodiscard]] static constexpr auto makeStartDescArray(const unsigned int port)
+    -> std::array<retro_input_descriptor, 1>
+{
+    return {{
+        {port, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "[Core] Start"},
     }};
 }
 
@@ -813,6 +850,7 @@ void MAPPER_Init()
                 retro::logDebug("Port {} gamepad.", retro_port);
                 addDpad(retro_port, dos_port);
                 addToRetroDesc(makeDpadDescArray(retro_port));
+                addToRetroDesc(makeLeftAnalogCustomDescArray(retro_port));
             } else {
                 retro::logDebug("Port {} joystick.", retro_port);
                 add2Axes(retro_port, dos_port);
@@ -820,6 +858,7 @@ void MAPPER_Init()
             }
             add2Buttons(retro_port, dos_port);
             addToRetroDesc(make2ButtonsDescArray(retro_port));
+            addToRetroDesc(makeStartDescArray(retro_port));
             addMouseEmulationButtons(retro_port);
             addToRetroDesc(makeAnalogEmulatedMouseDescArray(retro_port));
             use_analog_mouse_emulation = true;
@@ -848,6 +887,7 @@ void MAPPER_Init()
             } else {
                 addToRetroDesc(make4ButtonsDescArray(first_retro_port));
             }
+            addToRetroDesc(makeLeftAnalogCustomDescArray(first_retro_port));
             addToRetroDesc(makeAnalogEmulatedMouseDescArray(first_retro_port));
             use_analog_mouse_emulation = true;
         } else {
@@ -856,6 +896,7 @@ void MAPPER_Init()
             if (force_2axis) {
                 add2Axes(first_retro_port, 0);
                 addToRetroDesc(make2ButtonsDescArray(first_retro_port));
+                addToRetroDesc(makeLeftAnalogCustomDescArray(first_retro_port));
                 addToRetroDesc(makeAnalogEmulatedMouseDescArray(first_retro_port));
                 use_analog_mouse_emulation = true;
             } else {
@@ -871,6 +912,7 @@ void MAPPER_Init()
         } else {
             add4Buttons(first_retro_port);
         }
+        addToRetroDesc(makeStartDescArray(first_retro_port));
         addMouseEmulationButtons(first_retro_port);
     } else {
         update_dosbox_variable(false, "joystick", "joysticktype", "none");
@@ -882,6 +924,12 @@ void MAPPER_Init()
     addToRetroDesc(makeVKBDDescArray(0));
     addVKBDButton(1);
     addToRetroDesc(makeVKBDDescArray(1));
+    if (first_retro_port > 1) {
+        addToRetroDesc(makeSelectDescArray(first_retro_port));
+    }
+    if (second_retro_port > 1) {
+        addToRetroDesc(makeSelectDescArray(second_retro_port));
+    }
 
     static constexpr std::tuple<unsigned int, const char*> dev_id_option_name_map_p1[]{
         {RETRO_DEVICE_ID_JOYPAD_UP, "pad0_map_up"},

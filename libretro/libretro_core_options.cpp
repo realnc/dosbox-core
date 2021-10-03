@@ -636,6 +636,15 @@ CoreOptions core_options {
         "On-screen virtual keyboard.",
 
         CoreOptionDefinition {
+            "vkbd_enabled",
+            "Virtual Keyboard Support",
+            {
+                true,
+                false,
+            },
+            true,
+        },
+        CoreOptionDefinition {
             "vkbd_theme",
             "Color theme",
             {

@@ -1021,16 +1021,33 @@ void MAPPER_Init()
         JOYSTICK_Enable(1, false);
     }
 
-    addVKBDButton(0);
-    addToRetroDesc(makeVKBDDescArray(0));
-    addVKBDButton(1);
-    addToRetroDesc(makeVKBDDescArray(1));
-    if (first_retro_port > 1) {
-        addToRetroDesc(makeSelectDescArray(first_retro_port));
+    // Virtual keyboard only works on ports 0 and 1.
+    if (active_port_count > 0) {
+        const bool vkbd_enabled = retro::core_options["vkbd_enabled"].toBool();
+        bool port_taken = false;
+
+        if (first_retro_port <= 1 && vkbd_enabled) {
+            addVKBDButton(first_retro_port);
+            addToRetroDesc(makeVKBDDescArray(first_retro_port));
+            port_taken = true;
+        }
+        if (!port_taken) {
+            addToRetroDesc(makeSelectDescArray(first_retro_port));
+        }
+
+        if (active_port_count == 2) {
+            port_taken = false;
+            if (second_retro_port == 1 && vkbd_enabled) {
+                addVKBDButton(second_retro_port);
+                addToRetroDesc(makeVKBDDescArray(second_retro_port));
+                port_taken = true;
+            }
+            if (!port_taken) {
+                addToRetroDesc(makeSelectDescArray(second_retro_port));
+            }
+        }
     }
-    if (second_retro_port > 1) {
-        addToRetroDesc(makeSelectDescArray(second_retro_port));
-    }
+
     addCoreOptionMappings(active_port_count, first_retro_port, second_retro_port);
 
     retro_desc.push_back({}); // null terminator

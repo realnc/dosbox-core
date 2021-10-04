@@ -898,7 +898,6 @@ void retro_set_environment(const retro_environment_t cb)
         {"Gamepad", RETRO_DEVICE_JOYPAD},
         {"Joystick", RETRO_DEVICE_JOYSTICK},
         {"Disconnected", RETRO_DEVICE_NONE},
-        {},
     };
 
     static retro_controller_info ports[]{

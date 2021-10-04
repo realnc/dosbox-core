@@ -914,6 +914,13 @@ void retro_set_environment(const retro_environment_t cb)
 
 void retro_set_controller_port_device(const unsigned port, const unsigned device)
 {
+    if (static_cast<int>(port) >= RETRO_INPUT_PORTS_MAX) {
+        retro::logWarn(
+            "Ignoring controller port {} since we only support {} ports.", port + 1,
+            RETRO_INPUT_PORTS_MAX);
+        return;
+    }
+
     connected[port] = false;
     gamepad[port] = false;
     switch (device) {

@@ -15,10 +15,6 @@
 #include <tuple>
 #include <vector>
 
-#define RDEV(x) RETRO_DEVICE_##x
-#define RDIX(x) RETRO_DEVICE_INDEX_##x
-#define RDID(x) RETRO_DEVICE_ID_##x
-
 class Processable;
 static std::vector<std::unique_ptr<Processable>> input_list;
 
@@ -28,7 +24,7 @@ static bool use_fast_mouse = false;
 static bool use_analog_mouse_emulation = false;
 static bool use_dpad_mouse_emulation = false;
 bool libretro_supports_bitmasks = false;
-int16_t joypad_bits[RETRO_DEVICES]{};
+std::array<int16_t, RETRO_INPUT_PORTS_MAX> joypad_bits{};
 
 static constexpr KBD_KEYS event_key_map[]{
     KBD_f1,    KBD_f2,      KBD_f3,         KBD_f4,          KBD_f5,    KBD_f6,
@@ -137,7 +133,7 @@ public:
 
     void process() override
     {
-        item_.process(*this, input_cb(0, RDEV(MOUSE), 0, retro_button_));
+        item_.process(*this, input_cb(0, RETRO_DEVICE_MOUSE, 0, retro_button_));
     }
 
     void press() const
@@ -305,7 +301,7 @@ public:
             (direction_ == AnalogDirection::Up || direction_ == AnalogDirection::Down)
             ? RETRO_DEVICE_ID_ANALOG_Y
             : RETRO_DEVICE_ID_ANALOG_X;
-        const float value = input_cb(retro_port_, RDEV(ANALOG), from_analog_stick_, axis);
+        const float value = input_cb(retro_port_, RETRO_DEVICE_ANALOG, from_analog_stick_, axis);
         const bool is_down_or_right =
             (direction_ == AnalogDirection::Down || direction_ == AnalogDirection::Right)
             && value > 30000.0f;
@@ -351,7 +347,7 @@ public:
 
     void process() override
     {
-        const float value = input_cb(retro_port_, RDEV(ANALOG), retro_side_, retro_axis_);
+        const float value = input_cb(retro_port_, RETRO_DEVICE_ANALOG, retro_side_, retro_axis_);
         if (dosbox_axis_ == 0) {
             JOYSTICK_Move_X(dosbox_port_, value / 32768.0f);
         } else {
@@ -623,58 +619,71 @@ static RETRO_CALLCONV void keyboardEventCb(
 
 static void addDpad(const unsigned int retro_port, const unsigned int dos_port)
 {
-    input_list.push_back(std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_LEFT), dos_port, 0));
     input_list.push_back(
-        std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_RIGHT), dos_port, 0));
-    input_list.push_back(std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_UP), dos_port, 1));
-    input_list.push_back(std::make_unique<JoystickHat>(retro_port, RDID(JOYPAD_DOWN), dos_port, 1));
+        std::make_unique<JoystickHat>(retro_port, RETRO_DEVICE_ID_JOYPAD_LEFT, dos_port, 0));
+    input_list.push_back(
+        std::make_unique<JoystickHat>(retro_port, RETRO_DEVICE_ID_JOYPAD_RIGHT, dos_port, 0));
+    input_list.push_back(
+        std::make_unique<JoystickHat>(retro_port, RETRO_DEVICE_ID_JOYPAD_UP, dos_port, 1));
+    input_list.push_back(
+        std::make_unique<JoystickHat>(retro_port, RETRO_DEVICE_ID_JOYPAD_DOWN, dos_port, 1));
 };
 
 static void add2Buttons(const unsigned int retro_port, const unsigned int dos_port)
 {
-    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_B), dos_port, 0));
-    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_A), dos_port, 1));
+    input_list.push_back(
+        std::make_unique<JoystickButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_B, dos_port, 0));
+    input_list.push_back(
+        std::make_unique<JoystickButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_A, dos_port, 1));
 };
 
 static void add4Buttons(const unsigned int retro_port)
 {
-    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_B), 0, 0));
-    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_A), 0, 1));
-    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_Y), 1, 0));
-    input_list.push_back(std::make_unique<JoystickButton>(retro_port, RDID(JOYPAD_X), 1, 1));
+    input_list.push_back(
+        std::make_unique<JoystickButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_B, 0, 0));
+    input_list.push_back(
+        std::make_unique<JoystickButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_A, 0, 1));
+    input_list.push_back(
+        std::make_unique<JoystickButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_Y, 1, 0));
+    input_list.push_back(
+        std::make_unique<JoystickButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_X, 1, 1));
 };
 
 static void add2Axes(const unsigned int retro_port, const unsigned int dos_port)
 {
-    input_list.push_back(
-        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), dos_port, 0));
-    input_list.push_back(
-        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), dos_port, 1));
+    input_list.push_back(std::make_unique<JoystickAxis>(
+        retro_port, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, dos_port, 0));
+    input_list.push_back(std::make_unique<JoystickAxis>(
+        retro_port, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, dos_port, 1));
 };
 
 static void add4Axes(const unsigned int retro_port)
 {
-    input_list.push_back(
-        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_X), 0, 0));
-    input_list.push_back(
-        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_LEFT), RDID(ANALOG_Y), 0, 1));
-    input_list.push_back(
-        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_RIGHT), RDID(ANALOG_X), 1, 0));
-    input_list.push_back(
-        std::make_unique<JoystickAxis>(retro_port, RDIX(ANALOG_RIGHT), RDID(ANALOG_Y), 1, 1));
+    input_list.push_back(std::make_unique<JoystickAxis>(
+        retro_port, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X, 0, 0));
+    input_list.push_back(std::make_unique<JoystickAxis>(
+        retro_port, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y, 0, 1));
+    input_list.push_back(std::make_unique<JoystickAxis>(
+        retro_port, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X, 1, 0));
+    input_list.push_back(std::make_unique<JoystickAxis>(
+        retro_port, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y, 1, 1));
 };
 
 static void addMouseEmulationButtons(const unsigned int retro_port)
 {
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_R), 0));
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_L), 1));
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_R2), 2));
-    input_list.push_back(std::make_unique<EmulatedMouseButton>(retro_port, RDID(JOYPAD_L2), 3));
+    input_list.push_back(
+        std::make_unique<EmulatedMouseButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_R, 0));
+    input_list.push_back(
+        std::make_unique<EmulatedMouseButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_L, 1));
+    input_list.push_back(
+        std::make_unique<EmulatedMouseButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_R2, 2));
+    input_list.push_back(
+        std::make_unique<EmulatedMouseButton>(retro_port, RETRO_DEVICE_ID_JOYPAD_L2, 3));
 }
 
 static void addVKBDButton(const unsigned int retro_port)
 {
-    input_list.push_back(std::make_unique<VKBDToggle>(retro_port, RDID(JOYPAD_SELECT)));
+    input_list.push_back(std::make_unique<VKBDToggle>(retro_port, RETRO_DEVICE_ID_JOYPAD_SELECT));
 }
 
 static void addCoreOptionMappings(
@@ -805,9 +814,9 @@ void MAPPER_Init()
     environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &callback);
 
     input_list.clear();
-    input_list.push_back(std::make_unique<MouseButton>(RDID(MOUSE_LEFT), 0));
-    input_list.push_back(std::make_unique<MouseButton>(RDID(MOUSE_RIGHT), 1));
-    input_list.push_back(std::make_unique<MouseButton>(RDID(MOUSE_MIDDLE), 2));
+    input_list.push_back(std::make_unique<MouseButton>(RETRO_DEVICE_ID_MOUSE_LEFT, 0));
+    input_list.push_back(std::make_unique<MouseButton>(RETRO_DEVICE_ID_MOUSE_RIGHT, 1));
+    input_list.push_back(std::make_unique<MouseButton>(RETRO_DEVICE_ID_MOUSE_MIDDLE, 2));
     use_analog_mouse_emulation = false;
     use_dpad_mouse_emulation = false;
 
@@ -1006,7 +1015,7 @@ void MAPPER_Run(const bool /*pressed*/)
 {
     poll_cb();
 
-    for (unsigned j = 0; j < RETRO_DEVICES; ++j) {
+    for (unsigned j = 0; j < RETRO_INPUT_PORTS_MAX; ++j) {
         if (libretro_supports_bitmasks) {
             joypad_bits[j] = input_cb(j, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
         } else {
@@ -1027,8 +1036,8 @@ void MAPPER_Run(const bool /*pressed*/)
         runMouseEmulation(1);
     }
 
-    int16_t mouse_x = input_cb(0, RDEV(MOUSE), 0, RDID(MOUSE_X));
-    int16_t mouse_y = input_cb(0, RDEV(MOUSE), 0, RDID(MOUSE_Y));
+    int16_t mouse_x = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+    int16_t mouse_y = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
     if (mouse_x || mouse_y) {
         float slowdown = 1.0;
         if (use_fast_mouse) {

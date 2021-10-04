@@ -68,7 +68,7 @@ MachineType machine = MCH_VGA;
 SVGACards svgaCard = SVGA_None;
 
 /* input variables */
-bool gamepad[16]; /* true means gamepad, false means joystick */
+std::array<bool, 16> gamepad{}; // True means gamepad, false means joystick.
 std::array<bool, 16> connected;
 static bool force_2axis_joystick = false;
 int mouse_emu_deadzone = 0;
@@ -893,7 +893,7 @@ void retro_set_environment(const retro_environment_t cb)
     bool allow_no_game = true;
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allow_no_game);
 
-    static const retro_controller_description ports_default[]{
+    static constexpr retro_controller_description ports_default[]{
         {"Keyboard + Mouse", RETRO_DEVICE_KEYBOARD},
         {"Gamepad", RETRO_DEVICE_JOYPAD},
         {"Joystick", RETRO_DEVICE_JOYSTICK},

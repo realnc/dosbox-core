@@ -7,8 +7,6 @@
 
 extern bool retro_vkbd;
 extern bool retro_capslock;
-extern void retro_key_down(const int keycode);
-extern void retro_key_up(const int keycode);
 
 extern void print_vkbd(void);
 extern void input_vkbd(void);

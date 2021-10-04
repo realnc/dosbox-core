@@ -1,14 +1,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "libretro_dosbox.h"
+#include "keyboard.h"
 #include "libretro-graph.h"
 #include "libretro-vkbd.h"
-
-#include "keyboard.h"
-
-extern long retro_ticks(void);
-extern void GFX_EndUpdate(const Bit16u* const changedLines);
+#include "libretro_dosbox.h"
+#include "video.h"
 
 unsigned int opt_vkbd_theme;
 libretro_graph_alpha_t opt_vkbd_alpha;

@@ -5,11 +5,11 @@
 #include <array>
 #include <cstdint>
 #include <filesystem>
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
 
-#define RETRO_DEVICES 5
+constexpr int RETRO_INPUT_PORTS_MAX = 5;
 constexpr int GFX_MAX_WIDTH = 1280;
 constexpr int GFX_MAX_HEIGHT = 1024;
 
@@ -21,7 +21,9 @@ extern float dosbox_aspect_ratio;
 extern std::array<std::vector<Bit8u>, 2> dosbox_framebuffers;
 extern std::vector<Bit8u>* dosbox_frontbuffer;
 extern bool dosbox_frontbuffer_uploaded;
-extern Bitu RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch;
+extern Bitu RDOSGFXwidth;
+extern Bitu RDOSGFXheight;
+extern Bitu RDOSGFXpitch;
 extern unsigned RDOSGFXcolorMode;
 #ifdef WITH_PINHACK
 extern bool request_VGA_SetupDrawing;
@@ -39,9 +41,9 @@ extern int mouse_emu_deadzone;
 extern float mouse_speed_factor_x;
 extern float mouse_speed_factor_y;
 extern std::array<bool, 16> connected;
-extern bool gamepad[16];
+extern std::array<bool, 16> gamepad;
 extern bool libretro_supports_bitmasks;
-extern int16_t joypad_bits[RETRO_DEVICES];
+extern std::array<int16_t, RETRO_INPUT_PORTS_MAX> joypad_bits;
 extern std::set<std::string> locked_dosbox_variables;
 
 namespace retro {
@@ -158,3 +160,6 @@ void core_autoexec();
 auto update_dosbox_variable(
     bool autoexec, const std::string& section_string, const std::string& var_string,
     const std::string& val_string) -> bool;
+long retro_ticks();
+void retro_key_up(int keycode);
+void retro_key_down(int keycode);

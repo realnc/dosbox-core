@@ -5,25 +5,7 @@
 #include "libretro_dosbox.h"
 #include "log.h"
 #include "setup.h"
-#include <clocale>
 #include <string_view>
-
-// Fluidsynth uses libinstpatch which as of v1.1.3 has the nasty behavior of changing the locale
-// under our nose. We remember and restore the current locale whenever this could happen.
-//
-// https://github.com/realnc/dosbox-core/issues/7
-// https://github.com/swami/libinstpatch/issues/37
-class LocaleGuard final
-{
-public:
-    ~LocaleGuard()
-    {
-        setlocale(LC_ALL, locale_.c_str());
-    }
-
-private:
-    std::string locale_ = setlocale(LC_ALL, nullptr);
-};
 
 MidiHandlerFluidsynth MidiHandlerFluidsynth::instance_;
 
@@ -79,8 +61,6 @@ void init_fluid_dosbox_settings(Section_prop& secprop)
 
 auto MidiHandlerFluidsynth::Open(const char* const /*conf*/) -> bool
 {
-    LocaleGuard locale_guard;
-
     Close();
 
     auto* section = static_cast<Section_prop*>(control->GetSection("midi"));

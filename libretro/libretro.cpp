@@ -68,8 +68,8 @@ MachineType machine = MCH_VGA;
 SVGACards svgaCard = SVGA_None;
 
 /* input variables */
-std::array<bool, 16> gamepad{}; // True means gamepad, false means joystick.
-std::array<bool, 16> connected;
+std::array<bool, RETRO_INPUT_PORTS_MAX> gamepad{}; // True means gamepad, false means joystick.
+std::array<bool, RETRO_INPUT_PORTS_MAX> connected;
 static bool force_2axis_joystick = false;
 int mouse_emu_deadzone = 0;
 float mouse_speed_factor_x = 1.0;
@@ -893,23 +893,20 @@ void retro_set_environment(const retro_environment_t cb)
     bool allow_no_game = true;
     cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &allow_no_game);
 
-    static constexpr retro_controller_description ports_default[]{
+    static constexpr std::array<retro_controller_description, 4> ports_default{{
         {"Keyboard + Mouse", RETRO_DEVICE_KEYBOARD},
         {"Gamepad", RETRO_DEVICE_JOYPAD},
         {"Joystick", RETRO_DEVICE_JOYSTICK},
         {"Disconnected", RETRO_DEVICE_NONE},
-    };
+    }};
 
-    static retro_controller_info ports[]{
-        {ports_default, 4},
-        {ports_default, 4},
-        {ports_default, 4},
-        {ports_default, 4},
-        {ports_default, 4},
-        {ports_default, 4},
-        {},
-    };
-    environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, ports);
+    static std::array<retro_controller_info, RETRO_INPUT_PORTS_MAX + 1> ports = [] {
+        decltype(ports) tmp;
+        tmp.fill({ports_default.data(), ports_default.size()});
+        tmp.back() = {};
+        return tmp;
+    }();
+    environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, ports.data());
 
     retro_core_options_update_display_callback display_cb{update_core_option_visibility};
     environ_cb(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK, &display_cb);

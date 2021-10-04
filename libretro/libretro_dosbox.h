@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-constexpr int RETRO_INPUT_PORTS_MAX = 5;
+constexpr int RETRO_INPUT_PORTS_MAX = 16;
 constexpr int GFX_MAX_WIDTH = 1280;
 constexpr int GFX_MAX_HEIGHT = 1024;
 
@@ -40,8 +40,8 @@ extern bool autofire;
 extern int mouse_emu_deadzone;
 extern float mouse_speed_factor_x;
 extern float mouse_speed_factor_y;
-extern std::array<bool, 16> connected;
-extern std::array<bool, 16> gamepad;
+extern std::array<bool, RETRO_INPUT_PORTS_MAX> connected;
+extern std::array<bool, RETRO_INPUT_PORTS_MAX> gamepad;
 extern bool libretro_supports_bitmasks;
 extern std::array<int16_t, RETRO_INPUT_PORTS_MAX> joypad_bits;
 extern std::set<std::string> locked_dosbox_variables;

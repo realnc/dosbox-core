@@ -7,9 +7,6 @@
 
 #include "keyboard.h"
 
-bool libretro_supports_bitmasks = false;
-int16_t joypad_bits[RETRO_DEVICES];
-
 extern long retro_ticks(void);
 extern std::tuple<retro_key, KBD_KEYS> retro_dosbox_map[RETROK_LAST];
 extern void GFX_EndUpdate(const Bit16u* const changedLines);

@@ -27,6 +27,8 @@ static bool use_slow_mouse = false;
 static bool use_fast_mouse = false;
 static bool use_analog_mouse_emulation = false;
 static bool use_dpad_mouse_emulation = false;
+bool libretro_supports_bitmasks = false;
+int16_t joypad_bits[RETRO_DEVICES]{};
 
 static constexpr std::tuple<retro_key, KBD_KEYS> retro_dosbox_map[]{
     {RETROK_1, KBD_1},

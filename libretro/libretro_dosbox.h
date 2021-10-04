@@ -39,6 +39,8 @@ extern float mouse_speed_factor_x;
 extern float mouse_speed_factor_y;
 extern std::array<bool, 16> connected;
 extern bool gamepad[16];
+extern bool libretro_supports_bitmasks;
+extern int16_t joypad_bits[RETRO_DEVICES];
 extern std::set<std::string> locked_dosbox_variables;
 
 namespace retro {

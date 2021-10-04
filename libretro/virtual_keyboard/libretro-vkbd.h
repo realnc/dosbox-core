@@ -17,9 +17,6 @@ extern void toggle_vkbd(void);
 extern unsigned int opt_vkbd_theme;
 extern libretro_graph_alpha_t opt_vkbd_alpha;
 
-extern bool libretro_supports_bitmasks;
-extern int16_t joypad_bits[5];
-
 #define VKBDX 13
 #define VKBDY 7
 

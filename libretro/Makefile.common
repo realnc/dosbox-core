@@ -19,8 +19,7 @@ INCFLAGS += \
 	-I$(CORE_DIR)/libretro \
 	-I$(CORE_DIR)/libretro/virtual_keyboard \
 	-I$(LIBRETRO_COMM_DIR)/include \
-	-I$(CORE_DIR)/include \
-	-I$(CORE_DIR)/libretro/munt_build/include
+	-I$(CORE_DIR)/include
 
 # common files
 SOURCES_CXX += \

@@ -43,3 +43,6 @@
 [submodule "libretro/deps/libffi"]
 	path = libretro/deps/libffi
 	url = https://github.com/libffi/libffi.git
+[submodule "libretro/deps/opusfile"]
+	path = libretro/deps/opusfile
+	url = https://github.com/xiph/opusfile.git

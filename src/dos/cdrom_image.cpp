@@ -109,6 +109,9 @@ bool CDROM_Interface_Image::AudioFile::read(Bit8u *buffer, int seek, int count)
 
 int CDROM_Interface_Image::AudioFile::getLength()
 {
+#ifdef __LIBRETRO__
+	return lround(Sound_Duration(sample) * 176.4f);
+#else
 	int time = 1;
 	int shift = 0;
 	if (!(sample->flags & SOUND_SAMPLEFLAG_CANSEEK)) return -1;
@@ -124,6 +127,7 @@ int CDROM_Interface_Image::AudioFile::getLength()
 			time = time << 1;
 		}
 	}
+#endif
 }
 #endif
 
@@ -533,6 +537,11 @@ bool CDROM_Interface_Image::LoadCueSheet(char *cuefile)
 				track.file = new BinaryFile(filename.c_str(), error);
 			}
 #if defined(C_SDL_SOUND)
+	#ifdef __LIBRETRO__
+			else {
+				track.file = new AudioFile(filename.c_str(), error);
+			}
+	#else
 			//The next if has been surpassed by the else, but leaving it in as not 
 			//to break existing cue sheets that depend on this.(mine with OGG tracks specifying MP3 as type)
 			else if (type == "WAVE" || type == "AIFF" || type == "MP3") {
@@ -546,6 +555,7 @@ bool CDROM_Interface_Image::LoadCueSheet(char *cuefile)
 					}
 				}
 			}
+	#endif
 #endif
 			if (error) {
 				delete track.file;

@@ -46,3 +46,6 @@
 [submodule "libretro/deps/opusfile"]
 	path = libretro/deps/opusfile
 	url = https://github.com/xiph/opusfile.git
+[submodule "libretro/deps/SDL_audiolib"]
+	path = libretro/deps/SDL_audiolib
+	url = https://github.com/realnc/SDL_audiolib.git

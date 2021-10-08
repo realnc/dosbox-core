@@ -161,14 +161,14 @@ libretro-build-linux-i686:
     WITH_VOODOO: 1
   image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-i386-ubuntu:xenial-gcc9
   script:
-    - python3 -m pip install --no-cache-dir meson==0.55.3 ninja
+    - linux32 python3 -m pip install --no-cache-dir meson==0.55.3 ninja
     - touch libretro/deps/mpg123/aclocal.m4
     - sleep 1
     - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
     - sleep 1
     - touch libretro/deps/mpg123/configure
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
 
 # MacOS 64-bit

@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/FluidSynth/fluidsynth.git
+	branch = db5db4b845d153840afcb003ef8252cd40b8acdd
+	commit = db5db4b845d153840afcb003ef8252cd40b8acdd
+	parent = c609f66162eb21afdc74cf26deee3d27f2f075ac
+	method = merge
+	cmdver = 0.4.3

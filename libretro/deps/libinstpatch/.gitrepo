@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/swami/libinstpatch.git
+	branch = v1.1.5
+	commit = 7780d44c4fe766a63c03afec725e03058ce59815
+	parent = 2077d13aafae5f1d0c1877fd56e8270da207434e
+	method = merge
+	cmdver = 0.4.3

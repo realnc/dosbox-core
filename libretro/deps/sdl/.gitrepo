@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/libsdl-org/SDL-1.2.git
+	branch = ae7f25f634650b3e06bccfa2538d59959e193649
+	commit = ae7f25f634650b3e06bccfa2538d59959e193649
+	parent = 11aa409d24cdd695009f9ca8007d80c353924158
+	method = merge
+	cmdver = 0.4.3

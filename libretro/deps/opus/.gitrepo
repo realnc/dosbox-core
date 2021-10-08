@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/xiph/opus.git
+	branch = 6b6035ae4a29abbd237463d84a45fbeb0d92bc18
+	commit = 6b6035ae4a29abbd237463d84a45fbeb0d92bc18
+	parent = 74c56eb26731ef2a8d85802a1ed2badd9b9cb496
+	method = merge
+	cmdver = 0.4.3

@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/git-commands/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/GNOME/glib.git
+	branch = 2.68.4
+	commit = d99d7967a2ada895102b308dbb1c05eadb9a5ef8
+	parent = 7230ca55f7ea7b3079d7a70e8e0dd7273ca21bf1
+	method = merge
+	cmdver = 0.4.3

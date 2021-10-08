@@ -70,9 +70,9 @@ libretro-build-windows-x64:
     CMAKE_GENERATOR: Ninja
     platform: win
     TARGET_TRIPLET: x86_64-w64-mingw32.static
-    BUNDLED_AUDIO_CODECS: 0
+    BUNDLED_AUDIO_CODECS: 1
     BUNDLED_GLIB: 0
-    BUNDLED_LIBSNDFILE: 0
+    BUNDLED_LIBSNDFILE: 1
     BUNDLED_SDL: 0
     STATIC_LIBCXX: 0
     WITH_BASSMIDI: 1
@@ -95,9 +95,9 @@ libretro-build-windows-i686:
     CMAKE_GENERATOR: Ninja
     platform: win
     TARGET_TRIPLET: i686-w64-mingw32.static
-    BUNDLED_AUDIO_CODECS: 0
+    BUNDLED_AUDIO_CODECS: 1
     BUNDLED_GLIB: 0
-    BUNDLED_LIBSNDFILE: 0
+    BUNDLED_LIBSNDFILE: 1
     BUNDLED_SDL: 0
     STATIC_LIBCXX: 0
     WITH_BASSMIDI: 1
@@ -131,6 +131,11 @@ libretro-build-linux-x64:
   image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-amd64-ubuntu:xenial-gcc9
   script:
     - python3 -m pip install --no-cache-dir meson==0.55.3 ninja
+    - touch libretro/deps/mpg123/aclocal.m4
+    - sleep 1
+    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
+    - sleep 1
+    - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
@@ -157,6 +162,11 @@ libretro-build-linux-i686:
   image: $CI_SERVER_HOST:5050/libretro-infrastructure/libretro-build-i386-ubuntu:xenial-gcc9
   script:
     - python3 -m pip install --no-cache-dir meson==0.55.3 ninja
+    - touch libretro/deps/mpg123/aclocal.m4
+    - sleep 1
+    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
+    - sleep 1
+    - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
@@ -176,6 +186,7 @@ libretro-build-osx-x64:
     BUNDLED_AUDIO_CODECS: 0
     BUNDLED_LIBSNDFILE: 0
     BUNDLED_SDL: 0
+    WITH_SDL_SOUND_WRAPPER: 0
     PKG_CONFIG_FLAGS: --static
     MACOS_SDK_PATH: /private/var/tmp/homebrew_dosbox_core/MacOSX10.13.sdk
     MACOS_DEPLOYMENT_TARGET: '10.12'

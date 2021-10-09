@@ -186,7 +186,6 @@ libretro-build-osx-x64:
     BUNDLED_AUDIO_CODECS: 0
     BUNDLED_LIBSNDFILE: 0
     BUNDLED_SDL: 0
-    WITH_SDL_SOUND_WRAPPER: 0
     PKG_CONFIG_FLAGS: --static
     MACOS_SDK_PATH: /private/var/tmp/homebrew_dosbox_core/MacOSX10.13.sdk
     MACOS_DEPLOYMENT_TARGET: '10.12'

@@ -224,7 +224,7 @@ libretro-build-osx-x64:
     - curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/MacOSX10.13.sdk.tar.zst' | ./zstd -d | tar x
     - popd
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - export LDFLAGS="-L /private/var/tmp/homebrew_dosbox_core/static_libs"
+    - export LDFLAGS="-L \"$PWD/libretro/deps_bin/lib\" -L /private/var/tmp/homebrew_dosbox_core/static_libs"
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip -u -r -S ${MAKEFILE_PATH}/${CORENAME}_libretro.dylib
     - rm -rf /private/var/tmp/homebrew_dosbox_core

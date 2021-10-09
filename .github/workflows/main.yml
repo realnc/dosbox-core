@@ -262,9 +262,9 @@ jobs:
       BUNDLED_LIBSNDFILE: 0
       BUNDLED_SDL: 0
       PKG_CONFIG_FLAGS: --static
-      MACOS_SDK_PATH: /usr/local/MacOSX10.13.sdk
+      MACOS_SDK_PATH: /tmp/MacOSX10.13.sdk
       MACOS_DEPLOYMENT_TARGET: 10.12
-      EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_SYSROOT=/usr/local/MacOSX10.13.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12
+      EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_SYSROOT=/tmp/MacOSX10.13.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12
       HOMEBREW_PREFIX: /private/var/tmp/homebrew_dosbox_core
       HOMEBREW_CELLAR: /private/var/tmp/homebrew_dosbox_core/Cellar
       HOMEBREW_SHELLENV_PREFIX: /private/var/tmp/homebrew_dosbox_core
@@ -283,7 +283,7 @@ jobs:
         sudo rm -f lib/pkgconfig/fluidsynth.pc
 
     - name: Install 10.13 SDK
-      working-directory: /usr/local
+      working-directory: /tmp
       run: |
         curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/MacOSX10.13.sdk.tar.zst' | zstd -d | sudo tar x
 
@@ -299,15 +299,25 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Remove /usr/local homebrew
+      working-directory: /usr/local
+      run: |
+        sudo mkdir /tmp/oldbrew
+        sudo mv * /tmp/oldbrew/
+
     - name: Build
       working-directory: ./libretro
       run: |
         make deps
-        export LDFLAGS="-L /private/var/tmp/homebrew_dosbox_core/static_libs"
-
+        export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L /private/var/tmp/homebrew_dosbox_core/static_libs"
         make -j`sysctl -n hw.ncpu`
         strip -u -r -S dosbox_core_libretro.dylib
         zip -9 macOS-x64.zip dosbox_core_libretro.dylib
+
+    - name: Restore /usr/local homebrew
+      working-directory: /usr/local
+      run: |
+        sudo mv /tmp/oldbrew/* .
 
     - name: Upload artifact
       if: github.event_name == 'push'

@@ -8,7 +8,7 @@ LIBMPG123 = $(DEPS_BIN_DIR)/lib/pkgconfig/libmpg123.pc
 $(LIBMPG123):
 	mkdir -p $(LIBMPG123_BUILD_DIR)
 	cd $(LIBMPG123_BUILD_DIR) \
-	&& "$(CURDIR)/deps/mpg123/configure" \
+	&& CFLAGS= CXXFLAGS= LDFLAGS= "$(CURDIR)/deps/mpg123/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-shared \

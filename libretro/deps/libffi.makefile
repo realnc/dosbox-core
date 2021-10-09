@@ -8,7 +8,7 @@ $(LIBFFI):
 	cd deps/libffi && ./autogen.sh
 	mkdir -p "$(LIBFFI_BUILD_DIR)"
 	cd "$(LIBFFI_BUILD_DIR)" \
-	&& "$(CURDIR)/deps/libffi/configure" \
+	&& CFLAGS= CXXFLAGS= LDFLAGS= "$(CURDIR)/deps/libffi/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-dependency-tracking \

@@ -6,7 +6,7 @@ GLIB = $(DEPS_BIN_DIR)/lib/pkgconfig/glib-2.0.pc
 
 $(GLIB): $(LIBFFI)
 	mkdir -p "$(GLIB_BUILD_DIR)"
-	$(MESON) "$(GLIB_BUILD_DIR)" "$(CURDIR)/deps/glib" \
+	CFLAGS= CXXFLAGS= LDFLAGS= $(MESON) "$(GLIB_BUILD_DIR)" "$(CURDIR)/deps/glib" \
 	    --buildtype $(MESON_BUILD_TYPE) \
 	    --prefix "$(DEPS_BIN_DIR)" \
 	    --libdir lib \

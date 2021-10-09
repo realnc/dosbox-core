@@ -8,7 +8,7 @@ $(FLAC): $(OGG)
 	cd "$(CURDIR)/deps/flac/" && ./autogen.sh
 	mkdir -p $(FLAC_BUILD_DIR)
 	cd $(FLAC_BUILD_DIR) \
-	&& "$(CURDIR)/deps/flac/configure" \
+	&& CFLAGS= CXXFLAGS= LDFLAGS= "$(CURDIR)/deps/flac/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-shared \

@@ -382,9 +382,13 @@ ifeq ($(WITH_SDL_SOUND_WRAPPER), 1)
 		include deps/ogg.makefile
 		include deps/opus.makefile
 		include deps/opusfile.makefile
+		include deps/vorbis.makefile
+	else
+		EXTRA_PACKAGES += libmpg123 opusfile vorbisfile
 	endif
-	EXTRA_PACKAGES += libmpg123 opusfile vorbisfile
-	COMMONFLAGS += -DC_SDL_SOUND
+	COMMONFLAGS += \
+		-DC_SDL_SOUND \
+		`$(PKGCONFIG) --cflags libmpg123 opusfile vorbisfile`
 endif
 export PKG_CONFIG_PATH := $(DEPS_BIN_DIR)/lib/pkgconfig:$(PKG_CONFIG_PATH)
 export PATH := $(DEPS_BIN_DIR)/bin:$(PATH)
@@ -413,6 +417,17 @@ ifeq ($(STATIC_PACKAGES), 1)
 	LDFLAGS += -Wl,-Bstatic
 	PKG_CONFIG_FLAGS += --static
 endif
+ifeq ($(BUNDLED_AUDIO_CODECS), 1)
+	LDFLAGS += \
+		$(DEPS_BIN_DIR)/lib/libFLAC.a \
+		$(DEPS_BIN_DIR)/lib/libmpg123.a \
+		$(DEPS_BIN_DIR)/lib/libogg.a \
+		$(DEPS_BIN_DIR)/lib/libopus.a \
+		$(DEPS_BIN_DIR)/lib/libopusfile.a \
+		$(DEPS_BIN_DIR)/lib/libvorbis.a \
+		$(DEPS_BIN_DIR)/lib/libvorbisfile.a
+endif
+
 ifdef EXTRA_PACKAGES
 	LDFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs $(EXTRA_PACKAGES)`
 	INCFLAGS += `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --cflags-only-I $(EXTRA_PACKAGES)`

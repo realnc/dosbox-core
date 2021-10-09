@@ -65,6 +65,8 @@ libretro-build-windows-x64:
     - .libretro-windows-x64-mingw-make-default
     - .core-defs
   variables:
+    AR: ar
+    AS: as
     CC: gcc
     CXX: g++
     CMAKE_GENERATOR: Ninja
@@ -80,6 +82,11 @@ libretro-build-windows-x64:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   script:
+    - touch libretro/deps/mpg123/aclocal.m4
+    - sleep 1
+    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
+    - sleep 1
+    - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
@@ -90,6 +97,8 @@ libretro-build-windows-i686:
     - .libretro-windows-i686-mingw-make-default
     - .core-defs
   variables:
+    AR: ar
+    AS: as
     CC: gcc
     CXX: g++
     CMAKE_GENERATOR: Ninja
@@ -105,6 +114,11 @@ libretro-build-windows-i686:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   script:
+    - touch libretro/deps/mpg123/aclocal.m4
+    - sleep 1
+    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
+    - sleep 1
+    - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - i686-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll

@@ -185,11 +185,43 @@ ifeq ($(WITH_FLUIDSYNTH), 1)
 endif
 
 ifeq ($(WITH_SDL_SOUND_WRAPPER), 1)
-	INCFLAGS += -I$(CORE_DIR)/libretro/sdl_sound_wrapper
-	SOURCES_CXX += $(CORE_DIR)/libretro/sdl_sound_wrapper/SDL_sound.cpp
+	INCFLAGS += \
+		-I$(CORE_DIR)/libretro/deps/SDL_audiolib/3rdparty/dr_libs \
+		-I$(CORE_DIR)/libretro/deps/SDL_audiolib/3rdparty/speex_resampler \
+		-I$(CORE_DIR)/libretro/deps/SDL_audiolib/include \
+		-I$(CORE_DIR)/libretro/deps/SDL_audiolib/src \
+		-I$(CORE_DIR)/libretro/sdl_sound_wrapper
+
+	COMMONFLAGS += \
+		-DAULIB_STATIC_DEFINE \
+		-DOUTSIDE_SPEEX \
+		-DRANDOM_PREFIX=SDL_audiolib \
+		-DSPX_RESAMPLE_EXPORT=
+
+	SOURCES_C += \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/3rdparty/speex_resampler/resample.c \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/dr_flac.c \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/dr_wav.c \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/missing/sdl_load_file_rw.c \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/missing/sdl_rwsize.c
+
+	SOURCES_CXX += \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/Decoder.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/DecoderDrflac.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/DecoderDrwav.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/DecoderMpg123.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/DecoderOpus.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/DecoderVorbis.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/Resampler.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/ResamplerSpeex.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/Stream.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/aulib.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/sampleconv.cpp \
+		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/stream_p.cpp \
+		$(CORE_DIR)/libretro/sdl_sound_wrapper/SDL_sound.cpp
 endif
 
-SOURCES_C := \
+SOURCES_C += \
 	$(LIBRETRO_COMM_DIR)/encodings/encoding_utf.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strcasestr.c \
 	$(LIBRETRO_COMM_DIR)/compat/compat_strl.c \

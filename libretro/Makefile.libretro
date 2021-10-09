@@ -383,9 +383,8 @@ ifeq ($(WITH_SDL_SOUND_WRAPPER), 1)
 		include deps/opus.makefile
 		include deps/opusfile.makefile
 	endif
-	include deps/SDL_audiolib.makefile
-	LDFLAGS := -L$(DEPS_BIN_DIR)/lib -lSDL_audiolib -lmpg123 -lopusfile -lvorbisfile $(LDFLAGS)
-	COMMONFLAGS += `$(PKGCONFIG) --cflags SDL_audiolib` -DC_SDL_SOUND
+	EXTRA_PACKAGES += libmpg123 opusfile vorbisfile
+	COMMONFLAGS += -DC_SDL_SOUND
 endif
 export PKG_CONFIG_PATH := $(DEPS_BIN_DIR)/lib/pkgconfig:$(PKG_CONFIG_PATH)
 export PATH := $(DEPS_BIN_DIR)/bin:$(PATH)
@@ -432,7 +431,7 @@ all: $(TARGET)
 .PHONY: deps
 deps:
 
-$(OBJECTS): $(FLUIDSYNTH) $(MUNT) $(SDLNET) $(SDL_AUDIOLIB)
+$(OBJECTS): $(FLUIDSYNTH) $(MUNT) $(SDLNET)
 
 $(TARGET): $(OBJECTS)
 ifeq ($(STATIC_LINKING), 1)

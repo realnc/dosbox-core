@@ -24,6 +24,9 @@ The core provides some improvements over the DOSBox-SVN core:
   - Using [BASSMIDI](https://www.un4seen.com), a MIDI software synthesizer that
     supports SF2/SFZ soundfonts.
 
+* Support for CUE CD images with split audio tracks.  
+  Audio tracks can be WAV, FLAC, Opus, Ogg Vorbis or MP3 files.
+
 * Experimental 3dfx Voodoo support.  
   This is based on a [patch by kekko](https://www.vogons.org/viewtopic.php?t=41853),
   which in turn is based on MAME code. Currently, only software-based emulation

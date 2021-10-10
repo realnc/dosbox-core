@@ -48,14 +48,14 @@ auto Sound_NewSampleFromFile(
 
     Sound_Sample* sample = new Sound_Sample;
     sample->rwops = rwops;
+    sample->buffer = new char[bufferSize];
+    sample->float_buffer.resize(bufferSize / 2);
+    sample->buffer_size = bufferSize;
     decoder->open(sample->rwops);
     sample->decoder = std::move(decoder);
     sample->resampler.setQuality(3);
     sample->resampler.setDecoder(sample->decoder);
     sample->resampler.setSpec(desired->rate, desired->channels, 4096);
-    sample->buffer = new char[bufferSize];
-    sample->float_buffer.resize(bufferSize / 2);
-    sample->buffer_size = bufferSize;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     return sample;
 }
@@ -102,6 +102,7 @@ auto Sound_Decode(Sound_Sample* const sample) -> uint32_t
 
 auto Sound_Seek(Sound_Sample* const sample, const uint32_t ms) -> int
 {
+    sample->resampler.discardPendingSamples();
     return sample->decoder->seekToTime(std::chrono::milliseconds{ms});
 }
 

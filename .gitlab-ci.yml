@@ -82,14 +82,15 @@ libretro-build-windows-x64:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   script:
-    - touch libretro/deps/mpg123/aclocal.m4
-    - sleep 1
-    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
-    - sleep 1
-    - touch libretro/deps/mpg123/configure
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
-    - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
+     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} download_github_windows_x64
+#    - touch libretro/deps/mpg123/aclocal.m4
+#    - sleep 1
+#    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
+#    - sleep 1
+#    - touch libretro/deps/mpg123/configure
+#    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+#    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+#    - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
 # Windows 32-bit
 libretro-build-windows-i686:
@@ -114,14 +115,15 @@ libretro-build-windows-i686:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   script:
-    - touch libretro/deps/mpg123/aclocal.m4
-    - sleep 1
-    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
-    - sleep 1
-    - touch libretro/deps/mpg123/configure
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
-    - i686-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} download_github_windows_x86
+#    - touch libretro/deps/mpg123/aclocal.m4
+#    - sleep 1
+#    - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
+#    - sleep 1
+#    - touch libretro/deps/mpg123/configure
+#    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+#    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+#    - i686-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
 # Linux 64-bit
 libretro-build-linux-x64:

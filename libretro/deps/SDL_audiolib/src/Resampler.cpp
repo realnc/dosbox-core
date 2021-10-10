@@ -250,6 +250,12 @@ auto Aulib::Resampler::resample(float dst[], int dstLen) -> int
     return totalSamples;
 }
 
+void Aulib::Resampler::discardPendingSamples()
+{
+    d->fOutBufferPos = d->fOutBufferEnd = d->fInBufferPos = d->fInBufferEnd = 0;
+    doDiscardPendingSamples();
+}
+
 /*
 
 Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019 Nikos Chantziaras.

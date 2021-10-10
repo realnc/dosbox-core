@@ -82,6 +82,13 @@ auto Aulib::ResamplerSrc::adjustForOutputSpec(int dstRate, int srcRate, int chan
     return 0;
 }
 
+void Aulib::ResamplerSrc::doDiscardPendingSamples()
+{
+    if (d->fResampler) {
+        src_reset(d->fResampler.get());
+    }
+}
+
 /*
 
 Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019 Nikos Chantziaras.

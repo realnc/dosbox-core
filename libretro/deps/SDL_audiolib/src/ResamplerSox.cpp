@@ -87,6 +87,13 @@ auto Aulib::ResamplerSox::adjustForOutputSpec(int dstRate, int srcRate, int chan
     return 0;
 }
 
+void Aulib::ResamplerSox::doDiscardPendingSamples()
+{
+    if (d->fResampler) {
+        soxr_clear(d->fResampler.get());
+    }
+}
+
 /*
 
 Copyright (C) 2014, 2015, 2016, 2017, 2018, 2019 Nikos Chantziaras.

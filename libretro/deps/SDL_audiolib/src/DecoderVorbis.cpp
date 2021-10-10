@@ -141,14 +141,8 @@ auto Aulib::DecoderVorbis::rewind() -> bool
         return false;
     }
 
-    int ret;
-    if (d->fEOF) {
-        ret = ov_raw_seek(d->fVFHandle.get(), 0);
-        d->fEOF = false;
-    } else {
-        ret = ov_raw_seek_lap(d->fVFHandle.get(), 0);
-    }
-    return ret == 0;
+    d->fEOF = false;
+    return ov_raw_seek(d->fVFHandle.get(), 0) == 0;
 }
 
 auto Aulib::DecoderVorbis::duration() const -> chrono::microseconds
@@ -159,7 +153,7 @@ auto Aulib::DecoderVorbis::duration() const -> chrono::microseconds
 auto Aulib::DecoderVorbis::seekToTime(chrono::microseconds pos) -> bool
 {
     if (not isOpen()
-        or ov_time_seek_lap(d->fVFHandle.get(), chrono::duration<double>(pos).count()) != 0) {
+        or ov_time_seek(d->fVFHandle.get(), chrono::duration<double>(pos).count()) != 0) {
         return false;
     }
     d->fEOF = false;

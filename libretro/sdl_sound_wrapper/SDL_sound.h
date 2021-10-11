@@ -30,6 +30,7 @@ struct Sound_AudioInfo
 struct Sound_Sample
 {
     char* buffer;
+    std::vector<char> byte_buffer;
     std::vector<float> float_buffer;
     uint32_t buffer_size;
     Sound_SampleFlags flags;

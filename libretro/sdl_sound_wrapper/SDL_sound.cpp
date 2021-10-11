@@ -48,8 +48,9 @@ auto Sound_NewSampleFromFile(
 
     Sound_Sample* sample = new Sound_Sample;
     sample->rwops = rwops;
-    sample->buffer = new char[bufferSize];
+    sample->byte_buffer.resize(bufferSize);
     sample->float_buffer.resize(bufferSize / 2);
+    sample->buffer = sample->byte_buffer.data();
     sample->buffer_size = bufferSize;
     decoder->open(sample->rwops);
     sample->decoder = std::move(decoder);
@@ -65,17 +66,16 @@ void Sound_FreeSample(Sound_Sample* const sample)
     if (!sample) {
         return;
     }
-
-    delete[] sample->buffer;
     SDL_RWclose(sample->rwops);
     delete sample;
 }
 
 auto Sound_SetBufferSize(Sound_Sample* const sample, const uint32_t new_size) -> int
 {
-    delete[] sample->buffer;
-    sample->buffer = new char[new_size];
+    sample->byte_buffer.resize(new_size);
+    sample->buffer = sample->byte_buffer.data();
     sample->float_buffer.resize(new_size / 2);
+    sample->buffer_size = new_size;
     return true;
 }
 
@@ -88,7 +88,7 @@ auto Sound_Decode(Sound_Sample* const sample) -> uint32_t
 {
     const int float_sample_count =
         sample->resampler.resample(sample->float_buffer.data(), sample->float_buffer.size());
-    auto* dst = sample->buffer;
+    auto* dst = sample->byte_buffer.data();
 
     for (int i = 0; i < float_sample_count; ++i) {
         const auto int_sample = floatSampleToInt16(sample->float_buffer[i]);
@@ -97,7 +97,7 @@ auto Sound_Decode(Sound_Sample* const sample) -> uint32_t
     }
 
     static_assert(sizeof(sample->buffer[0]) == 1, "");
-    return dst - sample->buffer;
+    return dst - sample->byte_buffer.data();
 }
 
 auto Sound_Seek(Sound_Sample* const sample, const uint32_t ms) -> int

@@ -1,5 +1,7 @@
 *.[do]
-*.so
 *.dll
-/libretro/munt_build
+*.dylib
+*.so
+*~
 /libretro/deps_bin
+autom4te.cache/

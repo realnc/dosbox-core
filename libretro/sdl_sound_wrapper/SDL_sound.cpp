@@ -55,7 +55,7 @@ auto Sound_NewSampleFromFile(
     sample->decoder = std::move(decoder);
     sample->resampler.setQuality(3);
     sample->resampler.setDecoder(sample->decoder);
-    sample->resampler.setSpec(desired->rate, desired->channels, 4096);
+    sample->resampler.setSpec(desired->rate, desired->channels, sample->float_buffer.size() / 2);
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     return sample;
 }

@@ -103,6 +103,9 @@ auto Sound_Decode(Sound_Sample* const sample) -> uint32_t
 auto Sound_Seek(Sound_Sample* const sample, const uint32_t ms) -> int
 {
     sample->resampler.discardPendingSamples();
+    if (ms == 0) {
+        return sample->decoder->rewind();
+    }
     return sample->decoder->seekToTime(std::chrono::milliseconds{ms});
 }
 

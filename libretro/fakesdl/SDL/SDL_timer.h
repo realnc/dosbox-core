@@ -9,7 +9,7 @@ inline void SDL_Delay(uint32_t ms)
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
-inline auto SDL_GetTicks() -> uint32_t;
+auto SDL_GetTicks() -> uint32_t;
 
 /*
 

@@ -49,6 +49,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATC
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/fluidsynth" \
 	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install -j $(NUMPROC)
+	touch "$@"
 
 .PHONY: fluidsynth
 fluidsynth: $(FLUIDSYNTH)

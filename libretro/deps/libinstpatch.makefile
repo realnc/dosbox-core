@@ -18,6 +18,7 @@ $(LIBINSTPATCH): $(LIBSNDFILE) $(GLIB)
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/libinstpatch" \
 	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install -j $(NUMPROC)
+	touch "$@"
 
 .PHONY: libinstpatch
 libinstpatch: $(LIBINSTPATCH)

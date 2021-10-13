@@ -16,6 +16,7 @@ $(GLIB): $(LIBFFI)
 	    -Dnls=disabled
 	$(NINJA) -C "$(GLIB_BUILD_DIR)" -j$(NUMPROC) install
 	sed -i'.original' 's/^Libs:.*/& -lpthread/' $(GLIB)
+	touch "$@"
 
 .PHONY: glib
 glib: $(GLIB)

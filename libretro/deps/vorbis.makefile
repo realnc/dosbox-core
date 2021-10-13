@@ -18,6 +18,7 @@ $(VORBIS): $(OGG)
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC) \
 	&& sed -i'.original' '/^Requires:/d' $(VORBIS) \
 	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(VORBIS)
+	touch "$@"
 
 .PHONY: vorbis
 vorbis: $(VORBIS)

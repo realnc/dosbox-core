@@ -20,6 +20,7 @@ $(LIBFFI):
 	    --with-pic \
 	    --with-gcc-arch=generic \
 	&& $(MAKE) -j$(NUMPROC) install
+	touch "$@"
 
 .PHONY: libffi
 libffi: $(LIBFFI)

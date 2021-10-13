@@ -19,6 +19,7 @@ $(OPUSFILE): $(OGG) $(OPUS)
 	    --disable-examples \
 	    --disable-doc \
 	&& $(MAKE) -j$(NUMPROC) install
+	touch "$@"
 
 .PHONY: opusfile
 opusfile: $(OPUSFILE)

@@ -20,6 +20,7 @@ $(MUNT):
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/munt/mt32emu" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
+	touch "$@"
 
 .PHONY: munt
 munt: $(MUNT)

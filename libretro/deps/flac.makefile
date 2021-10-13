@@ -22,6 +22,7 @@ $(FLAC): $(OGG)
 	    --disable-rpath \
 	    --with-pic \
 	&& $(MAKE) -j$(NUMPROC) install
+	touch "$@"
 
 # $(FLAC): $(OGG)
 # 	mkdir -p $(FLAC_BUILD_DIR)

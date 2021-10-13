@@ -24,6 +24,7 @@ $(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC) \
 	&& sed -i'.original' '/^Requires:/d' $(LIBSNDFILE) \
 	&& sed -i'.original' 's/^Requires.private:/Requires:/g' $(LIBSNDFILE)
+	touch "$@"
 
 .PHONY: libsndfile
 libsndfile: $(LIBSNDFILE)

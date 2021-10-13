@@ -19,6 +19,7 @@ $(OGG):
 	    $(EXTRA_CMAKE_FLAGS) \
 	    "$(CURDIR)/deps/ogg" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC)
+	touch "$@"
 
 .PHONY: ogg
 ogg: $(OGG)

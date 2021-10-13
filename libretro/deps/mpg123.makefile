@@ -23,6 +23,7 @@ $(LIBMPG123):
 	    --with-audio=dummy \
 	    --with-default-audio=dummy \
 	&& $(MAKE) -j$(NUMPROC) install
+	touch "$@"
 
 .PHONY: mpg123
 mpg123: $(LIBMPG123)

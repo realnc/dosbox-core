@@ -21,6 +21,7 @@ $(OPUS):
 	    "$(CURDIR)/deps/opus" \
 	&& VERBOSE=1 $(CMAKE) --build . --config $(CMAKE_BUILD_TYPE) --target install -j $(NUMPROC) \
 	&& sed -i'.original' 's/^Version: 0/Version: 1.3.1/g' $(OPUS)
+	touch "$@"
 
 .PHONY: opus
 opus: $(OPUS)

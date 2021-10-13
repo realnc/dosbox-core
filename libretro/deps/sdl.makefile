@@ -30,6 +30,7 @@ $(SDL):
 	    --with-pic \
 	    --without-x \
 	&& $(MAKE) -j$(NUMPROC) install
+	touch "$@"
 
 .PHONY: sdl
 sdl: $(SDL)

@@ -16,6 +16,7 @@ $(SDLNET): $(SDL)
 	    --disable-gui \
 	    --with-pic \
 	&& $(MAKE) -j$(NUMPROC) install
+	touch "$@"
 
 .PHONY: sdl_net
 sdl_net: $(SDLNET)

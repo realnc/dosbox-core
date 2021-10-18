@@ -188,7 +188,6 @@ libretro-build-linux-i686:
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
 
 # MacOS 64-bit
-# The libretro CI is unable to build the core. We build it on github and download it from there.
 libretro-build-osx-x64:
   extends:
     - .libretro-osx-x64-make-default

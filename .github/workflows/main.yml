@@ -262,38 +262,29 @@ jobs:
       BUNDLED_LIBSNDFILE: 0
       BUNDLED_SDL: 0
       PKG_CONFIG_FLAGS: --static
-      MACOS_SDK_PATH: /tmp/MacOSX10.13.sdk
-      MACOS_DEPLOYMENT_TARGET: 10.12
-      EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_SYSROOT=/tmp/MacOSX10.13.sdk -DCMAKE_OSX_DEPLOYMENT_TARGET=10.12
+      MACOS_DEPLOYMENT_TARGET: '10.9'
+      MACOSX_DEPLOYMENT_TARGET: '10.9'
+      EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
       HOMEBREW_PREFIX: /private/var/tmp/homebrew_dosbox_core
       HOMEBREW_CELLAR: /private/var/tmp/homebrew_dosbox_core/Cellar
       HOMEBREW_SHELLENV_PREFIX: /private/var/tmp/homebrew_dosbox_core
 
     steps:
-    - run: echo "/private/var/tmp/homebrew_dosbox_core/bin:/private/var/tmp/homebrew_dosbox_core/sbin:${PATH}" >> $GITHUB_PATH
+    - run: echo "${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${PATH}" >> $GITHUB_PATH
 
     - name: Install custom homebrew
-      working-directory: /private/var/tmp
       run: |
-        mkdir homebrew_dosbox_core
-        cd homebrew_dosbox_core
-        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-10.12-dosbox-core.tar.zst' | zstd -d | sudo tar x
-        sudo rm -rf include/fluidsynth*
-        sudo rm -f lib/libfluidsynth.*
-        sudo rm -f lib/pkgconfig/fluidsynth.pc
-
-    - name: Install 10.13 SDK
-      working-directory: /tmp
-      run: |
-        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/MacOSX10.13.sdk.tar.zst' | zstd -d | sudo tar x
+        mkdir "${HOMEBREW_PREFIX}"
+        cd "${HOMEBREW_PREFIX}"
+        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-dosbox-core.tar.zst' | zstd -d | tar x
 
     # Since macOS is developed by monkeys, we have to do this shit to get static linking against
     # homebrew-installed libraries.
     - name: Symlink static homebrew libs
-      working-directory: /private/var/tmp/homebrew_dosbox_core
       run: |
-        sudo mkdir static_libs
-        sudo ln -s /private/var/tmp/homebrew_dosbox_core/{lib,opt/libffi/lib}/*.a static_libs/
+        cd "${HOMEBREW_PREFIX}"
+        mkdir static_libs
+        ln -s /private/var/tmp/homebrew_dosbox_core/{lib,opt/libffi/lib}/*.a static_libs/
 
     - uses: actions/checkout@v2
       with:
@@ -309,7 +300,7 @@ jobs:
       working-directory: ./libretro
       run: |
         make deps
-        export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L /private/var/tmp/homebrew_dosbox_core/static_libs"
+        export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs"
         make -j`sysctl -n hw.ncpu`
         strip -u -r -S dosbox_core_libretro.dylib
         zip -9 macOS-x64.zip dosbox_core_libretro.dylib

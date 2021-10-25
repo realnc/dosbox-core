@@ -7,7 +7,8 @@ SDL = $(DEPS_BIN_DIR)/lib/pkgconfig/sdl.pc
 $(SDL):
 	mkdir -p "$(SDL_BUILD_DIR)"
 	cd "$(SDL_BUILD_DIR)" \
-	&& CFLAGS= CXXFLAGS= LDFLAGS= "$(CURDIR)/deps/sdl/configure" \
+	&& $(if $(filter $(platform),osx),CC=clang CXX=clang++) CFLAGS= CXXFLAGS= LDFLAGS= \
+	    "$(CURDIR)/deps/sdl/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-shared \

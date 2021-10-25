@@ -7,7 +7,8 @@ SDLNET = $(DEPS_BIN_DIR)/lib/pkgconfig/SDL_net.pc
 $(SDLNET): $(SDL)
 	mkdir -p "$(SDLNET_BUILD_DIR)"
 	cd "$(SDLNET_BUILD_DIR)" \
-	&& CFLAGS= CXXFLAGS= LDFLAGS= "$(CURDIR)/deps/sdl_net/configure" \
+	&& $(if $(filter $(platform),osx),CC=clang CXX=clang++) CFLAGS= CXXFLAGS= LDFLAGS= \
+	    "$(CURDIR)/deps/sdl_net/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-shared \
@@ -15,6 +16,10 @@ $(SDLNET): $(SDL)
 	    --disable-sdltest \
 	    --disable-gui \
 	    --with-pic \
+	&& $(MAKE) -j$(NUMPROC) libSDL_net.la \
+	&& sleep 1 \
+	&& touch showinterfaces \
+	&& touch showinterfaces.exe \
 	&& $(MAKE) -j$(NUMPROC) install
 	touch "$@"
 

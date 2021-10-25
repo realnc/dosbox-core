@@ -258,24 +258,26 @@ jobs:
       platform: osx
       WITH_DYNAREC: x86_64
       STATIC_LIBCXX: 1
-      BUNDLED_AUDIO_CODECS: 0
-      BUNDLED_LIBSNDFILE: 0
-      BUNDLED_SDL: 0
+      BUNDLED_AUDIO_CODECS: 1
+      BUNDLED_LIBSNDFILE: 1
+      BUNDLED_SDL: 1
+      BUNDLED_GLIB: 0
       PKG_CONFIG_FLAGS: --static
       MACOS_DEPLOYMENT_TARGET: '10.9'
       MACOSX_DEPLOYMENT_TARGET: '10.9'
       EXTRA_CMAKE_FLAGS: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9
-      HOMEBREW_PREFIX: /private/var/tmp/homebrew_dosbox_core
-      HOMEBREW_CELLAR: /private/var/tmp/homebrew_dosbox_core/Cellar
-      HOMEBREW_SHELLENV_PREFIX: /private/var/tmp/homebrew_dosbox_core
+      HOMEBREW_PREFIX: /Users/Shared/homebrew-dosbox-core
+      HOMEBREW_CELLAR: /Users/Shared/homebrew-dosbox-core/Cellar
+      HOMEBREW_SHELLENV_PREFIX: /Users/Shared/homebrew-dosbox-core
 
     steps:
     - run: echo "${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${PATH}" >> $GITHUB_PATH
 
     - name: Install custom homebrew
       run: |
+        rm -rf "${HOMEBREW_PREFIX}"
         mkdir "${HOMEBREW_PREFIX}"
-        cd "${HOMEBREW_PREFIX}"
+        cd "${HOMEBREW_PREFIX}"/..
         curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-dosbox-core.tar.zst' | zstd -d | tar x
 
     # Since macOS is developed by monkeys, we have to do this shit to get static linking against
@@ -284,7 +286,7 @@ jobs:
       run: |
         cd "${HOMEBREW_PREFIX}"
         mkdir static_libs
-        ln -s /private/var/tmp/homebrew_dosbox_core/{lib,opt/libffi/lib}/*.a static_libs/
+        ln -s "${HOMEBREW_PREFIX}"/{lib,opt/libffi/lib}/*.a static_libs/
 
     - uses: actions/checkout@v2
       with:

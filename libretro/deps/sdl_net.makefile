@@ -17,7 +17,7 @@ $(SDLNET): $(SDL)
 	    --disable-gui \
 	    --with-pic \
 	&& $(MAKE) -j$(NUMPROC) libSDL_net.la \
-	&& sleep 1 \
+	&& sleep 2 \
 	&& touch showinterfaces \
 	&& touch showinterfaces.exe \
 	&& $(MAKE) -j$(NUMPROC) install

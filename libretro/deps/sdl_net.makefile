@@ -16,10 +16,7 @@ $(SDLNET): $(SDL)
 	    --disable-sdltest \
 	    --disable-gui \
 	    --with-pic \
-	&& $(MAKE) -j$(NUMPROC) libSDL_net.la \
-	&& sleep 2 \
-	&& touch showinterfaces \
-	&& touch showinterfaces.exe \
+    && sed -i'.original' 's/^PROGRAMS =.*/PROGRAMS = /g' Makefile \
 	&& $(MAKE) -j$(NUMPROC) install
 	touch "$@"
 

@@ -1077,8 +1077,9 @@ void retro_init()
     update_core_option_visibility();
     disk_control::init(environ_cb);
 
-    if (!environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb))
-        perf_cb.get_time_usec = NULL;
+    if (!environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb)) {
+        perf_cb.get_time_usec = nullptr;
+    }
 }
 
 void retro_deinit()

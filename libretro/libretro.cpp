@@ -1080,6 +1080,9 @@ void retro_init()
     if (!environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb)) {
         perf_cb.get_time_usec = nullptr;
     }
+
+    libretro_supports_bitmasks = environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, nullptr);
+    retro::logDebug("Frontend input bitmask support: {}", libretro_supports_bitmasks);
 }
 
 void retro_deinit()

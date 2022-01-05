@@ -206,6 +206,20 @@ CoreOptions core_options {
             "external"
         },
         CoreOptionDefinition {
+            "frame_duping",
+            "Frame duping (minor speedup)",
+            "Can provide a (very) minor performance benefit by instructing the frontend to present "
+                "the previous frame again without re-uploading it if there is no new frame. Some "
+                "drivers might not correctly support this however. If you run into issues where "
+                "you get a black screen that lasts until your next input, you can disable frame "
+                "duping as a workaround.",
+            {
+                true,
+                false,
+            },
+            true
+        },
+        CoreOptionDefinition {
             "thread_sync",
             "Thread synchronization method",
             "\"Wait\" is the recommended method and should work well on most systems. If for some "

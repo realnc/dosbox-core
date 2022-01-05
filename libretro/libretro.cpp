@@ -77,6 +77,7 @@ float mouse_speed_factor_y = 1.0;
 
 /* core option variables */
 bool run_synced = true;
+static bool use_frame_duping = true;
 static bool use_spinlock = false;
 
 /* directories */
@@ -680,6 +681,7 @@ static void check_variables()
         }
     }
 
+    use_frame_duping = core_options["frame_duping"].toBool();
     use_spinlock = core_options["thread_sync"].toString() == "spin";
     useSpinlockThreadSync(use_spinlock);
 
@@ -1208,7 +1210,7 @@ void retro_run()
         print_vkbd();
 
     // If we have a new frame, submit it.
-    if (dosbox_frontbuffer_uploaded) {
+    if (dosbox_frontbuffer_uploaded && use_frame_duping) {
         video_cb(nullptr, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
     } else if (run_synced) {
         video_cb(dosbox_framebuffers[0].data(), RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);

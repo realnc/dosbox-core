@@ -83,6 +83,7 @@ static bool use_spinlock = false;
 /* directories */
 std::filesystem::path retro_save_directory;
 std::filesystem::path retro_system_directory;
+std::filesystem::path load_game_directory;
 static std::filesystem::path retro_content_directory;
 static const std::string retro_library_name = "DOSBox-core";
 
@@ -1130,18 +1131,9 @@ auto retro_load_game(const retro_game_info* const game) -> bool
         }
     }
 
-    // Change the current working directory so that it's possible to have paths in .conf and
-    // .bat files (like MOUNT commands) that are relative to the content directory.
     if (game_path.has_parent_path()) {
-        try {
-            std::filesystem::current_path(game_path.parent_path());
-        }
-        catch (const std::exception& e) {
-            retro::logError(
-                "Failed to change current directory to \"{}\": {}", game_path, e.what());
-        }
+        load_game_directory = game_path.parent_path();
     }
-
     emu_thread = std::thread(start_dosbox, load_path.u8string());
     switchThread();
 

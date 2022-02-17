@@ -305,6 +305,15 @@ public:
 			//os2: some special drive check
 			//rest: substitute ~ for home
 			bool failed = false;
+#ifdef __LIBRETRO__
+			// See if it exists in the content's directory first.
+			if (auto relative_to_game = (load_game_directory / temp_line).u8string();
+				!stat(relative_to_game.c_str(), &test))
+			{
+				temp_line = std::move(relative_to_game);
+				failed = false;
+			}
+#endif
 #if defined (WIN32) || defined(OS2)
 			/* Removing trailing backslash if not root dir so stat will succeed */
 			if(temp_line.size() > 3 && temp_line[temp_line.size()-1]=='\\') temp_line.erase(temp_line.size()-1,1);
@@ -338,15 +347,6 @@ public:
 				//Try again after resolving ~
 				if(!stat(temp_line.c_str(),&test)) failed = false;
 			}
-#ifdef __LIBRETRO__
-			// See if it works when treating it as relative to the game's path.
-			if (auto relative_to_game = (load_game_directory / temp_line).u8string();
-				!stat(relative_to_game.c_str(), &test))
-			{
-				temp_line = std::move(relative_to_game);
-				failed = false;
-			}
-#endif
 			if(failed) {
 #endif
 				WriteOut(MSG_Get("PROGRAM_MOUNT_ERROR_1"),temp_line.c_str());
@@ -1336,19 +1336,21 @@ public:
 		while(cmd->FindCommand((unsigned int)(paths.size() + 2), temp_line) && temp_line.size()) {
 			
 			struct stat test;
+#ifdef __LIBRETRO__
+			// See if it exists in the content's directory first.
+			if (auto relative_to_game = (load_game_directory / temp_line).u8string();
+				!stat(relative_to_game.c_str(), &test))
+			{
+				temp_line = std::move(relative_to_game);
+			}
+			else
+#endif
 			if (stat(temp_line.c_str(),&test)) {
 				//See if it works if the ~ are written out
 				std::string homedir(temp_line);
 				Cross::ResolveHomedir(homedir);
 				if(!stat(homedir.c_str(),&test)) {
 					temp_line = homedir;
-#ifdef __LIBRETRO__
-				// See if it works when treating it as relative to the game's path.
-				} else if (auto relative_to_game = (load_game_directory / temp_line).u8string();
-						   !stat(relative_to_game.c_str(), &test))
-				{
-					temp_line = std::move(relative_to_game);
-#endif
 				} else {
 					// convert dosbox filename to system filename
 					char fullname[CROSS_LEN];

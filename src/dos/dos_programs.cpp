@@ -41,6 +41,7 @@
 
 #ifdef __LIBRETRO__
 #include "libretro_dosbox.h"
+#include <algorithm>
 #endif
 
 #if defined(OS2)
@@ -293,6 +294,10 @@ public:
 
 			if (!cmd->FindCommand(2,temp_line)) goto showusage;
 			if (!temp_line.size()) goto showusage;
+#if defined(__LIBRETRO__) && !defined(WIN32)
+			// Also allow the use of backslash as dir seperator on non-Windows platforms.
+			std::replace(temp_line.begin(), temp_line.end(), '\\', '/');
+#endif
 			if(path_relative_to_last_config && control->configfiles.size() && !Cross::IsPathAbsolute(temp_line)) {
 				std::string lastconfigdir(control->configfiles[control->configfiles.size()-1]);
 				std::string::size_type pos = lastconfigdir.rfind(CROSS_FILESPLIT);
@@ -307,8 +312,8 @@ public:
 			bool failed = false;
 #ifdef __LIBRETRO__
 			// See if it exists in the content's directory first.
-			if (auto relative_to_game = (load_game_directory / temp_line).u8string();
-				!stat(relative_to_game.c_str(), &test))
+			if (auto relative_to_game = (load_game_directory / temp_line).make_preferred().u8string();
+				std::filesystem::path(temp_line).is_relative() && !stat(relative_to_game.c_str(), &test))
 			{
 				temp_line = std::move(relative_to_game);
 				failed = false;
@@ -1337,9 +1342,13 @@ public:
 			
 			struct stat test;
 #ifdef __LIBRETRO__
+#ifndef WIN32
+			// Also allow the use of backslash as dir seperator on non-Windows platforms.
+			std::replace(temp_line.begin(), temp_line.end(), '\\', '/');
+#endif
 			// See if it exists in the content's directory first.
-			if (auto relative_to_game = (load_game_directory / temp_line).u8string();
-				!stat(relative_to_game.c_str(), &test))
+			if (auto relative_to_game = (load_game_directory / temp_line).make_preferred().u8string();
+				std::filesystem::path(temp_line).is_relative() && !stat(relative_to_game.c_str(), &test))
 			{
 				temp_line = std::move(relative_to_game);
 			}

@@ -807,7 +807,7 @@ static void check_variables()
             // Dosbox only accepts the numerical MIDI port, not client/port names.
             const auto& current_value = core_options["midi_port"].toString();
             for (const auto& [port, client, port_name] : alsa_midi_ports) {
-                if (client + ':' + port_name == current_value) {
+                if (client + ':' + port_name == current_value || client == current_value) {
                     update_dosbox_variable(false, "midi", "midiconfig", port);
                     break;
                 }
@@ -1009,9 +1009,9 @@ void retro_init()
             values.emplace_back(
                 client + ':' + port_name, "[" + client + "] " + port_name + " - " + port);
         }
-        if (values.empty()) {
-            values.emplace_back("none", "(no MIDI ports found)");
-        }
+        // Hard-code a "Munt MT-32" port choice. This provides a way to use Munt and have the
+        // setting persist even when users forget to run Munt prior to starting the core.
+        values.emplace_back("Munt MT-32", "Autodetect Munt MT-32 port");
         retro::core_options.option("midi_port")->setValues(values, values.front());
     }
 #endif

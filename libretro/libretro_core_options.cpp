@@ -1254,8 +1254,15 @@ CoreOptions core_options {
         CoreOptionDefinition {
             "midi_port",
             "ALSA MIDI port",
-            "ALSA port to send MIDI to."
-            // No values. We detect and set MIDI ports at runtime.
+            "ALSA port to send MIDI to.",
+            {
+                { "auto gs gm", "Autodetect GS port (use GM if GS is not found)" },
+                { "auto gm", "Autodetect GM port" },
+                { "auto mt32", "Autodetect MT-32 port" },
+                { "auto xg", "Autodetect XG port" },
+                { "auto gm2", "Autodetect GM2 port" },
+            },
+            "auto gs gm"
         },
         #endif
         #ifdef __WIN32__

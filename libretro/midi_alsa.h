@@ -4,10 +4,21 @@
 #include <tuple>
 #include <vector>
 
-/* Returns a list of all available ALSA MIDI output ports. The tuple contains the port, the client
- * name and the port name.
+enum class MidiStandard
+{
+    Generic,
+    GM,
+    GM2,
+    GS,
+    MT32,
+    XG,
+};
+
+/* Returns a list of all available ALSA MIDI output ports. The tuple contains the port's MIDI
+ * standard, the port, the client name and the port name.
  */
-auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std::string>>;
+auto getAlsaMidiPorts()
+    -> std::vector<std::tuple<MidiStandard, std::string, std::string, std::string>>;
 
 /*
 

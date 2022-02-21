@@ -4,12 +4,38 @@
 #include "log.h"
 #include <alsa/asoundlib.h>
 #include <memory>
+#include <string_view>
 
-auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std::string>>
+static auto alsaMidiTypeToMidiStandard(const unsigned int type, const std::string_view port)
+    -> MidiStandard
+{
+    if (type & SND_SEQ_PORT_TYPE_MIDI_GM) {
+        return MidiStandard::GM;
+    }
+    if (type & SND_SEQ_PORT_TYPE_MIDI_GM2) {
+        return MidiStandard::GM2;
+    }
+    if (type & SND_SEQ_PORT_TYPE_MIDI_GS) {
+        return MidiStandard::GS;
+    }
+    if (type & SND_SEQ_PORT_TYPE_MIDI_MT32) {
+        return MidiStandard::MT32;
+    }
+    if (type & SND_SEQ_PORT_TYPE_MIDI_XG) {
+        return MidiStandard::XG;
+    }
+    if (!(type & SND_SEQ_PORT_TYPE_MIDI_GENERIC)) {
+        retro::logWarn("Cannot detect MIDI spec of port {}, will treat as generic MIDI.", port);
+    }
+    return MidiStandard::Generic;
+}
+
+auto getAlsaMidiPorts()
+    -> std::vector<std::tuple<MidiStandard, std::string, std::string, std::string>>
 {
     snd_seq_client_info_t* client_info;
     snd_seq_port_info_t* port_info;
-    std::vector<std::tuple<std::string, std::string, std::string>> port_list;
+    std::vector<std::tuple<MidiStandard, std::string, std::string, std::string>> port_list;
     const auto seq = [] {
         snd_seq_t* tmp = nullptr;
         const auto err = snd_seq_open(&tmp, "default", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK);
@@ -37,7 +63,10 @@ auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std:
             const unsigned port_caps = snd_seq_port_info_get_capability(port_info);
             const unsigned port_type = snd_seq_port_info_get_type(port_info);
 
-            if ((port_type & SND_SEQ_PORT_TYPE_MIDI_GENERIC)
+            if ((port_type
+                 & (SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_MIDI_GM
+                    | SND_SEQ_PORT_TYPE_MIDI_GS | SND_SEQ_PORT_TYPE_MIDI_XG
+                    | SND_SEQ_PORT_TYPE_MIDI_MT32 | SND_SEQ_PORT_TYPE_MIDI_GM2))
                 && (port_caps & (SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE)))
             {
                 auto port = std::to_string(snd_seq_client_info_get_client(client_info)) + ':'
@@ -45,7 +74,8 @@ auto getAlsaMidiPorts() -> std::vector<std::tuple<std::string, std::string, std:
                 auto client_name = snd_seq_client_info_get_name(client_info);
                 auto port_name = snd_seq_port_info_get_name(port_info);
                 port_list.emplace_back(
-                    std::move(port), std::move(client_name), std::move(port_name));
+                    alsaMidiTypeToMidiStandard(port_type, port), std::move(port),
+                    std::move(client_name), std::move(port_name));
             }
         }
     }

@@ -806,11 +806,27 @@ static void check_variables()
 #if defined(HAVE_ALSA)
             // Dosbox only accepts the numerical MIDI port, not client/port names.
             const auto& current_value = core_options["midi_port"].toString();
-            for (const auto& [port, client, port_name] : alsa_midi_ports) {
-                if (client + ':' + port_name == current_value || client == current_value) {
+            std::string first_gm_port;
+            bool port_found = false;
+            for (const auto& [midi_std, port, client, port_name] : alsa_midi_ports) {
+                if ((current_value == "auto gm" && midi_std == MidiStandard::GM)
+                    || (current_value == "auto gs gm" && midi_std == MidiStandard::GS)
+                    || (current_value == "auto xg" && midi_std == MidiStandard::XG)
+                    || (current_value == "auto mt32" && midi_std == MidiStandard::MT32)
+                    || (current_value == "auto gm2" && midi_std == MidiStandard::GM2)
+                    || (client + ':' + port_name == current_value))
+                {
                     update_dosbox_variable(false, "midi", "midiconfig", port);
+                    port_found = true;
                     break;
                 }
+                if (midi_std == MidiStandard::GM && first_gm_port.empty()) {
+                    first_gm_port = std::move(port);
+                }
+            }
+            // Fall back to the first GM port if we originally wanted GS but didn't find one.
+            if (!port_found && current_value == "auto gs gm" && !first_gm_port.empty()) {
+                update_dosbox_variable(false, "midi", "midiconfig", first_gm_port);
             }
 #endif
 #ifdef __WIN32__
@@ -1001,18 +1017,15 @@ void retro_init()
     }
 
 #ifdef HAVE_ALSA
-    // Add values to the midi port option. We don't use numerical ports since these can change. We
-    // instead use the MIDI client and port name and resolve them back to numerical ports later on.
+    // Add detected MIDI ports as additional values to the midi port option.
     {
-        std::vector<retro::CoreOptionValue> values;
-        for (const auto& [port, client, port_name] : alsa_midi_ports) {
-            values.emplace_back(
-                client + ':' + port_name, "[" + client + "] " + port_name + " - " + port);
+        auto* const option = retro::core_options.option("midi_port");
+        // We don't use numerical ports since these can change. We instead use the MIDI client and
+        // port name and resolve them back to numerical ports later on.
+        for (const auto& [midi_std, port, client, port_name] : alsa_midi_ports) {
+            option->addValue(
+                {client + ':' + port_name, "[" + client + "] " + port_name + " - " + port});
         }
-        // Hard-code a "Munt MT-32" port choice. This provides a way to use Munt and have the
-        // setting persist even when users forget to run Munt prior to starting the core.
-        values.emplace_back("Munt MT-32", "Autodetect Munt MT-32 port");
-        retro::core_options.option("midi_port")->setValues(values, values.front());
     }
 #endif
 #ifdef __WIN32__

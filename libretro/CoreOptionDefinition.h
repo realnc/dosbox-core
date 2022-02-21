@@ -40,6 +40,8 @@ public:
     void setValues(
         std::vector<CoreOptionValue> values, const CoreOptionValue& default_value) noexcept;
 
+    void addValue(CoreOptionValue value) noexcept;
+
     auto clearValues() noexcept -> std::vector<CoreOptionValue>;
 
     [[nodiscard]]
@@ -123,6 +125,11 @@ inline void CoreOptionDefinition::setValues(
 {
     values_ = std::move(values);
     setDefaultValue(default_value);
+}
+
+inline void CoreOptionDefinition::addValue(CoreOptionValue value) noexcept
+{
+    values_.emplace_back(std::move(value));
 }
 
 inline auto CoreOptionDefinition::begin() const noexcept

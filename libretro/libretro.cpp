@@ -453,7 +453,7 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
 #endif
 
     static const std::regex pad_map_regex{"^pad(0|1)_map_"};
-    core_options.setVisible(pad_map_regex, core_options["show_kb_map_options"].toBool());
+    updated |= core_options.setVisible(pad_map_regex, core_options["show_kb_map_options"].toBool());
 
     return updated;
 }

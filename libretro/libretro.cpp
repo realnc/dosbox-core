@@ -11,6 +11,7 @@
 #include "ints/int10.h"
 #include "joystick.h"
 #include "libretro-vkbd.h"
+#include "libretro_core_options.h"
 #include "libretro_dosbox.h"
 #include "log.h"
 #include "mapper.h"
@@ -277,7 +278,7 @@ auto update_dosbox_variable(
     }
 
     if (locked_dosbox_variables.count(var_string) != 0
-        && retro::core_options["option_handling"].toString() == "disable changed")
+        && retro::core_options[CORE_OPT_OPTION_HANDLING].toString() == "disable changed")
     {
         return false;
     }
@@ -353,107 +354,120 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     using namespace retro;
 
     bool updated = false;
-    const bool show_all = core_options["adv_options"].toBool();
+    const bool show_all = core_options[CORE_OPT_ADV_OPTIONS].toBool();
 
-    const auto& mode = core_options["cpu_cycles_mode"].toString();
-    updated |= core_options.setVisible("cpu_cycles_limit", mode == "max" || mode == "auto");
+    const auto& mode = core_options[CORE_OPT_CPU_CYCLES_MODE].toString();
+    updated |= core_options.setVisible(CORE_OPT_CPU_CYCLES_LIMIT, mode == "max" || mode == "auto");
     updated |= core_options.setVisible(
-        {"cpu_cycles_multiplier_realmode", "cpu_cycles_realmode",
-         "cpu_cycles_multiplier_fine_realmode", "cpu_cycles_fine_realmode"},
+        {CORE_OPT_CPU_CYCLES_MULTIPLIER_REALMODE, CORE_OPT_CPU_CYCLES_REALMODE,
+         CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE_REALMODE, CORE_OPT_CPU_CYCLES_FINE_REALMODE},
         mode == "auto");
 
-    const bool mpu_enabled = core_options["mpu_type"].toString() != "none";
-    updated |= core_options.setVisible("midi_driver", mpu_enabled);
+    const bool mpu_enabled = core_options[CORE_OPT_MPU_TYPE].toString() != "none";
+    updated |= core_options.setVisible(CORE_OPT_MIDI_DRIVER, mpu_enabled);
 
-    const auto& midi_driver = core_options["midi_driver"].toString();
+    const auto& midi_driver = core_options[CORE_OPT_MIDI_DRIVER].toString();
 #ifdef WITH_BASSMIDI
     const auto bassmidi_enabled = mpu_enabled && midi_driver == "bassmidi";
-    updated |=
-        core_options.setVisible({"bassmidi.soundfont", "bassmidi.sfvolume"}, bassmidi_enabled);
-    updated |= core_options.setVisible("bassmidi.voices", show_all && bassmidi_enabled);
+    updated |= core_options.setVisible(
+        {CORE_OPT_BASSMIDI_SOUNDFONT, CORE_OPT_BASSMIDI_SFVOLUME}, bassmidi_enabled);
+    updated |= core_options.setVisible(CORE_OPT_BASSMIDI_VOICES, show_all && bassmidi_enabled);
 #endif
 
 #ifdef WITH_FLUIDSYNTH
     const auto fsynth_enabled = mpu_enabled && midi_driver == "fluidsynth";
-    for (const auto* name : {"fluid.soundfont", "fluid.gain", "fluid.polyphony", "fluid.cores"}) {
+    for (const auto* name :
+         {CORE_OPT_FLUID_SOUNDFONT, CORE_OPT_FLUID_GAIN, CORE_OPT_FLUID_POLYPHONY,
+          CORE_OPT_FLUID_CORES})
+    {
         updated |= core_options.setVisible(name, fsynth_enabled);
     }
     for (const auto* name :
-         {"fluid.samplerate", "fluid.reverb", "fluid.reverb.roomsize", "fluid.reverb.damping",
-          "fluid.reverb.width", "fluid.reverb.level", "fluid.chorus", "fluid.chorus.number",
-          "fluid.chorus.level", "fluid.chorus.speed", "fluid.chorus.depth"})
+         {CORE_OPT_FLUID_SAMPLERATE, CORE_OPT_FLUID_REVERB, CORE_OPT_FLUID_REVERB_ROOMSIZE,
+          CORE_OPT_FLUID_REVERB_DAMPING, CORE_OPT_FLUID_REVERB_WIDTH, CORE_OPT_FLUID_REVERB_LEVEL,
+          CORE_OPT_FLUID_CHORUS, CORE_OPT_FLUID_CHORUS_NUMBER, CORE_OPT_FLUID_CHORUS_LEVEL,
+          CORE_OPT_FLUID_CHORUS_SPEED, CORE_OPT_FLUID_CHORUS_DEPTH})
     {
         updated |= core_options.setVisible(name, show_all && fsynth_enabled);
     }
 #endif
 
     const auto mt32_enabled = mpu_enabled && midi_driver == "mt32";
-    for (const auto* name : {"mt32.type", "mt32.thread", "mt32.partials", "mt32.analog"}) {
+    for (const auto* name :
+         {CORE_OPT_MT32_TYPE, CORE_OPT_MT32_THREAD, CORE_OPT_MT32_PARTIALS, CORE_OPT_MT32_ANALOG})
+    {
         updated |= core_options.setVisible(name, mt32_enabled);
     }
     for (const auto* name :
-         {"mt32.reverse.stereo", "mt32.dac", "mt32.reverb.mode", "mt32.reverb.time",
-          "mt32.reverb.level", "mt32.rate", "mt32.src.quality", "mt32.niceampramp"})
+         {CORE_OPT_MT32_REVERSE_STEREO, CORE_OPT_MT32_DAC, CORE_OPT_MT32_REVERB_MODE,
+          CORE_OPT_MT32_REVERB_TIME, CORE_OPT_MT32_REVERB_LEVEL, CORE_OPT_MT32_RATE,
+          CORE_OPT_MT32_SRC_QUALITY, CORE_OPT_MT32_NICEAMPRAMP})
     {
         updated |= core_options.setVisible(name, show_all && mt32_enabled);
     }
-    const bool mt32_is_threaded = core_options["mt32.thread"].toBool();
-    for (const auto* name : {"mt32.chunk", "mt32.prebuffer"}) {
+    const bool mt32_is_threaded = core_options[CORE_OPT_MT32_THREAD].toBool();
+    for (const auto* name : {CORE_OPT_MT32_CHUNK, CORE_OPT_MT32_PREBUFFER}) {
         updated |= core_options.setVisible(name, show_all && mt32_enabled && mt32_is_threaded);
     }
 
 #ifdef HAVE_ALSA
-    updated |= core_options.setVisible("midi_port", midi_driver == "alsa" && mpu_enabled);
+    updated |= core_options.setVisible(CORE_OPT_MIDI_PORT, midi_driver == "alsa" && mpu_enabled);
 #endif
 #ifdef __WIN32__
-    updated |= core_options.setVisible("midi_port", midi_driver == "win32" && mpu_enabled);
+    updated |= core_options.setVisible(CORE_OPT_MIDI_PORT, midi_driver == "win32" && mpu_enabled);
 #endif
 
 #ifdef WITH_VOODOO
-    updated |=
-        core_options.setVisible("voodoo_memory_size", core_options["voodoo"].toString() != "false");
+    updated |= core_options.setVisible(
+        CORE_OPT_VOODOO_MEMORY_SIZE, core_options[CORE_OPT_VOODOO].toString() != "false");
 #endif
 
-    const auto& machine_type = core_options["machine_type"].toString();
+    const auto& machine_type = core_options[CORE_OPT_MACHINE_TYPE].toString();
 
     updated |= core_options.setVisible(
-        {"machine_cga_composite_mode", "machine_cga_model"}, show_all && machine_type == "cga");
+        {CORE_OPT_MACHINE_CGA_COMPOSITE_MODE, CORE_OPT_MACHINE_CGA_MODEL},
+        show_all && machine_type == "cga");
 
-    updated |=
-        core_options.setVisible("machine_hercules_palette", show_all && machine_type == "hercules");
+    updated |= core_options.setVisible(
+        CORE_OPT_MACHINE_HERCULES_PALETTE, show_all && machine_type == "hercules");
 
-    const auto& sb_type = core_options["sblaster_type"].toString();
+    const auto& sb_type = core_options[CORE_OPT_SBLASTER_TYPE].toString();
     const bool sb_enabled = sb_type != "none";
     const bool sb_is_gameblaster = sb_type == "gb";
     const bool sb_is_sb16 = sb_type == "sb16";
     updated |= core_options.setVisible(
-        {"sblaster_base", "sblaster_opl_mode", "sblaster_opl_emu"}, show_all && sb_enabled);
+        {CORE_OPT_SBLASTER_BASE, CORE_OPT_SBLASTER_OPL_MODE, CORE_OPT_SBLASTER_OPL_EMU},
+        show_all && sb_enabled);
     updated |= core_options.setVisible(
-        {"sblaster_irq", "sblaster_dma"}, show_all && sb_enabled && !sb_is_gameblaster);
-    updated |= core_options.setVisible("sblaster_hdma", show_all && sb_is_sb16);
+        {CORE_OPT_SBLASTER_IRQ, CORE_OPT_SBLASTER_DMA},
+        show_all && sb_enabled && !sb_is_gameblaster);
+    updated |= core_options.setVisible(CORE_OPT_SBLASTER_HDMA, show_all && sb_is_sb16);
 
-    auto gus_enabled = core_options["gus"].toBool();
-    updated |= core_options.setVisible({"gusbase", "gusirq", "gusdma"}, show_all && gus_enabled);
+    auto gus_enabled = core_options[CORE_OPT_GUS].toBool();
+    updated |= core_options.setVisible(
+        {CORE_OPT_GUSBASE, CORE_OPT_GUSIRQ, CORE_OPT_GUSDMA}, show_all && gus_enabled);
 
     updated |= core_options.setVisible(
-        {"default_mount_freesize", "thread_sync", "cpu_type", "scaler", "mpu_type", "tandy",
-         "disney", "log_method", "log_level"},
+        {CORE_OPT_DEFAULT_MOUNT_FREESIZE, CORE_OPT_THREAD_SYNC, CORE_OPT_CPU_TYPE, CORE_OPT_SCALER,
+         CORE_OPT_MPU_TYPE, CORE_OPT_TANDY, CORE_OPT_DISNEY, CORE_OPT_LOG_METHOD,
+         CORE_OPT_LOG_LEVEL},
         show_all);
 
 #ifdef WITH_PINHACK
-    const auto pinhack_enabled = core_options["pinhack"].toBool();
+    const auto pinhack_enabled = core_options[CORE_OPT_PINHACK].toBool();
     const bool pinhack_expand_height_enabled =
-        core_options["pinhackexpandheight_coarse"].toInt() != 0;
+        core_options[CORE_OPT_PINHACKEXPANDHEIGHT_COARSE].toInt() != 0;
     updated |= core_options.setVisible(
-        {"pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight",
-         "pinhackexpandheight_coarse"},
+        {CORE_OPT_PINHACKACTIVE, CORE_OPT_PINHACKTRIGGERWIDTH, CORE_OPT_PINHACKTRIGGERHEIGHT,
+         CORE_OPT_PINHACKEXPANDHEIGHT_COARSE},
         pinhack_enabled);
     updated |= core_options.setVisible(
-        "pinhackexpandheight_fine", pinhack_enabled && pinhack_expand_height_enabled);
+        CORE_OPT_PINHACKEXPANDHEIGHT_FINE, pinhack_enabled && pinhack_expand_height_enabled);
 #endif
 
     static const std::regex pad_map_regex{"^pad(0|1)_map_"};
-    updated |= core_options.setVisible(pad_map_regex, core_options["show_kb_map_options"].toBool());
+    updated |=
+        core_options.setVisible(pad_map_regex, core_options[CORE_OPT_SHOW_KB_MAP_OPTIONS].toBool());
 
     return updated;
 }
@@ -463,33 +477,36 @@ static void check_blaster_variables(const bool autoexec)
     using namespace retro;
 
     update_dosbox_variable(
-        autoexec, "sblaster", "sbtype", core_options["sblaster_type"].toString());
+        autoexec, "sblaster", "sbtype", core_options[CORE_OPT_SBLASTER_TYPE].toString());
     update_dosbox_variable(
-        autoexec, "sblaster", "sbbase", core_options["sblaster_base"].toString());
-    update_dosbox_variable(autoexec, "sblaster", "irq", core_options["sblaster_irq"].toString());
-    update_dosbox_variable(autoexec, "sblaster", "dma", core_options["sblaster_dma"].toString());
-    update_dosbox_variable(autoexec, "sblaster", "hdma", core_options["sblaster_hdma"].toString());
+        autoexec, "sblaster", "sbbase", core_options[CORE_OPT_SBLASTER_BASE].toString());
     update_dosbox_variable(
-        autoexec, "sblaster", "oplmode", core_options["sblaster_opl_mode"].toString());
+        autoexec, "sblaster", "irq", core_options[CORE_OPT_SBLASTER_IRQ].toString());
     update_dosbox_variable(
-        autoexec, "sblaster", "oplemu", core_options["sblaster_opl_emu"].toString());
+        autoexec, "sblaster", "dma", core_options[CORE_OPT_SBLASTER_DMA].toString());
+    update_dosbox_variable(
+        autoexec, "sblaster", "hdma", core_options[CORE_OPT_SBLASTER_HDMA].toString());
+    update_dosbox_variable(
+        autoexec, "sblaster", "oplmode", core_options[CORE_OPT_SBLASTER_OPL_MODE].toString());
+    update_dosbox_variable(
+        autoexec, "sblaster", "oplemu", core_options[CORE_OPT_SBLASTER_OPL_EMU].toString());
 }
 
 static void check_gus_variables(const bool autoexec)
 {
     using namespace retro;
 
-    update_dosbox_variable(autoexec, "gus", "gus", core_options["gus"].toString());
-    update_dosbox_variable(autoexec, "gus", "gusbase", core_options["gusbase"].toString());
-    update_dosbox_variable(autoexec, "gus", "gusirq", core_options["gusirq"].toString());
-    update_dosbox_variable(autoexec, "gus", "gusdma", core_options["gusdma"].toString());
+    update_dosbox_variable(autoexec, "gus", "gus", core_options[CORE_OPT_GUS].toString());
+    update_dosbox_variable(autoexec, "gus", "gusbase", core_options[CORE_OPT_GUSBASE].toString());
+    update_dosbox_variable(autoexec, "gus", "gusirq", core_options[CORE_OPT_GUSIRQ].toString());
+    update_dosbox_variable(autoexec, "gus", "gusdma", core_options[CORE_OPT_GUSDMA].toString());
 }
 
 static void check_vkbd_variables()
 {
     using namespace retro;
 
-    const auto& theme = core_options["vkbd_theme"].toString();
+    const auto& theme = core_options[CORE_OPT_VKBD_THEME].toString();
     if (theme.find("light") != std::string::npos) {
         opt_vkbd_theme = 1;
     } else if (theme.find("dark") != std::string::npos) {
@@ -499,7 +516,7 @@ static void check_vkbd_variables()
         opt_vkbd_theme |= 0x80;
     }
 
-    const auto& transparency = core_options["vkbd_transparency"].toString();
+    const auto& transparency = core_options[CORE_OPT_VKBD_TRANSPARENCY].toString();
     if (transparency == "0%") {
         opt_vkbd_alpha = GRAPH_ALPHA_100;
     } else if (transparency == "25%") {
@@ -520,13 +537,15 @@ static void check_pinhack_variables()
     bool updated = false;
 
     for (const auto* name :
-         {"pinhack", "pinhackactive", "pinhacktriggerwidth", "pinhacktriggerheight"}) {
+         {CORE_OPT_PINHACK, CORE_OPT_PINHACKACTIVE, CORE_OPT_PINHACKTRIGGERWIDTH,
+          CORE_OPT_PINHACKTRIGGERHEIGHT})
+    {
         updated |= update_dosbox_variable(false, "pinhack", name, core_options[name].toString());
     }
 
-    const int expand_height_coarse = core_options["pinhackexpandheight_coarse"].toInt();
+    const int expand_height_coarse = core_options[CORE_OPT_PINHACKEXPANDHEIGHT_COARSE].toInt();
     if (expand_height_coarse > 0) {
-        const int expand_height_fine = core_options["pinhackexpandheight_fine"].toInt();
+        const int expand_height_fine = core_options[CORE_OPT_PINHACKEXPANDHEIGHT_FINE].toInt();
         updated |= update_dosbox_variable(
             false, "pinhack", "pinhackexpandheight",
             std::to_string(expand_height_coarse + expand_height_fine));
@@ -548,18 +567,18 @@ static void check_cpu_cycle_variables()
 {
     using namespace retro;
 
-    const auto& mode = core_options["cpu_cycles_mode"].toString();
-    const int realmode_cycles = core_options["cpu_cycles_realmode"].toInt()
-            * core_options["cpu_cycles_multiplier_realmode"].toInt()
-        + core_options["cpu_cycles_fine_realmode"].toInt()
-            * core_options["cpu_cycles_multiplier_fine_realmode"].toInt();
-    const int cycles =
-        core_options["cpu_cycles"].toInt() * core_options["cpu_cycles_multiplier"].toInt()
-        + core_options["cpu_cycles_fine"].toInt()
-            * core_options["cpu_cycles_multiplier_fine"].toInt();
+    const auto& mode = core_options[CORE_OPT_CPU_CYCLES_MODE].toString();
+    const int realmode_cycles = core_options[CORE_OPT_CPU_CYCLES_REALMODE].toInt()
+            * core_options[CORE_OPT_CPU_CYCLES_MULTIPLIER_REALMODE].toInt()
+        + core_options[CORE_OPT_CPU_CYCLES_FINE_REALMODE].toInt()
+            * core_options[CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE_REALMODE].toInt();
+    const int cycles = core_options[CORE_OPT_CPU_CYCLES].toInt()
+            * core_options[CORE_OPT_CPU_CYCLES_MULTIPLIER].toInt()
+        + core_options[CORE_OPT_CPU_CYCLES_FINE].toInt()
+            * core_options[CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE].toInt();
     const auto cycles_str = std::to_string(cycles);
     const std::string max_limits_str = [cycles, &cycles_str] {
-        const auto& limit = core_options["cpu_cycles_limit"].toString();
+        const auto& limit = core_options[CORE_OPT_CPU_CYCLES_LIMIT].toString();
         std::string retval;
         if (limit != "none") {
             retval += ' ' + limit;
@@ -588,10 +607,10 @@ static void update_bassmidi_variables()
 {
 #ifdef WITH_BASSMIDI
     const auto soundfont = retro_system_directory / "soundfonts"
-        / retro::core_options["bassmidi.soundfont"].toString();
+        / retro::core_options[CORE_OPT_BASSMIDI_SOUNDFONT].toString();
     update_dosbox_variable(false, "bassmidi", "bassmidi.soundfont", soundfont.u8string());
 
-    for (const auto* name : {"bassmidi.sfvolume", "bassmidi.voices"}) {
+    for (const auto* name : {CORE_OPT_BASSMIDI_SFVOLUME, CORE_OPT_BASSMIDI_VOICES}) {
         update_dosbox_variable(false, "bassmidi", name, retro::core_options[name].toString());
     }
 #endif
@@ -600,15 +619,16 @@ static void update_bassmidi_variables()
 static void update_fsynth_variables()
 {
 #ifdef WITH_FLUIDSYNTH
-    const auto soundfont =
-        retro_system_directory / "soundfonts" / retro::core_options["fluid.soundfont"].toString();
+    const auto soundfont = retro_system_directory / "soundfonts"
+        / retro::core_options[CORE_OPT_FLUID_SOUNDFONT].toString();
     update_dosbox_variable(false, "midi", "fluid.soundfont", soundfont.u8string());
 
     for (const auto* name :
-         {"fluid.gain", "fluid.polyphony", "fluid.cores", "fluid.samplerate", "fluid.reverb",
-          "fluid.reverb.roomsize", "fluid.reverb.damping", "fluid.reverb.width",
-          "fluid.reverb.level", "fluid.chorus", "fluid.chorus.number", "fluid.chorus.level",
-          "fluid.chorus.speed", "fluid.chorus.depth"})
+         {CORE_OPT_FLUID_GAIN, CORE_OPT_FLUID_POLYPHONY, CORE_OPT_FLUID_CORES,
+          CORE_OPT_FLUID_SAMPLERATE, CORE_OPT_FLUID_REVERB, CORE_OPT_FLUID_REVERB_ROOMSIZE,
+          CORE_OPT_FLUID_REVERB_DAMPING, CORE_OPT_FLUID_REVERB_WIDTH, CORE_OPT_FLUID_REVERB_LEVEL,
+          CORE_OPT_FLUID_CHORUS, CORE_OPT_FLUID_CHORUS_NUMBER, CORE_OPT_FLUID_CHORUS_LEVEL,
+          CORE_OPT_FLUID_CHORUS_SPEED, CORE_OPT_FLUID_CHORUS_DEPTH})
     {
         update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
     }
@@ -620,9 +640,11 @@ static void update_mt32_variables()
     update_dosbox_variable(false, "midi", "mt32.romdir", retro_system_directory.u8string());
 
     for (const auto* name :
-         {"mt32.type", "mt32.thread", "mt32.partials", "mt32.analog", "mt32.reverse.stereo",
-          "mt32.dac", "mt32.reverb.mode", "mt32.reverb.time", "mt32.reverb.level", "mt32.rate",
-          "mt32.src.quality", "mt32.niceampramp", "mt32.chunk", "mt32.prebuffer"})
+         {CORE_OPT_MT32_TYPE, CORE_OPT_MT32_THREAD, CORE_OPT_MT32_PARTIALS, CORE_OPT_MT32_ANALOG,
+          CORE_OPT_MT32_REVERSE_STEREO, CORE_OPT_MT32_DAC, CORE_OPT_MT32_REVERB_MODE,
+          CORE_OPT_MT32_REVERB_TIME, CORE_OPT_MT32_REVERB_LEVEL, CORE_OPT_MT32_RATE,
+          CORE_OPT_MT32_SRC_QUALITY, CORE_OPT_MT32_NICEAMPRAMP, CORE_OPT_MT32_CHUNK,
+          CORE_OPT_MT32_PREBUFFER})
     {
         update_dosbox_variable(false, "midi", name, retro::core_options[name].toString());
     }
@@ -642,7 +664,7 @@ static void use_libretro_log_cb()
 static void update_libretro_log_interface()
 {
     retro_log_callback log_cb{nullptr};
-    if (retro::core_options["log_method"].toString() == "frontend") {
+    if (retro::core_options[CORE_OPT_LOG_METHOD].toString() == "frontend") {
         use_libretro_log_cb();
     } else {
         retro::setRetroLogCb(log_cb.log);
@@ -651,7 +673,7 @@ static void update_libretro_log_interface()
 
 static void update_log_verbosity()
 {
-    const auto& level = retro::core_options["log_level"].toString();
+    const auto& level = retro::core_options[CORE_OPT_LOG_LEVEL].toString();
     if (level == "errors") {
         retro::setLoggingLevel(RETRO_LOG_ERROR);
     } else if (level == "warnings") {
@@ -672,7 +694,7 @@ static void check_variables()
 
     {
         const bool old_timing = run_synced;
-        run_synced = core_options["core_timing"].toString() == "external";
+        run_synced = core_options[CORE_OPT_CORE_TIMING].toString() == "external";
 
         if (dosbox_initialiazed && run_synced != old_timing) {
             if (!run_synced) {
@@ -682,22 +704,23 @@ static void check_variables()
         }
     }
 
-    use_frame_duping = core_options["frame_duping"].toBool();
-    use_spinlock = core_options["thread_sync"].toString() == "spin";
+    use_frame_duping = core_options[CORE_OPT_FRAME_DUPING].toBool();
+    use_spinlock = core_options[CORE_OPT_THREAD_SYNC].toString() == "spin";
     useSpinlockThreadSync(use_spinlock);
 
-    if (core_options["option_handling"].toString() == "all off") {
+    if (core_options[CORE_OPT_OPTION_HANDLING].toString() == "all off") {
         return;
     }
 
     if (!dosbox_initialiazed) {
-        update_dosbox_variable(false, "dosbox", "memsize", core_options["memory_size"].toString());
+        update_dosbox_variable(
+            false, "dosbox", "memsize", core_options[CORE_OPT_MEMORY_SIZE].toString());
 
         svgaCard = SVGA_None;
         machine = MCH_VGA;
         int10.vesa_nolfb = false;
         int10.vesa_oldvbe = false;
-        const std::string& machine_type = core_options["machine_type"].toString();
+        const std::string& machine_type = core_options[CORE_OPT_MACHINE_TYPE].toString();
         if (machine_type == "hercules") {
             machine = MCH_HERC;
         } else if (machine_type == "cga") {
@@ -733,24 +756,26 @@ static void check_variables()
             svgaCard = SVGA_None;
         }
         update_dosbox_variable(false, "dosbox", "machine", machine_type);
-        update_dosbox_variable(false, "mixer", "blocksize", core_options["blocksize"].toString());
-        update_dosbox_variable(false, "mixer", "prebuffer", core_options["prebuffer"].toString());
+        update_dosbox_variable(
+            false, "mixer", "blocksize", core_options[CORE_OPT_BLOCKSIZE].toString());
+        update_dosbox_variable(
+            false, "mixer", "prebuffer", core_options[CORE_OPT_PREBUFFER].toString());
 
 #ifdef WITH_VOODOO
-        update_dosbox_variable(false, "pci", "voodoo", core_options["voodoo"].toString());
+        update_dosbox_variable(false, "pci", "voodoo", core_options[CORE_OPT_VOODOO].toString());
         update_dosbox_variable(
-            false, "pci", "voodoomem", core_options["voodoo_memory_size"].toString());
+            false, "pci", "voodoomem", core_options[CORE_OPT_VOODOO_MEMORY_SIZE].toString());
 #endif
 
-        mount_overlay = core_options["save_overlay"].toBool();
+        mount_overlay = core_options[CORE_OPT_SAVE_OVERLAY].toBool();
     } else {
         if (machine == MCH_HERC) {
-            herc_pal = core_options["machine_hercules_palette"].toInt();
+            herc_pal = core_options[CORE_OPT_MACHINE_HERCULES_PALETTE].toInt();
             Herc_Palette();
             VGA_DAC_CombineColor(1, 7);
         } else if (machine == MCH_CGA) {
-            CGA_Composite_Mode(core_options["machine_cga_composite_mode"].toInt());
-            CGA_Model(core_options["machine_cga_model"].toInt());
+            CGA_Composite_Mode(core_options[CORE_OPT_MACHINE_CGA_COMPOSITE_MODE].toInt());
+            CGA_Model(core_options[CORE_OPT_MACHINE_CGA_MODEL].toInt());
         }
 
         check_blaster_variables(false);
@@ -760,8 +785,8 @@ static void check_variables()
             const bool prev_force_2axis_joystick = force_2axis_joystick;
             const int prev_mouse_emu_deadzone = mouse_emu_deadzone;
 
-            force_2axis_joystick = core_options["joystick_force_2axis"].toBool();
-            mouse_emu_deadzone = core_options["emulated_mouse_deadzone"].toInt();
+            force_2axis_joystick = core_options[CORE_OPT_JOYSTICK_FORCE_2AXIS].toBool();
+            mouse_emu_deadzone = core_options[CORE_OPT_EMULATED_MOUSE_DEADZONE].toInt();
             if (prev_force_2axis_joystick != force_2axis_joystick
                 || prev_mouse_emu_deadzone != mouse_emu_deadzone)
             {
@@ -769,26 +794,27 @@ static void check_variables()
             }
         }
 
-        mouse_speed_factor_x = core_options["mouse_speed_factor_x"].toFloat();
-        mouse_speed_factor_y = core_options["mouse_speed_factor_y"].toFloat();
+        mouse_speed_factor_x = core_options[CORE_OPT_MOUSE_SPEED_FACTOR_X].toFloat();
+        mouse_speed_factor_y = core_options[CORE_OPT_MOUSE_SPEED_FACTOR_Y].toFloat();
 
-        update_dosbox_variable(false, "cpu", "cputype", core_options["cpu_type"].toString());
-        update_dosbox_variable(false, "cpu", "core", core_options["cpu_core"].toString());
+        update_dosbox_variable(false, "cpu", "cputype", core_options[CORE_OPT_CPU_TYPE].toString());
+        update_dosbox_variable(false, "cpu", "core", core_options[CORE_OPT_CPU_CORE].toString());
         update_dosbox_variable(
-            false, "render", "aspect", core_options["aspect_correction"].toString());
-        update_dosbox_variable(false, "render", "scaler", core_options["scaler"].toString());
+            false, "render", "aspect", core_options[CORE_OPT_ASPECT_CORRECTION].toString());
+        update_dosbox_variable(false, "render", "scaler", core_options[CORE_OPT_SCALER].toString());
         update_dosbox_variable(
-            false, "joystick", "timed", core_options["joystick_timed"].toString());
+            false, "joystick", "timed", core_options[CORE_OPT_JOYSTICK_TIMED].toString());
 
         check_cpu_cycle_variables();
 
-        update_dosbox_variable(false, "speaker", "pcspeaker", core_options["pcspeaker"].toString());
+        update_dosbox_variable(
+            false, "speaker", "pcspeaker", core_options[CORE_OPT_PCSPEAKER].toString());
 
         {
-            const auto& mpu_type = core_options["mpu_type"].toString();
+            const auto& mpu_type = core_options[CORE_OPT_MPU_TYPE].toString();
             update_dosbox_variable(false, "midi", "mpu401", mpu_type);
 
-            const auto& midi_driver = core_options["midi_driver"].toString();
+            const auto& midi_driver = core_options[CORE_OPT_MIDI_DRIVER].toString();
             use_retro_midi = midi_driver == "libretro";
             update_dosbox_variable(
                 false, "midi", "mididevice", use_retro_midi ? "none" : midi_driver);
@@ -805,7 +831,7 @@ static void check_variables()
             }
 #if defined(HAVE_ALSA)
             // Dosbox only accepts the numerical MIDI port, not client/port names.
-            const auto& current_value = core_options["midi_port"].toString();
+            const auto& current_value = core_options[CORE_OPT_MIDI_PORT].toString();
             std::string first_gm_port;
             bool port_found = false;
             for (const auto& [midi_std, port, client, port_name] : alsa_midi_ports) {
@@ -831,18 +857,18 @@ static void check_variables()
 #endif
 #ifdef __WIN32__
             update_dosbox_variable(
-                false, "midi", "midiconfig", core_options["midi_port"].toString());
+                false, "midi", "midiconfig", core_options[CORE_OPT_MIDI_PORT].toString());
 #endif
         }
 
 #if defined(C_IPX)
-        update_dosbox_variable(false, "ipx", "ipx", core_options["ipx"].toString());
+        update_dosbox_variable(false, "ipx", "ipx", core_options[CORE_OPT_IPX].toString());
 #endif
 
-        update_dosbox_variable(false, "speaker", "tandy", core_options["tandy"].toString());
+        update_dosbox_variable(false, "speaker", "tandy", core_options[CORE_OPT_TANDY].toString());
 
         if (!dosbox_initialiazed) {
-            const auto& disney_val = core_options["disney"].toString();
+            const auto& disney_val = core_options[CORE_OPT_DISNEY].toString();
             update_dosbox_variable(false, "speaker", "disney", disney_val);
             disney_init = disney_val == "on";
         }
@@ -1019,7 +1045,7 @@ void retro_init()
 #ifdef HAVE_ALSA
     // Add detected MIDI ports as additional values to the midi port option.
     {
-        auto* const option = retro::core_options.option("midi_port");
+        auto* const option = retro::core_options.option(CORE_OPT_MIDI_PORT);
         // We don't use numerical ports since these can change. We instead use the MIDI client and
         // port name and resolve them back to numerical ports later on.
         for (const auto& [midi_std, port, client, port_name] : alsa_midi_ports) {
@@ -1037,7 +1063,7 @@ void retro_init()
         if (values.empty()) {
             values.emplace_back("none", "(no MIDI ports found)");
         }
-        retro::core_options.option("midi_port")->setValues(values, values.front());
+        retro::core_options.option(CORE_OPT_MIDI_PORT)->setValues(values, values.front());
     }
 #endif
 
@@ -1074,11 +1100,11 @@ void retro_init()
             fsynth_values.push_back({"none", "(no soundfonts found)"});
         }
 #ifdef WITH_BASSMIDI
-        retro::core_options.option("bassmidi.soundfont")
+        retro::core_options.option(CORE_OPT_BASSMIDI_SOUNDFONT)
             ->setValues(bass_values, bass_values.front());
 #endif
 #ifdef WITH_FLUIDSYNTH
-        retro::core_options.option("fluid.soundfont")
+        retro::core_options.option(CORE_OPT_FLUID_SOUNDFONT)
             ->setValues(fsynth_values, fsynth_values.front());
 #endif
     }

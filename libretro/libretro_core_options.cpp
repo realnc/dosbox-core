@@ -1,5 +1,6 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "CoreOptions.h"
+#include "libretro_core_options.h"
 #include "libretro_dosbox.h"
 
 // clang-format off
@@ -149,7 +150,7 @@ CoreOptions core_options {
     "dosbox_core_",
 
     CoreOptionDefinition {
-        "option_handling",
+        CORE_OPT_OPTION_HANDLING,
         "Core option handling",
         "Disabling all core options can be useful if you prefer to use dosbox .conf files to set "
             "configuration settings. Note that you don't need to disable all options if your .conf "
@@ -165,7 +166,7 @@ CoreOptions core_options {
         "disable changed"
     },
     CoreOptionDefinition {
-        "adv_options",
+        CORE_OPT_ADV_OPTIONS,
         "Show all options",
         "Show all options, including those that usually do not require changing.",
         {
@@ -175,7 +176,7 @@ CoreOptions core_options {
         false
     },
     CoreOptionDefinition {
-        "show_kb_map_options",
+        CORE_OPT_SHOW_KB_MAP_OPTIONS,
         "Show keyboard mapping options",
         {
             true,
@@ -184,12 +185,12 @@ CoreOptions core_options {
         true
     },
     CoreOptionCategory {
-        "timing",
+        CORE_OPTCAT_TIMING,
         "Timing",
         "Timing and synchronization.",
 
         CoreOptionDefinition {
-            "core_timing",
+            CORE_OPT_CORE_TIMING,
             "Frame timing mode",
             "External mode is the recommended setting. It enables the frontend to drive frame "
                 "pacing. It has no input lag and allows frontend features like DRC and Frame Delay "
@@ -206,7 +207,7 @@ CoreOptions core_options {
             "external"
         },
         CoreOptionDefinition {
-            "frame_duping",
+            CORE_OPT_FRAME_DUPING,
             "Frame duping (minor speedup)",
             "Can provide a (very) minor performance benefit by instructing the frontend to present "
                 "the previous frame again without re-uploading it if there is no new frame. Some "
@@ -220,7 +221,7 @@ CoreOptions core_options {
             true
         },
         CoreOptionDefinition {
-            "thread_sync",
+            CORE_OPT_THREAD_SYNC,
             "Thread synchronization method",
             "\"Wait\" is the recommended method and should work well on most systems. If for some "
                 "reason it doesn't and you're seeing stutter, setting this to \"spin\" might help "
@@ -236,12 +237,12 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
-        "file_and_disk",
+        CORE_OPTCAT_FILE_AND_DISK,
         "Storage",
         "File and disk options.",
 
         CoreOptionDefinition {
-            "mount_c_as",
+            CORE_OPT_MOUNT_C_AS,
             "Mount drive C as",
             "When directly loading a DOS executable rather than a .conf file, the C drive can be "
                 "mounted to be either the executable's directory, or its parent directory. For "
@@ -256,7 +257,7 @@ CoreOptions core_options {
             "content"
         },
         CoreOptionDefinition {
-            "default_mount_freesize",
+            CORE_OPT_DEFAULT_MOUNT_FREESIZE,
             "Free space for default-mounted drive C",
             "This is the \"-freesize\" value to use for drive C when loading a DOS executable "
                 "instead of a .conf file that contains its own MOUNT command.",
@@ -273,7 +274,7 @@ CoreOptions core_options {
             1024
         },
         CoreOptionDefinition {
-            "save_overlay",
+            CORE_OPT_SAVE_OVERLAY,
             "Enable overlay file system (restart)",
             "Enable overlay file system to redirect filesystem changes to the save directory. "
                 "Disable if you have problems starting some games.",
@@ -285,12 +286,12 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
-        "video_emulation",
+        CORE_OPTCAT_VIDEO_EMULATION,
         "Video card",
         "Configuration of the emulated video card.",
 
         CoreOptionDefinition {
-            "machine_type",
+            CORE_OPT_MACHINE_TYPE,
             "Emulated machine (restart)",
             "The type of video hardware DOSBox will emulate.",
             {
@@ -310,7 +311,7 @@ CoreOptions core_options {
             "svga_s3"
         },
         CoreOptionDefinition {
-            "machine_hercules_palette",
+            CORE_OPT_MACHINE_HERCULES_PALETTE,
             "Hercules color mode",
             "The color scheme for hercules emulation.",
             {
@@ -321,7 +322,7 @@ CoreOptions core_options {
             0
         },
         CoreOptionDefinition {
-            "machine_cga_composite_mode",
+            CORE_OPT_MACHINE_CGA_COMPOSITE_MODE,
             "CGA composite mode toggle",
             "Enable or disable CGA composite mode.",
             {
@@ -332,7 +333,7 @@ CoreOptions core_options {
             0
         },
         CoreOptionDefinition {
-            "machine_cga_model",
+            CORE_OPT_MACHINE_CGA_MODEL,
             "CGA model",
             "The type of CGA model in the emulated system.",
             {
@@ -343,7 +344,7 @@ CoreOptions core_options {
         },
         #ifdef WITH_VOODOO
         CoreOptionDefinition {
-            "voodoo",
+            CORE_OPT_VOODOO,
             "3dfx Voodoo emulation (restart)",
             "This emulates the actual 3dfx hardware. This is not a glide emulator and as a result "
                 "a glide wrapper is neither needed nor supported.\n"
@@ -360,7 +361,7 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "voodoo_memory_size",
+            CORE_OPT_VOODOO_MEMORY_SIZE,
             "Voodoo memory size (restart)",
             "The amount of memory that the emulated Voodoo card has. 4MB is the standard memory "
                 "configuration for the original Voodoo. 12MB is a non-standard configuration.",
@@ -373,12 +374,12 @@ CoreOptions core_options {
         #endif
     },
     CoreOptionCategory {
-        "specs",
+        CORE_OPTCAT_SPECS,
         "Specs",
         "CPU and RAM specifications of the emulated DOS PC.",
 
         CoreOptionDefinition {
-            "memory_size",
+            CORE_OPT_MEMORY_SIZE,
             "Memory size (restart)",
             "The amount of memory that the emulated machine has. This value is best left at its "
                 "default to avoid problems with some games, though few games might require a higher "
@@ -395,7 +396,7 @@ CoreOptions core_options {
             16
         },
         CoreOptionDefinition {
-            "cpu_core",
+            CORE_OPT_CPU_CORE,
             "CPU core",
             "CPU core used for emulation. "
         #if defined(C_DYNREC) || defined(C_DYNAMIC_X86)
@@ -424,7 +425,7 @@ CoreOptions core_options {
         #endif
         },
         CoreOptionDefinition {
-            "cpu_type",
+            CORE_OPT_CPU_TYPE,
             "CPU type",
             "Emulated CPU type. \"Auto\" is the fastest choice.",
             {
@@ -439,7 +440,7 @@ CoreOptions core_options {
             "auto"
         },
         CoreOptionDefinition {
-            "cpu_cycles_mode",
+            CORE_OPT_CPU_CYCLES_MODE,
             "CPU cycles mode",
             "Method to determine the amount of emulated CPU cycles per millisecond. \"Fixed\" mode "
                 "emulates the amount of cycles you have set. \"Max\" mode will emulate as many "
@@ -457,7 +458,7 @@ CoreOptions core_options {
             "fixed"
         },
         CoreOptionDefinition {
-            "cpu_cycles_multiplier_realmode",
+            CORE_OPT_CPU_CYCLES_MULTIPLIER_REALMODE,
             "Real mode coarse CPU cycles multiplier",
             "Multiplier for coarse CPU cycles tuning when running real mode games in \"auto\" "
                 "cycles mode.",
@@ -465,7 +466,7 @@ CoreOptions core_options {
             1000
         },
         CoreOptionDefinition {
-            "cpu_cycles_realmode",
+            CORE_OPT_CPU_CYCLES_REALMODE,
             "Real mode coarse CPU cycles value",
             "Value for coarse CPU cycles tuning when running real mode games in \"auto\" cycles "
                 "mode.",
@@ -473,7 +474,7 @@ CoreOptions core_options {
             3
         },
         CoreOptionDefinition {
-            "cpu_cycles_multiplier_fine_realmode",
+            CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE_REALMODE,
             "Real mode fine CPU cycles multiplier",
             "Multiplier for fine CPU cycles tuning when running real mode games in \"auto\" cycles "
                 "mode.",
@@ -481,7 +482,7 @@ CoreOptions core_options {
             100
         },
         CoreOptionDefinition {
-            "cpu_cycles_fine_realmode",
+            CORE_OPT_CPU_CYCLES_FINE_REALMODE,
             "Real mode fine CPU cycles value",
             "Value for fine CPU cycles tuning when running real mode games in \"auto\" cycles "
                 "mode.",
@@ -489,7 +490,7 @@ CoreOptions core_options {
             0
         },
         CoreOptionDefinition {
-            "cpu_cycles_limit",
+            CORE_OPT_CPU_CYCLES_LIMIT,
             "Max CPU cycles limit",
             "Limit the maximum amount of CPU cycles used when using \"max\" mode.",
             {
@@ -509,28 +510,28 @@ CoreOptions core_options {
             "100%"
         },
         CoreOptionDefinition {
-            "cpu_cycles_multiplier",
+            CORE_OPT_CPU_CYCLES_MULTIPLIER,
             "Coarse CPU cycles multiplier",
             "Multiplier for coarse CPU cycles tuning.",
             { CYCLES_COARSE_MULTIPLIERS },
             10000
         },
         CoreOptionDefinition {
-            "cpu_cycles",
+            CORE_OPT_CPU_CYCLES,
             "Coarse CPU cycles value",
             "Value for coarse CPU cycles tuning.",
             { CYCLES_VALUES },
             1
         },
         CoreOptionDefinition {
-            "cpu_cycles_multiplier_fine",
+            CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE,
             "Fine CPU cycles multiplier",
             "Multiplier for fine CPU cycles tuning.",
             { CYCLES_FINE_MULTIPLIERS },
             1000
         },
         CoreOptionDefinition {
-            "cpu_cycles_fine",
+            CORE_OPT_CPU_CYCLES_FINE,
             "Fine CPU cycles value",
             "Value for fine CPU cycles tuning.",
             { CYCLES_VALUES },
@@ -538,12 +539,12 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
-        "scaling",
+        CORE_OPTCAT_SCALING,
         "Scaling",
         "Image scaling options.",
 
         CoreOptionDefinition {
-            "aspect_correction",
+            CORE_OPT_ASPECT_CORRECTION,
             "Aspect ratio correction",
             "When enabled, the aspect ratio will match that of a CRT monitor. This is required for "
                 "non-square pixel resolutions to look as intended. Disable this if you want "
@@ -557,7 +558,7 @@ CoreOptions core_options {
             true
         },
         CoreOptionDefinition {
-            "scaler",
+            CORE_OPT_SCALER,
             "DOSBox scaler",
             "Built-in, CPU-based DOSBox scalers. These are provided here only as a last resort. "
                 "You should generally set this to \"none\" and instead use the scaling options and "
@@ -586,12 +587,12 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
-        "input",
+        CORE_OPTCAT_INPUT,
         "Input",
         "Emulated joystick and mouse.",
 
         CoreOptionDefinition {
-            "joystick_force_2axis",
+            CORE_OPT_JOYSTICK_FORCE_2AXIS,
             "Force 2-axis/2-button",
             "Normally, when only one port is assigned a joystick or gamepad, 4 axes and 4 buttons "
                 "are emulated on that port. Some (usually older) games however do not work "
@@ -603,7 +604,7 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "joystick_timed",
+            CORE_OPT_JOYSTICK_TIMED,
             "Enable joystick timed intervals",
             "Enable timed intervals for joystick axes. Experiment with this option if your "
                 "joystick drifts.",
@@ -614,7 +615,7 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "emulated_mouse_deadzone",
+            CORE_OPT_EMULATED_MOUSE_DEADZONE,
             "Gamepad emulated mouse deadzone",
             "Deadzone of the gamepad emulated mouse. Experiment with this value if the mouse "
                 "cursor drifts.",
@@ -630,14 +631,14 @@ CoreOptions core_options {
             30
         },
         CoreOptionDefinition {
-            "mouse_speed_factor_x",
+            CORE_OPT_MOUSE_SPEED_FACTOR_X,
             "Horizontal mouse sensitivity",
             "Experiment with this value if the mouse is too fast when moving left/right.",
             MOUSE_SPEED_FACTORS,
             "1.00"
         },
         CoreOptionDefinition {
-            "mouse_speed_factor_y",
+            CORE_OPT_MOUSE_SPEED_FACTOR_Y,
             "Vertical mouse sensitivity",
             "Experiment with this value if the mouse is too fast when moving up/down.",
             MOUSE_SPEED_FACTORS,
@@ -645,12 +646,12 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
-        "vkbd",
+        CORE_OPTCAT_VKBD,
         "Virtual keyboard",
         "On-screen virtual keyboard.",
 
         CoreOptionDefinition {
-            "vkbd_enabled",
+            CORE_OPT_VKBD_ENABLED,
             "Virtual Keyboard Support",
             {
                 true,
@@ -659,7 +660,7 @@ CoreOptions core_options {
             true,
         },
         CoreOptionDefinition {
-            "vkbd_theme",
+            CORE_OPT_VKBD_THEME,
             "Color theme",
             {
                 { "light", "Light (shadow)" },
@@ -670,7 +671,7 @@ CoreOptions core_options {
             "light",
         },
         CoreOptionDefinition {
-            "vkbd_transparency",
+            CORE_OPT_VKBD_TRANSPARENCY,
             "Transparency",
             {
                 "0%",
@@ -683,314 +684,314 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
-        "pad0_kb_mappings",
+        CORE_OPTCAT_PAD0_KB_MAPPINGS,
         "Gamepad/Joystick 1 keyboard mappings",
         "It's impossible to map \"Gamepad\" or \"Joystick\" port inputs to keyboard keys using the "
             "frontend's UI. You need to use these core options instead.",
 
         CoreOptionDefinition {
-            "pad0_map_up",
+            CORE_OPT_PAD0_MAP_UP,
             "(J1) D-Pad Up",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_down",
+            CORE_OPT_PAD0_MAP_DOWN,
             "(J1) D-Pad Down",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_left",
+            CORE_OPT_PAD0_MAP_LEFT,
             "(J1) D-Pad Left",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_right",
+            CORE_OPT_PAD0_MAP_RIGHT,
             "(J1) D-Pad Right",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_b",
+            CORE_OPT_PAD0_MAP_B,
             "(J1) B",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_a",
+            CORE_OPT_PAD0_MAP_A,
             "(J1) A",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_y",
+            CORE_OPT_PAD0_MAP_Y,
             "(J1) Y",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_x",
+            CORE_OPT_PAD0_MAP_X,
             "(J1) X",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_select",
+            CORE_OPT_PAD0_MAP_SELECT,
             "(J1) Select",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_start",
+            CORE_OPT_PAD0_MAP_START,
             "(J1) Start",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_lbump",
+            CORE_OPT_PAD0_MAP_LBUMP,
             "(J1) Left Bumper",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_rbump",
+            CORE_OPT_PAD0_MAP_RBUMP,
             "(J1) Right Bumper",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_ltrig",
+            CORE_OPT_PAD0_MAP_LTRIG,
             "(J1) Left Trigger",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_rtrig",
+            CORE_OPT_PAD0_MAP_RTRIG,
             "(J1) Right Trigger",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_lthumb",
+            CORE_OPT_PAD0_MAP_LTHUMB,
             "(J1) Left Thumb",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_rthumb",
+            CORE_OPT_PAD0_MAP_RTHUMB,
             "(J1) Right Thumb",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_laup",
+            CORE_OPT_PAD0_MAP_LAUP,
             "(J1) Left Analog Up",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_ladown",
+            CORE_OPT_PAD0_MAP_LADOWN,
             "(J1) Left Analog Down",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_laleft",
+            CORE_OPT_PAD0_MAP_LALEFT,
             "(J1) Left Analog Left",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_laright",
+            CORE_OPT_PAD0_MAP_LARIGHT,
             "(J1) Left Analog Right",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_raup",
+            CORE_OPT_PAD0_MAP_RAUP,
             "(J1) Right Analog Up",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_radown",
+            CORE_OPT_PAD0_MAP_RADOWN,
             "(J1) Right Analog Down",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_raleft",
+            CORE_OPT_PAD0_MAP_RALEFT,
             "(J1) Right Analog Left",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad0_map_raright",
+            CORE_OPT_PAD0_MAP_RARIGHT,
             "(J1) Right Analog Right",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
     },
     CoreOptionCategory {
-        "pad1_kb_mappings",
+        CORE_OPTCAT_PAD1_KB_MAPPINGS,
         "Gamepad/Joystick 2 keyboard mappings",
         "It's impossible to map \"Gamepad\" or \"Joystick\" port inputs to keyboard keys using the "
             "frontend's UI. You need to use these core options instead.",
 
         CoreOptionDefinition {
-            "pad1_map_up",
+            CORE_OPT_PAD1_MAP_UP,
             "(J2) D-Pad Up",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_down",
+            CORE_OPT_PAD1_MAP_DOWN,
             "(J2) D-Pad Down",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_left",
+            CORE_OPT_PAD1_MAP_LEFT,
             "(J2) D-Pad Left",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_right",
+            CORE_OPT_PAD1_MAP_RIGHT,
             "(J2) D-Pad Right",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_b",
+            CORE_OPT_PAD1_MAP_B,
             "(J2) B",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_a",
+            CORE_OPT_PAD1_MAP_A,
             "(J2) A",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_y",
+            CORE_OPT_PAD1_MAP_Y,
             "(J2) Y",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_x",
+            CORE_OPT_PAD1_MAP_X,
             "(J2) X",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_select",
+            CORE_OPT_PAD1_MAP_SELECT,
             "(J2) Select",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_start",
+            CORE_OPT_PAD1_MAP_START,
             "(J2) Start",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_lbump",
+            CORE_OPT_PAD1_MAP_LBUMP,
             "(J2) Left Bumper",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_rbump",
+            CORE_OPT_PAD1_MAP_RBUMP,
             "(J2) Right Bumper",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_ltrig",
+            CORE_OPT_PAD1_MAP_LTRIG,
             "(J2) Left Trigger",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_rtrig",
+            CORE_OPT_PAD1_MAP_RTRIG,
             "(J2) Right Trigger",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_lthumb",
+            CORE_OPT_PAD1_MAP_LTHUMB,
             "(J2) Left Thumb",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_rthumb",
+            CORE_OPT_PAD1_MAP_RTHUMB,
             "(J2) Right Thumb",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_laup",
+            CORE_OPT_PAD1_MAP_LAUP,
             "(J2) Left Analog Up",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_ladown",
+            CORE_OPT_PAD1_MAP_LADOWN,
             "(J2) Left Analog Down",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_laleft",
+            CORE_OPT_PAD1_MAP_LALEFT,
             "(J2) Left Analog Left",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_laright",
+            CORE_OPT_PAD1_MAP_LARIGHT,
             "(J2) Left Analog Right",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_raup",
+            CORE_OPT_PAD1_MAP_RAUP,
             "(J2) Right Analog Up",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_radown",
+            CORE_OPT_PAD1_MAP_RADOWN,
             "(J2) Right Analog Down",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_raleft",
+            CORE_OPT_PAD1_MAP_RALEFT,
             "(J2) Right Analog Left",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
         CoreOptionDefinition {
-            "pad1_map_raright",
+            CORE_OPT_PAD1_MAP_RARIGHT,
             "(J2) Right Analog Right",
             retro_keyboard_ids,
             RETROK_UNKNOWN,
         },
     },
     CoreOptionCategory {
-        "sound_card",
+        CORE_OPTCAT_SOUND_CARD,
         "Sound",
         "Emulated audio device parameters.",
 
         CoreOptionDefinition {
-            "sblaster_type",
+            CORE_OPT_SBLASTER_TYPE,
             "SoundBlaster type",
             "Type of emulated SoundBlaster card.",
             {
@@ -1005,7 +1006,7 @@ CoreOptions core_options {
             "sb16"
         },
         CoreOptionDefinition {
-            "sblaster_base",
+            CORE_OPT_SBLASTER_BASE,
             "SoundBlaster Base Address",
             "The I/O address for the emulated SoundBlaster card.",
             {
@@ -1021,7 +1022,7 @@ CoreOptions core_options {
             "220"
         },
         CoreOptionDefinition {
-            "sblaster_irq",
+            CORE_OPT_SBLASTER_IRQ,
             "SoundBlaster IRQ Number",
             "The IRQ number for the emulated SoundBlaster card.",
             {
@@ -1036,7 +1037,7 @@ CoreOptions core_options {
             7
         },
         CoreOptionDefinition {
-            "sblaster_dma",
+            CORE_OPT_SBLASTER_DMA,
             "SoundBlaster DMA Number",
             "The DMA number for the emulated SoundBlaster card.",
             {
@@ -1050,7 +1051,7 @@ CoreOptions core_options {
             1
         },
         CoreOptionDefinition {
-            "sblaster_hdma",
+            CORE_OPT_SBLASTER_HDMA,
             "SoundBlaster High DMA Number",
             "The High DMA number for the emulated SoundBlaster card.",
             {
@@ -1064,7 +1065,7 @@ CoreOptions core_options {
             5
         },
         CoreOptionDefinition {
-            "sblaster_opl_mode",
+            CORE_OPT_SBLASTER_OPL_MODE,
             "SoundBlaster OPL mode",
             "The SoundBlaster emulated OPL mode. All modes are Adlib compatible except cms.",
             {
@@ -1079,7 +1080,7 @@ CoreOptions core_options {
             "auto"
         },
         CoreOptionDefinition {
-            "sblaster_opl_emu",
+            CORE_OPT_SBLASTER_OPL_EMU,
             "SoundBlaster OPL provider",
             "\"Nuked OPL3\" is a cycle-accurate OPL3 (YMF262) emulator. It offers the best "
                 "quality, but is quite demanding on the CPU. \"Compat\" is the next best option. "
@@ -1093,7 +1094,7 @@ CoreOptions core_options {
             "compat"
         },
         CoreOptionDefinition {
-            "gus",
+            CORE_OPT_GUS,
             "Gravis Ultrasound support",
             "Enables Gravis Ultrasound emulation. The ULTRADIR directory is not configurable. It "
                 "is always set to C:\\ULTRASND.",
@@ -1104,7 +1105,7 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "gusbase",
+            CORE_OPT_GUSBASE,
             "Ultrasound IO address",
             "The IO base address for the emulated Gravis Ultrasound card.",
             {
@@ -1120,7 +1121,7 @@ CoreOptions core_options {
             "240"
         },
         CoreOptionDefinition {
-            "gusirq",
+            CORE_OPT_GUSIRQ,
             "Ultrasound IRQ",
             "The IRQ number for the emulated Gravis Ultrasound card.",
             {
@@ -1135,7 +1136,7 @@ CoreOptions core_options {
             5
         },
         CoreOptionDefinition {
-            "gusdma",
+            CORE_OPT_GUSDMA,
             "Ultrasound DMA",
             "The DMA channel for the emulated Gravis Ultrasound card.",
             {
@@ -1149,7 +1150,7 @@ CoreOptions core_options {
             3
         },
         CoreOptionDefinition {
-            "pcspeaker",
+            CORE_OPT_PCSPEAKER,
             "Enable PC speaker",
             "Enable PC speaker emulation.",
             {
@@ -1159,7 +1160,7 @@ CoreOptions core_options {
             true
         },
         CoreOptionDefinition {
-            "tandy",
+            CORE_OPT_TANDY,
             "Enable Tandy Sound System",
             "Enable Tandy Sound System Emulation. Auto only works if machine is set to tandy.",
             {
@@ -1170,7 +1171,7 @@ CoreOptions core_options {
             "off"
         },
         CoreOptionDefinition {
-            "disney",
+            CORE_OPT_DISNEY,
             "Enable Disney Sound Source",
             "Enable Disney Sound Source Emulation.",
             {
@@ -1180,7 +1181,7 @@ CoreOptions core_options {
             "off"
         },
         CoreOptionDefinition {
-            "blocksize",
+            CORE_OPT_BLOCKSIZE,
             "DOSBox mixer block size (restart)",
             "Larger blocks might help sound stuttering but sound will also be more lagged.",
             {
@@ -1194,7 +1195,7 @@ CoreOptions core_options {
             1024
         },
         CoreOptionDefinition {
-            "prebuffer",
+            CORE_OPT_PREBUFFER,
             "DOSBox mixer pre-buffer size (restart)",
             "How many milliseconds of data to keep on top of the blocksize.",
             {
@@ -1205,12 +1206,12 @@ CoreOptions core_options {
         },
     },
     CoreOptionCategory {
-        "midi",
+        CORE_OPTCAT_MIDI,
         "MIDI",
         "MIDI emulation and output.",
 
         CoreOptionDefinition {
-            "mpu_type",
+            CORE_OPT_MPU_TYPE,
             "MPU-401 type",
             "Type of MPU-401 MIDI interface to emulate. \"Intelligent\" mode is the best choice.",
             {
@@ -1221,7 +1222,7 @@ CoreOptions core_options {
             "intelligent"
         },
         CoreOptionDefinition {
-            "midi_driver",
+            CORE_OPT_MIDI_DRIVER,
             "MIDI driver",
             "The MT-32 emulation driver uses Munt and needs the correct ROMs in the frontend's "
                 "system directory.\n"
@@ -1252,7 +1253,7 @@ CoreOptions core_options {
         },
         #ifdef HAVE_ALSA
         CoreOptionDefinition {
-            "midi_port",
+            CORE_OPT_MIDI_PORT,
             "ALSA MIDI port",
             "ALSA port to send MIDI to.",
             {
@@ -1267,7 +1268,7 @@ CoreOptions core_options {
         #endif
         #ifdef __WIN32__
         CoreOptionDefinition {
-            "midi_port",
+            CORE_OPT_MIDI_PORT,
             "Windows MIDI port",
             "Windows port to send MIDI to."
             // No values. We detect and set MIDI ports at runtime.
@@ -1275,14 +1276,14 @@ CoreOptions core_options {
         #endif
         #ifdef WITH_BASSMIDI
         CoreOptionDefinition {
-            "bassmidi.soundfont",
+            CORE_OPT_BASSMIDI_SOUNDFONT,
             "BASSMIDI soundfont",
             "Soundfonts are looked for in the \"soundfonts\" directory inside the frontend's "
                 "system directory. Supported formats are SF2 and SFZ.",
             // No values. We scan for soundfonts at runtime.
         },
         CoreOptionDefinition {
-            "bassmidi.sfvolume",
+            CORE_OPT_BASSMIDI_SFVOLUME,
             "BASSMIDI soundfont volume",
             {
                 "0.0",
@@ -1321,7 +1322,7 @@ CoreOptions core_options {
             "0.6",
         },
         CoreOptionDefinition {
-            "bassmidi.voices",
+            CORE_OPT_BASSMIDI_VOICES,
             "BASSMIDI voice count",
             "Maximum number of samples that can play together. This is not the same thing as the "
                 "maximum number of notes; multiple samples may be played for a single note. ",
@@ -1357,7 +1358,7 @@ CoreOptions core_options {
         #endif
         #ifdef WITH_FLUIDSYNTH
         CoreOptionDefinition {
-            "fluid.soundfont",
+            CORE_OPT_FLUID_SOUNDFONT,
             "FluidSynth soundfont",
             "Soundfonts are looked for in the \"soundfonts\" directory inside the frontend's "
                 "system directory. Supported formats are SF2, SF3, DLS and GIG. SF2 and SF3 are "
@@ -1365,7 +1366,7 @@ CoreOptions core_options {
             // No values. We scan for soundfonts at runtime.
         },
         CoreOptionDefinition {
-            "fluid.samplerate",
+            CORE_OPT_FLUID_SAMPLERATE,
             "FluidSynth sample rate",
             "The sample rate of the audio generated by the synthesizer.",
             {
@@ -1381,7 +1382,7 @@ CoreOptions core_options {
             44100
         },
         CoreOptionDefinition {
-            "fluid.gain",
+            CORE_OPT_FLUID_GAIN,
             "FluidSynth volume gain",
             "The volume gain is applied to the final output of the synthesizer. Usually this needs "
                 "to be rather low (0.2-0.5) for most soundfonts to avoid audio clipping and "
@@ -1423,7 +1424,7 @@ CoreOptions core_options {
             "0.4",
         },
         CoreOptionDefinition {
-            "fluid.polyphony",
+            CORE_OPT_FLUID_POLYPHONY,
             "FluidSynth polyphony",
             "The polyphony defines how many voices can be played in parallel. Higher values are "
                 "more CPU intensive.",
@@ -1449,7 +1450,7 @@ CoreOptions core_options {
             256
         },
         CoreOptionDefinition {
-            "fluid.cores",
+            CORE_OPT_FLUID_CORES,
             "FluidSynth CPU cores",
             "Sets the number of synthesis CPU cores. If set to a value greater than 1, then "
                 "additional synthesis threads will be created to take advantage of a multi CPU or "
@@ -1478,7 +1479,7 @@ CoreOptions core_options {
             1
         },
         CoreOptionDefinition {
-            "fluid.reverb",
+            CORE_OPT_FLUID_REVERB,
             "FluidSynth enable reverb",
             {
                 true,
@@ -1487,7 +1488,7 @@ CoreOptions core_options {
             true
         },
         CoreOptionDefinition {
-            "fluid.reverb.roomsize",
+            CORE_OPT_FLUID_REVERB_ROOMSIZE,
             "FluidSynth reverb room size",
             {
                 "0.0",
@@ -1505,7 +1506,7 @@ CoreOptions core_options {
             "0.2"
         },
         CoreOptionDefinition {
-            "fluid.reverb.damping",
+            CORE_OPT_FLUID_REVERB_DAMPING,
             "FluidSynth reverb damping",
             {
                 "0.0",
@@ -1523,7 +1524,7 @@ CoreOptions core_options {
             "0.0"
         },
         CoreOptionDefinition {
-            "fluid.reverb.width",
+            CORE_OPT_FLUID_REVERB_WIDTH,
             "FluidSynth reverb width",
             {
                 "0.0",
@@ -1577,7 +1578,7 @@ CoreOptions core_options {
             "0.5"
         },
         CoreOptionDefinition {
-            "fluid.reverb.level",
+            CORE_OPT_FLUID_REVERB_LEVEL,
             "FluidSynth reverb level",
             {
                 "0.0",
@@ -1595,7 +1596,7 @@ CoreOptions core_options {
             "0.9"
         },
         CoreOptionDefinition {
-            "fluid.chorus",
+            CORE_OPT_FLUID_CHORUS,
             "FluidSynth enable chorus",
             {
                 true,
@@ -1604,7 +1605,7 @@ CoreOptions core_options {
             true
         },
         CoreOptionDefinition {
-            "fluid.chorus.number",
+            CORE_OPT_FLUID_CHORUS_NUMBER,
             "FluidSynth chorus voices",
             {
                 0,
@@ -1634,7 +1635,7 @@ CoreOptions core_options {
             3
         },
         CoreOptionDefinition {
-            "fluid.chorus.level",
+            CORE_OPT_FLUID_CHORUS_LEVEL,
             "FluidSynth chorus level",
             {
                 "0.0",
@@ -1671,7 +1672,7 @@ CoreOptions core_options {
             "2.0"
         },
         CoreOptionDefinition {
-            "fluid.chorus.speed",
+            CORE_OPT_FLUID_CHORUS_SPEED,
             "FluidSynth chorus speed",
             {
                 "0.1",
@@ -1728,7 +1729,7 @@ CoreOptions core_options {
             "0.3"
         },
         CoreOptionDefinition {
-            "fluid.chorus.depth",
+            CORE_OPT_FLUID_CHORUS_DEPTH,
             "FluidSynth chorus depth",
             {
                 0,
@@ -1769,7 +1770,7 @@ CoreOptions core_options {
         },
         #endif
         CoreOptionDefinition {
-            "mt32.type",
+            CORE_OPT_MT32_TYPE,
             "MT-32 hardware type",
             "Type of MT-32 module to emulate. MT-32 is the older, original model. The CM-32L "
                 "and LAPC-I are later models that provide some extra instruments not found on the "
@@ -1782,7 +1783,7 @@ CoreOptions core_options {
             "cm32l"
         },
         CoreOptionDefinition {
-            "mt32.reverse.stereo",
+            CORE_OPT_MT32_REVERSE_STEREO,
             "MT-32 reverse stereo channels",
             {
                 true,
@@ -1791,7 +1792,7 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "mt32.thread",
+            CORE_OPT_MT32_THREAD,
             "MT-32 threaded emulation",
             "Run MT-32 emulation in its own thread. Improves performance on multi-core CPUs.",
             {
@@ -1801,7 +1802,7 @@ CoreOptions core_options {
             false
         },
         CoreOptionDefinition {
-            "mt32.chunk",
+            CORE_OPT_MT32_CHUNK,
             "MT-32 threaded chunk size",
             "Minimum milliseconds of data to render at once. Increasing this value reduces "
                 "rendering overhead which may improve performance but also increases audio lag.",
@@ -1828,7 +1829,7 @@ CoreOptions core_options {
             16
         },
         CoreOptionDefinition {
-            "mt32.prebuffer",
+            CORE_OPT_MT32_PREBUFFER,
             "MT-32 threaded prebuffer size",
             "How many milliseconds of data to render ahead. Increasing this value may help to "
                 "avoid underruns but also increases audio lag. Cannot be set less than or equal to "
@@ -1861,7 +1862,7 @@ CoreOptions core_options {
             32
         },
         CoreOptionDefinition {
-            "mt32.partials",
+            CORE_OPT_MT32_PARTIALS,
             "MT-32 max partials",
             "The maximum number of partials playing simultaneously. A value of 32 matches real "
                 "MT-32 hardware. Lowering this value increases performance at the cost of notes "
@@ -1898,7 +1899,7 @@ CoreOptions core_options {
             32
         },
         CoreOptionDefinition {
-            "mt32.dac",
+            CORE_OPT_MT32_DAC,
             "MT-32 DAC input emulation mode",
             "High quality: Produces samples at double the volume, without tricks. Higher quality "
                 "than the real devices.\n"
@@ -1918,7 +1919,7 @@ CoreOptions core_options {
             0
         },
         CoreOptionDefinition {
-            "mt32.analog",
+            CORE_OPT_MT32_ANALOG,
             "MT-32 analog output emulation mode",
             "Digital: Only digital path is emulated. The output samples correspond to the digital "
                 "output signal appeared at the DAC entrance. Fastest mode.\n"
@@ -1940,7 +1941,7 @@ CoreOptions core_options {
             2
         },
         CoreOptionDefinition {
-            "mt32.reverb.mode",
+            CORE_OPT_MT32_REVERB_MODE,
             "MT-32 reverb mode",
             "Reverb emulation mode. \"Auto\" will automatically adjust reverb parameters to match "
                 "the loaded control ROM version.",
@@ -1954,7 +1955,7 @@ CoreOptions core_options {
             "auto"
         },
         CoreOptionDefinition {
-            "mt32.reverb.time",
+            CORE_OPT_MT32_REVERB_TIME,
             "MT-32 reverb decay time",
             {
                 0,
@@ -1969,7 +1970,7 @@ CoreOptions core_options {
             5
         },
         CoreOptionDefinition {
-            "mt32.reverb.level",
+            CORE_OPT_MT32_REVERB_LEVEL,
             "MT-32 reverb level",
             {
                 0,
@@ -1984,7 +1985,7 @@ CoreOptions core_options {
             3
         },
         CoreOptionDefinition {
-            "mt32.rate",
+            CORE_OPT_MT32_RATE,
             "MT-32 sample rate",
             {
                 { 8000, "8kHz" },
@@ -1999,7 +2000,7 @@ CoreOptions core_options {
             44100
         },
         CoreOptionDefinition {
-            "mt32.src.quality",
+            CORE_OPT_MT32_SRC_QUALITY,
             "MT-32 resampling quality",
             {
                 { 0, "fastest" },
@@ -2010,7 +2011,7 @@ CoreOptions core_options {
             2
         },
         CoreOptionDefinition {
-            "mt32.niceampramp",
+            CORE_OPT_MT32_NICEAMPRAMP,
             "MT-32 nice amp ramp",
             "Improves amplitude ramp for sustaining instruments. Quick changes of volume or "
                 "expression on a MIDI channel may result in amp jumps on real hardware. Enabling "
@@ -2024,7 +2025,7 @@ CoreOptions core_options {
         },
     },
     CoreOptionDefinition {
-        "ipx",
+        CORE_OPT_IPX,
         "Enable IPX networking",
         "Enable IPX over UDP tunneling.",
         {
@@ -2035,12 +2036,12 @@ CoreOptions core_options {
     },
     #ifdef WITH_PINHACK
     CoreOptionCategory {
-        "pinhack",
+        CORE_OPTCAT_PINHACK,
         "Pinhack",
         "Pinhack configuration options. Pinhack is a no-scroll hack for some pinball games.",
 
         CoreOptionDefinition {
-            "pinhack",
+            CORE_OPT_PINHACK,
             "Pinhack",
             "A hack that allows some pinball games to display the whole table without scrolling. "
                 "Do not enable this unless you're playing a game that works with it. It will cause "
@@ -2053,7 +2054,7 @@ CoreOptions core_options {
             false,
         },
         CoreOptionDefinition {
-            "pinhackactive",
+            CORE_OPT_PINHACKACTIVE,
             "Initial mode",
             "Whether or not to start with pinhack toggled on or off. It can be toggled on and off "
                 "at any point with the Insert key.",
@@ -2064,7 +2065,7 @@ CoreOptions core_options {
             false,
         },
         CoreOptionDefinition {
-            "pinhacktriggerwidth",
+            CORE_OPT_PINHACKTRIGGERWIDTH,
             "Horizontal trigger range",
             "The horizontal resolution range the pinball hack should trigger at. Usually not needed.",
             {
@@ -2107,7 +2108,7 @@ CoreOptions core_options {
             0
         },
         CoreOptionDefinition {
-            "pinhacktriggerheight",
+            CORE_OPT_PINHACKTRIGGERHEIGHT,
             "Vertical trigger range",
             "The vertical resolution range the pinball hack should trigger at.",
             {
@@ -2144,7 +2145,7 @@ CoreOptions core_options {
             "231-240"
         },
         CoreOptionDefinition {
-            "pinhackexpandheight_coarse",
+            CORE_OPT_PINHACKEXPANDHEIGHT_COARSE,
             "Coarse expand height",
             "The coarse vertical resolution to expand the game to. You need the correct value for "
                 "each individual game.",
@@ -2161,7 +2162,7 @@ CoreOptions core_options {
             600
         },
         CoreOptionDefinition {
-            "pinhackexpandheight_fine",
+            CORE_OPT_PINHACKEXPANDHEIGHT_FINE,
             "Fine expand height",
             "Combine this with the coarse expand height to get a final value. For example setting "
                 "coarse to 600 and fine to 9 will result in an expand height of 609 (Pinball Fantasies).",
@@ -2173,12 +2174,12 @@ CoreOptions core_options {
     },
     #endif
     CoreOptionCategory {
-        "logging",
+        CORE_OPTCAT_LOGGING,
         "Logging",
         "Event logging.",
 
         CoreOptionDefinition {
-            "log_method",
+            CORE_OPT_LOG_METHOD,
             "Output method",
             "Where to send log output. \"Frontend\" will send it to the frontend, while "
                 "\"stdout/stderr\" will print it to standard output or standard error (warnings "
@@ -2190,7 +2191,7 @@ CoreOptions core_options {
             "frontend",
         },
         CoreOptionDefinition {
-            "log_level",
+            CORE_OPT_LOG_LEVEL,
             "Verbosity level",
             {
                 "debug",

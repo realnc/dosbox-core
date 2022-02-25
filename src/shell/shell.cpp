@@ -28,6 +28,7 @@
 #include "support.h"
 #ifdef __LIBRETRO__
 	#include "CoreOptions.h"
+	#include "libretro_core_options.h"
 	#include "libretro_dosbox.h"
 	#include <filesystem>
 #endif
@@ -446,7 +447,9 @@ public:
 			}
 			if (test.st_mode & S_IFDIR) {
 #ifdef __LIBRETRO__
-				autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\" -freesize " + retro::core_options["default_mount_freesize"].toString());
+				autoexec[12].Install(
+				    std::string("MOUNT C \"") + buffer + "\" -freesize "
+				    + retro::core_options[CORE_OPT_DEFAULT_MOUNT_FREESIZE].toString());
 #else
 				autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\"");
 #endif
@@ -468,12 +471,17 @@ public:
 				*name++ = 0;
 				if (access(buffer,F_OK)) continue;
 #ifdef __LIBRETRO__
-				if (retro::core_options["mount_c_as"].toString() == "parent") {
+				if (retro::core_options[CORE_OPT_MOUNT_C_AS].toString() == "parent") {
 					std::filesystem::path fs_dir = buffer;
-					autoexec[12].Install(std::string("MOUNT C \"") + fs_dir.parent_path().u8string() + "\" -freesize " + retro::core_options["default_mount_freesize"].toString());
+					autoexec[12].Install(
+					    std::string("MOUNT C \"") + fs_dir.parent_path().u8string()
+					    + "\" -freesize "
+					    + retro::core_options[CORE_OPT_DEFAULT_MOUNT_FREESIZE].toString());
 					autoexec[13].Install("C:\nCD " + fs_dir.filename().u8string());
 				} else {
-					autoexec[12].Install(std::string("MOUNT C \"") + buffer + "\" -freesize " + retro::core_options["default_mount_freesize"].toString());
+					autoexec[12].Install(
+					    std::string("MOUNT C \"") + buffer + "\" -freesize "
+					    + retro::core_options[CORE_OPT_DEFAULT_MOUNT_FREESIZE].toString());
 					autoexec[13].Install("C:");
 				}
 #else

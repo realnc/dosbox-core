@@ -4,8 +4,9 @@
 #include "joystick.h"
 #include "keyboard.h"
 #include "libretro.h"
-#include "libretro_dosbox.h"
 #include "libretro-vkbd.h"
+#include "libretro_core_options.h"
+#include "libretro_dosbox.h"
 #include "log.h"
 #include "mapper.h"
 #include "mouse.h"
@@ -690,65 +691,65 @@ static void addCoreOptionMappings(
     const int active_port_count, const int first_retro_port, const int second_retro_port)
 {
     static constexpr std::tuple<unsigned int, const char*> dev_id_option_name_map_p1[]{
-        {RETRO_DEVICE_ID_JOYPAD_UP, "pad0_map_up"},
-        {RETRO_DEVICE_ID_JOYPAD_DOWN, "pad0_map_down"},
-        {RETRO_DEVICE_ID_JOYPAD_LEFT, "pad0_map_left"},
-        {RETRO_DEVICE_ID_JOYPAD_RIGHT, "pad0_map_right"},
-        {RETRO_DEVICE_ID_JOYPAD_B, "pad0_map_b"},
-        {RETRO_DEVICE_ID_JOYPAD_A, "pad0_map_a"},
-        {RETRO_DEVICE_ID_JOYPAD_Y, "pad0_map_y"},
-        {RETRO_DEVICE_ID_JOYPAD_X, "pad0_map_x"},
-        {RETRO_DEVICE_ID_JOYPAD_SELECT, "pad0_map_select"},
-        {RETRO_DEVICE_ID_JOYPAD_START, "pad0_map_start"},
-        {RETRO_DEVICE_ID_JOYPAD_L, "pad0_map_lbump"},
-        {RETRO_DEVICE_ID_JOYPAD_R, "pad0_map_rbump"},
-        {RETRO_DEVICE_ID_JOYPAD_L2, "pad0_map_ltrig"},
-        {RETRO_DEVICE_ID_JOYPAD_R2, "pad0_map_rtrig"},
-        {RETRO_DEVICE_ID_JOYPAD_L3, "pad0_map_lthumb"},
-        {RETRO_DEVICE_ID_JOYPAD_R3, "pad0_map_rthumb"},
+        {RETRO_DEVICE_ID_JOYPAD_UP, CORE_OPT_PAD0_MAP_UP},
+        {RETRO_DEVICE_ID_JOYPAD_DOWN, CORE_OPT_PAD0_MAP_DOWN},
+        {RETRO_DEVICE_ID_JOYPAD_LEFT, CORE_OPT_PAD0_MAP_LEFT},
+        {RETRO_DEVICE_ID_JOYPAD_RIGHT, CORE_OPT_PAD0_MAP_RIGHT},
+        {RETRO_DEVICE_ID_JOYPAD_B, CORE_OPT_PAD0_MAP_B},
+        {RETRO_DEVICE_ID_JOYPAD_A, CORE_OPT_PAD0_MAP_A},
+        {RETRO_DEVICE_ID_JOYPAD_Y, CORE_OPT_PAD0_MAP_Y},
+        {RETRO_DEVICE_ID_JOYPAD_X, CORE_OPT_PAD0_MAP_X},
+        {RETRO_DEVICE_ID_JOYPAD_SELECT, CORE_OPT_PAD0_MAP_SELECT},
+        {RETRO_DEVICE_ID_JOYPAD_START, CORE_OPT_PAD0_MAP_START},
+        {RETRO_DEVICE_ID_JOYPAD_L, CORE_OPT_PAD0_MAP_LBUMP},
+        {RETRO_DEVICE_ID_JOYPAD_R, CORE_OPT_PAD0_MAP_RBUMP},
+        {RETRO_DEVICE_ID_JOYPAD_L2, CORE_OPT_PAD0_MAP_LTRIG},
+        {RETRO_DEVICE_ID_JOYPAD_R2, CORE_OPT_PAD0_MAP_RTRIG},
+        {RETRO_DEVICE_ID_JOYPAD_L3, CORE_OPT_PAD0_MAP_LTHUMB},
+        {RETRO_DEVICE_ID_JOYPAD_R3, CORE_OPT_PAD0_MAP_RTHUMB},
     };
 
     static constexpr std::tuple<unsigned int, const char*> dev_id_option_name_map_p2[]{
-        {RETRO_DEVICE_ID_JOYPAD_UP, "pad1_map_up"},
-        {RETRO_DEVICE_ID_JOYPAD_DOWN, "pad1_map_down"},
-        {RETRO_DEVICE_ID_JOYPAD_LEFT, "pad1_map_left"},
-        {RETRO_DEVICE_ID_JOYPAD_RIGHT, "pad1_map_right"},
-        {RETRO_DEVICE_ID_JOYPAD_B, "pad1_map_b"},
-        {RETRO_DEVICE_ID_JOYPAD_A, "pad1_map_a"},
-        {RETRO_DEVICE_ID_JOYPAD_Y, "pad1_map_y"},
-        {RETRO_DEVICE_ID_JOYPAD_X, "pad1_map_x"},
-        {RETRO_DEVICE_ID_JOYPAD_SELECT, "pad1_map_select"},
-        {RETRO_DEVICE_ID_JOYPAD_START, "pad1_map_start"},
-        {RETRO_DEVICE_ID_JOYPAD_L, "pad1_map_lbump"},
-        {RETRO_DEVICE_ID_JOYPAD_R, "pad1_map_rbump"},
-        {RETRO_DEVICE_ID_JOYPAD_L2, "pad1_map_ltrig"},
-        {RETRO_DEVICE_ID_JOYPAD_R2, "pad1_map_rtrig"},
-        {RETRO_DEVICE_ID_JOYPAD_L3, "pad1_map_lthumb"},
-        {RETRO_DEVICE_ID_JOYPAD_R3, "pad1_map_rthumb"},
+        {RETRO_DEVICE_ID_JOYPAD_UP, CORE_OPT_PAD1_MAP_UP},
+        {RETRO_DEVICE_ID_JOYPAD_DOWN, CORE_OPT_PAD1_MAP_DOWN},
+        {RETRO_DEVICE_ID_JOYPAD_LEFT, CORE_OPT_PAD1_MAP_LEFT},
+        {RETRO_DEVICE_ID_JOYPAD_RIGHT, CORE_OPT_PAD1_MAP_RIGHT},
+        {RETRO_DEVICE_ID_JOYPAD_B, CORE_OPT_PAD1_MAP_B},
+        {RETRO_DEVICE_ID_JOYPAD_A, CORE_OPT_PAD1_MAP_A},
+        {RETRO_DEVICE_ID_JOYPAD_Y, CORE_OPT_PAD1_MAP_Y},
+        {RETRO_DEVICE_ID_JOYPAD_X, CORE_OPT_PAD1_MAP_X},
+        {RETRO_DEVICE_ID_JOYPAD_SELECT, CORE_OPT_PAD1_MAP_SELECT},
+        {RETRO_DEVICE_ID_JOYPAD_START, CORE_OPT_PAD1_MAP_START},
+        {RETRO_DEVICE_ID_JOYPAD_L, CORE_OPT_PAD1_MAP_LBUMP},
+        {RETRO_DEVICE_ID_JOYPAD_R, CORE_OPT_PAD1_MAP_RBUMP},
+        {RETRO_DEVICE_ID_JOYPAD_L2, CORE_OPT_PAD1_MAP_LTRIG},
+        {RETRO_DEVICE_ID_JOYPAD_R2, CORE_OPT_PAD1_MAP_RTRIG},
+        {RETRO_DEVICE_ID_JOYPAD_L3, CORE_OPT_PAD1_MAP_LTHUMB},
+        {RETRO_DEVICE_ID_JOYPAD_R3, CORE_OPT_PAD1_MAP_RTHUMB},
     };
 
     static constexpr std::tuple<unsigned int, AnalogDirection, std::string_view>
         analog_option_name_map_p1[]{
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Up, "pad0_map_laup"},
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Down, "pad0_map_ladown"},
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Left, "pad0_map_laleft"},
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Right, "pad0_map_laright"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Up, "pad0_map_raup"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Down, "pad0_map_radown"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Left, "pad0_map_raleft"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Right, "pad0_map_raright"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Up, CORE_OPT_PAD0_MAP_LAUP},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Down, CORE_OPT_PAD0_MAP_LADOWN},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Left, CORE_OPT_PAD0_MAP_LALEFT},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Right, CORE_OPT_PAD0_MAP_LARIGHT},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Up, CORE_OPT_PAD0_MAP_RAUP},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Down, CORE_OPT_PAD0_MAP_RADOWN},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Left, CORE_OPT_PAD0_MAP_RALEFT},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Right, CORE_OPT_PAD0_MAP_RARIGHT},
         };
 
     static constexpr std::tuple<unsigned int, AnalogDirection, std::string_view>
         analog_option_name_map_p2[]{
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Up, "pad1_map_laup"},
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Down, "pad1_map_ladown"},
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Left, "pad1_map_laleft"},
-            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Right, "pad1_map_laright"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Up, "pad1_map_raup"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Down, "pad1_map_radown"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Left, "pad1_map_raleft"},
-            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Right, "pad1_map_raright"},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Up, CORE_OPT_PAD1_MAP_LAUP},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Down, CORE_OPT_PAD1_MAP_LADOWN},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Left, CORE_OPT_PAD1_MAP_LALEFT},
+            {RETRO_DEVICE_INDEX_ANALOG_LEFT, AnalogDirection::Right, CORE_OPT_PAD1_MAP_LARIGHT},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Up, CORE_OPT_PAD1_MAP_RAUP},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Down, CORE_OPT_PAD1_MAP_RADOWN},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Left, CORE_OPT_PAD1_MAP_RALEFT},
+            {RETRO_DEVICE_INDEX_ANALOG_RIGHT, AnalogDirection::Right, CORE_OPT_PAD1_MAP_RARIGHT},
         };
 
     if (active_port_count > 0) {
@@ -872,7 +873,7 @@ void MAPPER_Init()
             ++dos_port;
         }
     } else if (active_port_count == 1) {
-        const bool force_2axis = retro::core_options["joystick_force_2axis"].toBool();
+        const bool force_2axis = retro::core_options[CORE_OPT_JOYSTICK_FORCE_2AXIS].toBool();
         if (force_2axis) {
             retro::logDebug(
                 "One port connected, but enabling only 2axis in connected port as forced in core "
@@ -929,7 +930,7 @@ void MAPPER_Init()
 
     // Virtual keyboard only works on ports 0 and 1.
     if (active_port_count > 0) {
-        const bool vkbd_enabled = retro::core_options["vkbd_enabled"].toBool();
+        const bool vkbd_enabled = retro::core_options[CORE_OPT_VKBD_ENABLED].toBool();
         bool port_taken = false;
 
         if (first_retro_port <= 1 && vkbd_enabled) {

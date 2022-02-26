@@ -396,6 +396,43 @@ CoreOptions core_options {
             16
         },
         CoreOptionDefinition {
+            CORE_OPT_XMS,
+            "XMS support",
+            "Extended memory (XMS) is usually required by protected mode games.",
+            {
+                true,
+                false,
+            },
+            true
+        },
+        CoreOptionDefinition {
+            CORE_OPT_EMS,
+            "EMS support",
+            "Expanded memory (EMS) is needed or recommended by some older games. However, some "
+                "games will not run at all with it enabled (Ultima 7, for example,) or will run "
+                "better with it disabled.\n"
+                "\n"
+                "Mixed mode is the most compatible setting for most games that use EMS memory.",
+            {
+                { true, "mixed mode" },
+                { "emm386", "map EMS to XMS (EMM386)" },
+                { "emsboard", "emulate physical EMS memory board" },
+                false,
+            },
+            true
+        },
+        CoreOptionDefinition {
+            CORE_OPT_UMB,
+            "UMB support",
+            "The upper memory block (UMB) is usually not needed by games, but can be used to load "
+                "TSR programs into it without using any of the 640KB base memory.",
+            {
+                true,
+                false,
+            },
+            true
+        },
+        CoreOptionDefinition {
             CORE_OPT_CPU_CORE,
             "CPU core",
             "CPU core used for emulation. "
@@ -1063,6 +1100,17 @@ CoreOptions core_options {
                 7,
             },
             5
+        },
+        CoreOptionDefinition {
+            CORE_OPT_SBMIXER,
+            "SoundBlaster mixer",
+            "This exposes the DOSBox mixer to games as a SoundBlaster mixer. Disable this if you "
+                "don't want games to be able to override your custom mixer volume levels.",
+            {
+                true,
+                false,
+            },
+            true
         },
         CoreOptionDefinition {
             CORE_OPT_SBLASTER_OPL_MODE,

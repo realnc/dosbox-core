@@ -24,6 +24,9 @@ inline constexpr const char* CORE_OPT_VOODOO_MEMORY_SIZE = "voodoo_memory_size";
 
 inline constexpr const char* CORE_OPTCAT_SPECS = "specs";
 inline constexpr const char* CORE_OPT_MEMORY_SIZE = "memory_size";
+inline constexpr const char* CORE_OPT_XMS = "xms";
+inline constexpr const char* CORE_OPT_EMS = "ems";
+inline constexpr const char* CORE_OPT_UMB = "umb";
 inline constexpr const char* CORE_OPT_CPU_CORE = "cpu_core";
 inline constexpr const char* CORE_OPT_CPU_TYPE = "cpu_type";
 inline constexpr const char* CORE_OPT_CPU_CYCLES_MODE = "cpu_cycles_mode";
@@ -113,6 +116,7 @@ inline constexpr const char* CORE_OPT_SBLASTER_BASE = "sblaster_base";
 inline constexpr const char* CORE_OPT_SBLASTER_IRQ = "sblaster_irq";
 inline constexpr const char* CORE_OPT_SBLASTER_DMA = "sblaster_dma";
 inline constexpr const char* CORE_OPT_SBLASTER_HDMA = "sblaster_hdma";
+inline constexpr const char* CORE_OPT_SBMIXER = "sbmixer";
 inline constexpr const char* CORE_OPT_SBLASTER_OPL_MODE = "sblaster_opl_mode";
 inline constexpr const char* CORE_OPT_SBLASTER_OPL_EMU = "sblaster_opl_emu";
 inline constexpr const char* CORE_OPT_GUS = "gus";

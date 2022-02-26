@@ -436,7 +436,8 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     const bool sb_is_gameblaster = sb_type == "gb";
     const bool sb_is_sb16 = sb_type == "sb16";
     updated |= core_options.setVisible(
-        {CORE_OPT_SBLASTER_BASE, CORE_OPT_SBLASTER_OPL_MODE, CORE_OPT_SBLASTER_OPL_EMU},
+        {CORE_OPT_SBLASTER_BASE, CORE_OPT_SBMIXER, CORE_OPT_SBLASTER_OPL_MODE,
+         CORE_OPT_SBLASTER_OPL_EMU},
         show_all && sb_enabled);
     updated |= core_options.setVisible(
         {CORE_OPT_SBLASTER_IRQ, CORE_OPT_SBLASTER_DMA},
@@ -486,6 +487,8 @@ static void check_blaster_variables(const bool autoexec)
         autoexec, "sblaster", "dma", core_options[CORE_OPT_SBLASTER_DMA].toString());
     update_dosbox_variable(
         autoexec, "sblaster", "hdma", core_options[CORE_OPT_SBLASTER_HDMA].toString());
+    update_dosbox_variable(
+        autoexec, "sblaster", "sbmixer", core_options[CORE_OPT_SBMIXER].toString());
     update_dosbox_variable(
         autoexec, "sblaster", "oplmode", core_options[CORE_OPT_SBLASTER_OPL_MODE].toString());
     update_dosbox_variable(
@@ -769,6 +772,10 @@ static void check_variables()
 
         mount_overlay = core_options[CORE_OPT_SAVE_OVERLAY].toBool();
     } else {
+        update_dosbox_variable(false, "dos", "xms", core_options[CORE_OPT_XMS].toString());
+        update_dosbox_variable(false, "dos", "ems", core_options[CORE_OPT_EMS].toString());
+        update_dosbox_variable(false, "dos", "umb", core_options[CORE_OPT_UMB].toString());
+
         if (machine == MCH_HERC) {
             herc_pal = core_options[CORE_OPT_MACHINE_HERCULES_PALETTE].toInt();
             Herc_Palette();

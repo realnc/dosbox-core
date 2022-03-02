@@ -299,6 +299,9 @@ jobs:
     - name: Build
       working-directory: ./libretro
       run: |
+        cd deps/mpg123/
+        autoreconf -iv
+        cd ../../
         make deps
         export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs"
         make -j`sysctl -n hw.ncpu`

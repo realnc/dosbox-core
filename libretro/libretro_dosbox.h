@@ -41,6 +41,7 @@ extern bool autofire;
 extern int mouse_emu_deadzone;
 extern float mouse_speed_factor_x;
 extern float mouse_speed_factor_y;
+extern float mouse_speed_hack_factor;
 extern std::array<bool, RETRO_INPUT_PORTS_MAX> connected;
 extern std::array<bool, RETRO_INPUT_PORTS_MAX> gamepad;
 extern bool libretro_supports_bitmasks;

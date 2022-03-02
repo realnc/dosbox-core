@@ -1008,7 +1008,8 @@ static void runMouseEmulation(const unsigned int port)
     }
 
     const float adjusted_x = emulated_mouse_x * mouse_speed_factor_x * 8.0f / slowdown;
-    const float adjusted_y = emulated_mouse_y * mouse_speed_factor_y * 8.0f / slowdown;
+    const float adjusted_y =
+        emulated_mouse_y * mouse_speed_factor_y * mouse_speed_hack_factor * 8.0f / slowdown;
     Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);
 }
 
@@ -1048,7 +1049,7 @@ void MAPPER_Run(const bool /*pressed*/)
             slowdown *= 8.0f;
         }
         float adjusted_x = mouse_x * mouse_speed_factor_x / slowdown;
-        float adjusted_y = mouse_y * mouse_speed_factor_y / slowdown;
+        float adjusted_y = mouse_y * mouse_speed_factor_y * mouse_speed_hack_factor / slowdown;
 
         if (!retro_vkbd) {
             Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);

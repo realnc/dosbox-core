@@ -681,6 +681,18 @@ CoreOptions core_options {
             MOUSE_SPEED_FACTORS,
             "1.00"
         },
+        CoreOptionDefinition {
+            CORE_OPT_MOUSE_SPEED_HACK,
+            "Vertical mouse sensitivity correction",
+            "A hack that modifies vertical sensitivity depending on the current video mode. Try "
+                "enabling this for games that switch between different video modes and result in "
+                "inconsistent vertical mouse speed.",
+            {
+                true,
+                false,
+            },
+            false
+        },
     },
     CoreOptionCategory {
         CORE_OPTCAT_VKBD,

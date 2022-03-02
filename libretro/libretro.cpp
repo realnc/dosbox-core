@@ -75,6 +75,7 @@ static bool force_2axis_joystick = false;
 int mouse_emu_deadzone = 0;
 float mouse_speed_factor_x = 1.0;
 float mouse_speed_factor_y = 1.0;
+float mouse_speed_hack_factor = 1.0;
 
 /* core option variables */
 bool run_synced = true;
@@ -310,6 +311,26 @@ static void leave_thread(const Bitu /*val*/)
     }
 }
 
+static void update_mouse_speed_hack_factor()
+{
+    if (!retro::core_options[CORE_OPT_MOUSE_SPEED_HACK].toBool()) {
+        mouse_speed_hack_factor = 1.0f;
+        return;
+    }
+
+    switch (currentHeight) {
+    case 240:
+    case 480:
+    case 720:
+    case 960:
+    case 1200:
+        mouse_speed_hack_factor = 2.0f;
+        break;
+    default:
+        mouse_speed_hack_factor = 0.85f;
+    }
+}
+
 static void update_gfx_mode(const bool change_fps)
 {
     const float old_fps = currentFPS;
@@ -347,6 +368,8 @@ static void update_gfx_mode(const bool change_fps)
     currentWidth = RDOSGFXwidth;
     currentHeight = RDOSGFXheight;
     current_aspect_ratio = dosbox_aspect_ratio;
+
+    update_mouse_speed_hack_factor();
 }
 
 static RETRO_CALLCONV auto update_core_option_visibility() -> bool
@@ -803,6 +826,7 @@ static void check_variables()
 
         mouse_speed_factor_x = core_options[CORE_OPT_MOUSE_SPEED_FACTOR_X].toFloat();
         mouse_speed_factor_y = core_options[CORE_OPT_MOUSE_SPEED_FACTOR_Y].toFloat();
+        update_mouse_speed_hack_factor();
 
         update_dosbox_variable(false, "cpu", "cputype", core_options[CORE_OPT_CPU_TYPE].toString());
         update_dosbox_variable(false, "cpu", "core", core_options[CORE_OPT_CPU_CORE].toString());

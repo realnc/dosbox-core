@@ -44,6 +44,8 @@
 #include "pci_bus.h"
 #ifdef __LIBRETRO__
 #include "libretro.h"
+#include "libretro_core_options.h"
+#include "libretro_dosbox.h"
 #include "midi_bassmidi.h"
 #include "midi_fluidsynth.h"
 #ifdef WITH_PINHACK
@@ -779,6 +781,29 @@ void DOSBOX_Init(void) {
 	Pint = secprop->Add_int("deadzone",Property::Changeable::WhenIdle,10);
 	Pint->SetMinMax(0,100);
 	Pint->Set_help("the percentage of motion to ignore. 100 turns the stick into a digital one.");
+
+#ifdef __LIBRETRO__
+	secprop = control->AddSection_prop(
+	    "mouse",
+	    [](Section* const conf) {
+		    const auto* const section = static_cast<Section_prop*>(conf);
+		    mouse_speed_factor_x = section->Get_int(CORE_OPT_MOUSE_SPEED_X) / 100.0f;
+		    mouse_speed_factor_y = section->Get_int(CORE_OPT_MOUSE_SPEED_Y) / 100.0f;
+		    update_mouse_speed_fix();
+	    },
+	    true);
+	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_X, Property::Changeable::Always, 100);
+	Pint->SetMinMax(1, 127);
+	Pint->Set_help("Horizontal mouse sensitivity in percent. (min 1, max 127)");
+	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_Y, Property::Changeable::Always, 100);
+	Pint->SetMinMax(1, 127);
+	Pint->Set_help("Vertical mouse sensitivity in percent. (min 1, max 127)");
+	Pbool = secprop->Add_bool(CORE_OPT_MOUSE_SPEED_HACK, Property::Changeable::Always, false);
+	Pbool->Set_help(
+	    "A hack that modifies vertical mouse sensitivity depending on the current\n"
+	    "video mode. For games that have inconsistent mouse speed because they use\n"
+	    "multiple video modes");
+#endif
 
 	secprop=control->AddSection_prop("serial",&SERIAL_Init,true);
 	const char* serials[] = { "dummy", "disabled", "modem", "nullmodem",

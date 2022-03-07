@@ -311,7 +311,7 @@ static void leave_thread(const Bitu /*val*/)
     }
 }
 
-static void update_mouse_speed_hack_factor()
+void update_mouse_speed_fix()
 {
     if (!retro::core_options[CORE_OPT_MOUSE_SPEED_HACK].toBool()) {
         mouse_speed_hack_factor = 1.0f;
@@ -369,7 +369,7 @@ static void update_gfx_mode(const bool change_fps)
     currentHeight = RDOSGFXheight;
     current_aspect_ratio = dosbox_aspect_ratio;
 
-    update_mouse_speed_hack_factor();
+    update_mouse_speed_fix();
 }
 
 static RETRO_CALLCONV auto update_core_option_visibility() -> bool
@@ -824,9 +824,11 @@ static void check_variables()
             }
         }
 
-        mouse_speed_factor_x = core_options[CORE_OPT_MOUSE_SPEED_FACTOR_X].toFloat();
-        mouse_speed_factor_y = core_options[CORE_OPT_MOUSE_SPEED_FACTOR_Y].toFloat();
-        update_mouse_speed_hack_factor();
+        for (const auto& option :
+             {CORE_OPT_MOUSE_SPEED_X, CORE_OPT_MOUSE_SPEED_Y, CORE_OPT_MOUSE_SPEED_HACK})
+        {
+            update_dosbox_variable(false, "mouse", option, core_options[option].toString());
+        }
 
         update_dosbox_variable(false, "cpu", "cputype", core_options[CORE_OPT_CPU_TYPE].toString());
         update_dosbox_variable(false, "cpu", "core", core_options[CORE_OPT_CPU_CORE].toString());

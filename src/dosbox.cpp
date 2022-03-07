@@ -787,8 +787,9 @@ void DOSBOX_Init(void) {
 	    "mouse",
 	    [](Section* const conf) {
 		    const auto* const section = static_cast<Section_prop*>(conf);
-		    mouse_speed_factor_x = section->Get_int(CORE_OPT_MOUSE_SPEED_X) / 100.0f;
-		    mouse_speed_factor_y = section->Get_int(CORE_OPT_MOUSE_SPEED_Y) / 100.0f;
+		    const auto mult = section->Get_int(CORE_OPT_MOUSE_SPEED_MULT);
+		    mouse_speed_factor_x = section->Get_int(CORE_OPT_MOUSE_SPEED_X) * mult / 100.0f;
+		    mouse_speed_factor_y = section->Get_int(CORE_OPT_MOUSE_SPEED_Y) * mult / 100.0f;
 		    update_mouse_speed_fix();
 	    },
 	    true);
@@ -798,6 +799,9 @@ void DOSBOX_Init(void) {
 	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_Y, Property::Changeable::Always, 100);
 	Pint->SetMinMax(1, 127);
 	Pint->Set_help("Vertical mouse sensitivity in percent. (min 1, max 127)");
+	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_MULT, Property::Changeable::Always, 1);
+	Pint->SetMinMax(1, 5);
+	Pint->Set_help("Mouse speed multiplier. (min 1, max 5)");
 	Pbool = secprop->Add_bool(CORE_OPT_MOUSE_SPEED_HACK, Property::Changeable::Always, false);
 	Pbool->Set_help(
 	    "A hack that modifies vertical mouse sensitivity depending on the current\n"

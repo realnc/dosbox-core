@@ -686,6 +686,20 @@ CoreOptions core_options {
             "100"
         },
         CoreOptionDefinition {
+            CORE_OPT_MOUSE_SPEED_MULT,
+            "Mouse speed multiplier",
+            "Since the possible mouse speed range is 1 to 127 due to a libretro limitation, this "
+                "option can be used to increase mouse speed further.",
+            {
+                { 1, "1x" },
+                { 2, "2x" },
+                { 3, "3x" },
+                { 4, "4x" },
+                { 5, "5x" },
+            },
+            1
+        },
+        CoreOptionDefinition {
             CORE_OPT_MOUSE_SPEED_HACK,
             "Vertical mouse sensitivity correction",
             "A hack that modifies vertical sensitivity depending on the current video mode. Try "

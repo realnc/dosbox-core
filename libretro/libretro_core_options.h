@@ -52,6 +52,7 @@ inline constexpr const char* CORE_OPT_JOYSTICK_TIMED = "joystick_timed";
 inline constexpr const char* CORE_OPT_EMULATED_MOUSE_DEADZONE = "emulated_mouse_deadzone";
 inline constexpr const char* CORE_OPT_MOUSE_SPEED_X = "mouse_speed_x";
 inline constexpr const char* CORE_OPT_MOUSE_SPEED_Y = "mouse_speed_y";
+inline constexpr const char* CORE_OPT_MOUSE_SPEED_MULT = "mouse_speed_mult";
 inline constexpr const char* CORE_OPT_MOUSE_SPEED_HACK = "mouse_speed_hack";
 
 inline constexpr const char* CORE_OPTCAT_VKBD = "vkbd";

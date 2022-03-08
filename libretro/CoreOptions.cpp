@@ -12,6 +12,12 @@ auto CoreOptions::envCbFallback(unsigned /*cmd*/, void* /*data*/) -> bool
     return false;
 }
 
+void retro::CoreOptions::setEnvironmentCallback(const retro_environment_t cb)
+{
+    env_cb_ = cb;
+    api_has_set_variable = env_cb_(RETRO_ENVIRONMENT_SET_VARIABLE, nullptr);
+}
+
 auto CoreOptions::operator[](const std::string_view key) const -> const CoreOptionValue&
 {
     const auto* option = this->option(key);
@@ -112,14 +118,29 @@ void CoreOptions::setCurrentValue(std::string_view key, const CoreOptionValue& v
         return;
     }
 
-    auto default_value = option->defaultValue();
-    auto values = option->clearValues();
-    option->setValues({"_bogus_"}, "_bogus_");
-    updateFrontend();
-    option->setValues(values, value);
-    updateFrontend();
-    option->setDefaultValue(default_value);
-    updateFrontend();
+    if (!api_has_set_variable) {
+        // The frontend doesn't support the SET_VARIABLE env command. Use this hack instead in an
+        // attempt to still make it work regardless. We remove all current option values and replace
+        // them with a bogus, temporary one. Then we put the original values back but change the
+        // default value to the value that was requested, which will result in it becoming the new
+        // current value. Finally, we restore the original default value.
+        auto default_value = option->defaultValue();
+        auto values = option->clearValues();
+        option->setValues({"_bogus_"}, "_bogus_");
+        updateFrontend();
+        option->setValues(values, value);
+        updateFrontend();
+        option->setDefaultValue(default_value);
+        updateFrontend();
+        return;
+    }
+
+    retro_variable var{option->key().c_str(), value.toString().c_str()};
+    if (!env_cb_(RETRO_ENVIRONMENT_SET_VARIABLE, &var)) {
+        retro::logError(
+            "Failed to change current value of core option \"{}\" to \"{}\".", key,
+            value.toString());
+    }
 }
 
 static auto make_retro_core_option_v2_definition(

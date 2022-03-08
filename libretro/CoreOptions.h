@@ -147,10 +147,11 @@ namespace retro {
  *     int frames_to_skip = core_options["frameskip"].toInt();
  *     string midi_device = core_options["midi_device"].toString();
  *
- * You can also change core option values programmatically from within your core's code. This is
- * not a feature directly supported by the libretro API, but it is made possible through a trick.
- * Frontends that follow the spec to the letter (like RetroArch) will work. However, some other
- * frontends might possibly get confused by this.
+ * You can also change the current value of core options programmatically from within your core's
+ * code. If the frontend supports the RETRO_ENVIRONMENT_SET_VARIABLE command, then that will be
+ * used to change the current value. If the frontend does not support that command, then a trick
+ * will be used to accomplish this. Well-behaved frontends that follow the spec to the letter should
+ * work fine.
  *
  * To change the current value of an option, just use the setCurrentValue() function of your options
  * object. To change the "audio_accuracy" option to "low", and the "frameskip" option to 3 from the
@@ -213,10 +214,9 @@ public:
         -> bool;
     auto setVisible(const std::regex& exp, bool visible) noexcept -> bool;
 
-    /* Change the current value of the specified option. Note that the libretro API does not
-     * actually provide a proper way to do this, so we instead rely on the frontend to correctly
-     * re-apply changed option values. Works in RetroArch, but other frontends might not be as
-     * well-behaved and thus this might not work.
+    /* Change the current value of the specified option. The function will attempt to make this work
+     * (through a trick) even if the frontend does not support the RETRO_ENVIRONMENT_SET_VARIABLE
+     * command.
      */
     void setCurrentValue(std::string_view key, const CoreOptionValue& value);
 
@@ -229,6 +229,7 @@ private:
     std::string key_prefix_;
     retro_environment_t env_cb_ = envCbFallback;
     CoreOptionValue invalid_value_{""};
+    bool api_has_set_variable = false;
 
     void updateRetroOptions();
     void updateFrontendV0();
@@ -256,11 +257,6 @@ CoreOptions::CoreOptions(std::string key_prefix, Ts&&... Args)
             }
         }
     }
-}
-
-inline void CoreOptions::setEnvironmentCallback(const retro_environment_t cb)
-{
-    env_cb_ = cb;
 }
 
 inline auto CoreOptions::option(const std::string_view key) -> CoreOptionDefinition*

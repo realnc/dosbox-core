@@ -16,7 +16,7 @@ $(SDLNET): $(SDL)
 	    --disable-sdltest \
 	    --disable-gui \
 	    --with-pic \
-    && sed -i'.original' 's/^PROGRAMS =.*/PROGRAMS = /g' Makefile \
+	&& sed -i'.original' 's/^PROGRAMS =.*/PROGRAMS = /g' Makefile \
 	&& $(MAKE) -j$(NUMPROC) install
 	touch "$@"
 

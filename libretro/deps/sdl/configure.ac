@@ -30,19 +30,21 @@ AC_SUBST(SDL_INTERFACE_AGE)
 AC_SUBST(SDL_BINARY_AGE)
 AC_SUBST(SDL_VERSION)
 
-# libtool versioning
+dnl libtool versioning
 LT_INIT([win32-dll])
 
 LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
 LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
 LT_REVISION=$SDL_INTERFACE_AGE
 LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
+LT_EXTRA="" dnl for OS2 dll name
 m4_pattern_allow([^LT_])
 
 AC_SUBST(LT_RELEASE)
 AC_SUBST(LT_CURRENT)
 AC_SUBST(LT_REVISION)
 AC_SUBST(LT_AGE)
+AC_SUBST(LT_EXTRA)
 
 dnl Detect the canonical build and host environments
 dnl AC_CANONICAL_HOST
@@ -76,6 +78,15 @@ case "$host" in
         # We build SDL on cygwin without the UNIX emulation layer
         BASE_CFLAGS="-I/usr/include/mingw -mno-cygwin"
         BASE_LDFLAGS="-mno-cygwin"
+        ;;
+    *-*-os2*)
+        # disable static builds on os/2
+        enable_static=no
+        # -DBUILD_SDL is needed for DECLSPEC
+        BASE_CFLAGS="-DBUILD_SDL"
+        BASE_LDFLAGS=""
+        # SDL-1.2 has been built as SDL12.dll
+        LT_EXTRA="-os2dllname SDL12"
         ;;
     *)
         BASE_CFLAGS="-D_GNU_SOURCE=1"
@@ -136,11 +147,11 @@ AC_ARG_ENABLE(libc,
 if test x$enable_libc = xyes; then
     AC_DEFINE(HAVE_LIBC)
 
-    dnl Check for C library headers
+dnl Check for C library headers
     AC_HEADER_STDC
     AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
 
-    dnl Check for typedefs, structures, etc.
+dnl Check for typedefs, structures, etc.
     AC_TYPE_SIZE_T
     if test x$ac_cv_header_inttypes_h = xyes -o x$ac_cv_header_stdint_h = xyes; then
         AC_CHECK_TYPE(int64_t)
@@ -150,15 +161,9 @@ if test x$enable_libc = xyes; then
         have_inttypes=yes
     fi
 
-    dnl Checks for library functions.
-    case "$host" in
-    *-*-cygwin* | *-*-mingw*)
-        ;;
-    *)
-        AC_FUNC_ALLOCA
-        ;;
-    esac
+    AC_FUNC_ALLOCA
 
+dnl Checks for library functions.
     AC_FUNC_MEMCMP
     if test x$ac_cv_func_memcmp_working = xyes; then
         AC_DEFINE(HAVE_MEMCMP)
@@ -171,8 +176,7 @@ if test x$enable_libc = xyes; then
         AC_TRY_COMPILE([
           #include <sys/types.h>
           #include <sys/mman.h>
-        ],[
-        ],[
+        ],, [
         AC_DEFINE(HAVE_MPROTECT)
         ]),
     )
@@ -324,16 +328,14 @@ CheckOSS()
               #include <sys/soundcard.h>
             ],[
               int arg = SNDCTL_DSP_SETFRAGMENT;
-            ],[
-            have_oss=yes
-            ])
+            ], [have_oss=yes])
         fi
         if test x$have_oss != xyes; then
             AC_TRY_COMPILE([
               #include <soundcard.h>
             ],[
               int arg = SNDCTL_DSP_SETFRAGMENT;
-            ],[
+            ], [
             have_oss=yes
             AC_DEFINE(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H)
             ])
@@ -401,9 +403,7 @@ CheckDMEDIA()
           #include <dmedia/audio.h>
         ],[
           ALport audio_port;
-        ],[
-        have_dmedia=yes
-        ])
+        ], [have_dmedia=yes])
         AC_MSG_RESULT($have_dmedia)
 
         if test x$have_dmedia = xyes; then
@@ -418,7 +418,7 @@ CheckDMEDIA()
 dnl Check whether we want to use Tru64 UNIX native audio or not
 CheckMME()
 {
-    dnl Make sure we are running on an Tru64 UNIX
+dnl Make sure we are running on an Tru64 UNIX
     case $ARCH in
         osf)
             ;;
@@ -437,9 +437,7 @@ CheckMME()
           #include <mme_api.h>
         ],[
           HWAVEOUT sound;
-        ],[
-        have_mme=yes
-        ])
+        ], [have_mme=yes])
         CFLAGS="$save_CFLAGS"
         AC_MSG_RESULT($have_mme)
 
@@ -577,9 +575,7 @@ CheckARTSC()
              #include <artsc.h>
             ],[
              arts_stream_t stream;
-            ],[
-            audio_arts=yes
-            ])
+            ], [audio_arts=yes])
             CFLAGS="$save_CFLAGS"
             AC_MSG_RESULT($audio_arts)
             if test x$audio_arts = xyes; then
@@ -630,9 +626,8 @@ CheckNAS()
             NAS_CFLAGS="-I/usr/X11R6/include/"
             NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
 
-        dnl On IRIX, the NAS includes are in a different directory,
-        dnl and libnas must be explicitly linked in
-
+dnl On IRIX, the NAS includes are in a different directory,
+dnl and libnas must be explicitly linked in
         elif test -r /usr/freeware/include/nas/audiolib.h; then
             have_nas=yes
             NAS_LIBS="-lnas -lXt"
@@ -710,10 +705,10 @@ CheckAtariAudio()
 }
 
 dnl See if we can use x86 assembly blitters
-# NASM is available from: http://nasm.sourceforge.net
+dnl NASM is available from: http://nasm.us
 CheckNASM()
 {
-    dnl Make sure we are running on an x86 platform
+dnl Make sure we are running on an x86 platform
     case $host in
         i?86*)
             ;;
@@ -723,14 +718,14 @@ CheckNASM()
             ;;
     esac
 
-    dnl Mac OS X might report itself as "i386" but generate x86_64 code.
-    dnl  So see what size we think a pointer is, and bail if not 32-bit.
+dnl Mac OS X might report itself as "i386" but generate x86_64 code.
+dnl  So see what size we think a pointer is, and bail if not 32-bit.
     AC_CHECK_SIZEOF([void *], 4)
     if test x$ac_cv_sizeof_void_p != x4; then
         return
     fi
 
-    dnl Check for NASM (for assembly blit routines)
+dnl Check for NASM (for assembly blit routines)
     AC_ARG_ENABLE(nasm,
 [AS_HELP_STRING([--enable-nasm], [use nasm assembly blitters on x86 [default=yes]])],
                   , enable_nasm=yes)
@@ -757,6 +752,9 @@ CheckNASM()
               macosx)
                   NASMFLAGS="-f macho"
                   ;;
+              os2)
+                  NASMFLAGS="-f aout"
+                  ;;
               *)
                   NASMFLAGS="-f elf32"
                   ;;
@@ -774,7 +772,7 @@ CheckNASM()
             SOURCES="$SOURCES $srcdir/src/hermes/*.asm"
             NASMFLAGS="$NASMFLAGS -I $srcdir/src/hermes/"
 
-            dnl See if hidden visibility is supported
+dnl         See if hidden visibility is supported
             echo "GLOBAL _bar:function hidden" > symbol-visibility
             echo "_bar:" >> symbol-visibility
             CompileNASM symbol-visibility && NASMFLAGS="$NASMFLAGS -DHIDDEN_VISIBILITY"
@@ -783,7 +781,7 @@ CheckNASM()
             AC_SUBST(NASMFLAGS)
 
             case "$host" in
-                # this line is needed for QNX, because it's not defined the __ELF__
+                # this is needed for QNX, because it does not define __ELF__
                 *-*-qnx*)
                      EXTRA_CFLAGS="$EXTRA_CFLAGS -D__ELF__";;
                 *-*-solaris*)
@@ -812,8 +810,7 @@ CheckAltivec()
         vector unsigned int vzero() {
             return vec_splat_u32(0);
         }
-        ],[
-        ],[
+        ],, [
         have_gcc_altivec=yes
         have_altivec_h_hdr=yes
         ])
@@ -825,10 +822,7 @@ CheckAltivec()
             vector unsigned int vzero() {
                 return vec_splat_u32(0);
             }
-            ],[
-            ],[
-            have_gcc_altivec=yes
-            ])
+            ],, [have_gcc_altivec=yes])
             AC_MSG_RESULT($have_gcc_altivec)
         fi
         CFLAGS="$save_CFLAGS"
@@ -855,26 +849,21 @@ CheckAltivecApple()
         altivec_CFLAGS="-faltivec"
         CFLAGS="$save_CFLAGS $altivec_CFLAGS"
 
-        dnl -faltivec doesn't need altivec.h and actually
-        dnl  emits a warning if included..
+dnl    -faltivec doesn't need altivec.h and actually emits a warning if included..
         AC_MSG_CHECKING(for Altivec with GCC -faltivec option)
         AC_TRY_COMPILE([
         vector unsigned int vzero() {
             return vec_splat_u32(0);
         }
-        ],[
-        ],[
-        have_gcc_altivec=yes
-        ])
+        ],, [have_gcc_altivec=yes])
         AC_MSG_RESULT($have_gcc_altivec)
-
         CFLAGS="$save_CFLAGS"
 
         if test x$have_gcc_altivec = xyes; then
             AC_DEFINE(SDL_ALTIVEC_BLITTERS)
             EXTRA_CFLAGS="$EXTRA_CFLAGS $altivec_CFLAGS"
         else
-        dnl Check standart gcc altivec options
+dnl         Check standart gcc altivec options
             CheckAltivec
         fi
     fi
@@ -966,10 +955,7 @@ CheckVisibilityHidden()
     #if !defined(__GNUC__) || __GNUC__ < 4
     #error SDL only uses visibility attributes in GCC 4 or newer
     #endif
-    ],[
-    ],[
-    have_gcc_fvisibility=yes
-    ])
+    ],, [have_gcc_fvisibility=yes])
     AC_MSG_RESULT($have_gcc_fvisibility)
     CFLAGS="$save_CFLAGS"
 
@@ -986,19 +972,14 @@ CheckWarnAll()
 
     save_CFLAGS="$CFLAGS"
     CFLAGS="$save_CFLAGS -Wall"
-    AC_TRY_COMPILE([
-    int x = 0;
-    ],[
-    ],[
-    have_gcc_Wall=yes
-    ])
+    AC_TRY_COMPILE([int x = 0;],, [have_gcc_Wall=yes])
     AC_MSG_RESULT($have_gcc_Wall)
     CFLAGS="$save_CFLAGS"
 
     if test x$have_gcc_Wall = xyes; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall"
 
-        dnl Haiku headers use multicharacter constants all over the place. Ignore these warnings when using -Wall.
+dnl Haiku headers use multicharacter constants all over the place. Ignore these warnings when using -Wall.
         AC_MSG_CHECKING(for necessary GCC -Wno-multichar option)
         need_gcc_Wno_multichar=no
         case "$host" in
@@ -1241,8 +1222,7 @@ CheckX11()
             AC_TRY_COMPILE([
               #include <X11/Xlibint.h>
               extern int _XData32(Display *dpy,register _Xconst long *data,unsigned len);
-            ],[
-            ],[
+            ],, [
             have_const_param_xdata32=yes
             AC_DEFINE(SDL_VIDEO_DRIVER_X11_CONST_PARAM_XDATA32)
             ])
@@ -1267,9 +1247,7 @@ CheckPHOTON()
           #include <photon/PdDirect.h>
         ],[
          PgDisplaySettings_t *visual;
-        ],[
-        video_photon=yes
-        ])
+        ], [video_photon=yes])
         AC_MSG_RESULT($video_photon)
         if test x$video_photon = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_PHOTON)
@@ -1303,10 +1281,7 @@ CheckCARBON()
         have_carbon=no
         AC_TRY_COMPILE([
           #include <Carbon/Carbon.h>
-        ],[
-        ],[
-        have_carbon=yes
-        ])
+        ],, [have_carbon=yes])
         AC_MSG_RESULT($have_carbon)
         if test x$have_carbon = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_TOOLBOX)
@@ -1325,16 +1300,13 @@ CheckCOCOA()
                   , enable_video_cocoa=yes)
     if test x$enable_video = xyes -a x$enable_video_cocoa = xyes; then
         save_CFLAGS="$CFLAGS"
-        dnl work around that we don't have Objective-C support in autoconf
+dnl     work around that we don't have Objective-C support in autoconf
         CFLAGS="$CFLAGS -x objective-c"
         AC_MSG_CHECKING(for Cocoa framework)
         have_cocoa=no
         AC_TRY_COMPILE([
           #import <Cocoa/Cocoa.h>
-        ],[
-        ],[
-        have_cocoa=yes
-        ])
+        ],, [have_cocoa=yes])
         AC_MSG_RESULT($have_cocoa)
         CFLAGS="$save_CFLAGS"
         if test x$have_cocoa = xyes; then
@@ -1359,10 +1331,7 @@ CheckFBCON()
          #include <linux/fb.h>
          #include <linux/kd.h>
          #include <linux/keyboard.h>
-        ],[
-        ],[
-        video_fbcon=yes
-        ])
+        ],, [video_fbcon=yes])
         AC_MSG_RESULT($video_fbcon)
         if test x$video_fbcon = xyes; then
             AC_CHECK_FUNCS(getpagesize)
@@ -1413,10 +1382,7 @@ CheckPS2GS()
         AC_TRY_COMPILE([
          #include <linux/ps2/dev.h>
          #include <linux/ps2/gs.h>
-        ],[
-        ],[
-        video_ps2gs=yes
-        ])
+        ],, [video_ps2gs=yes])
         AC_MSG_RESULT($video_ps2gs)
         if test x$video_ps2gs = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_PS2GS)
@@ -1439,10 +1405,7 @@ CheckPS3()
       #include <linux/fb.h>
       #include <asm/ps3fb.h>
       #include <libspe2.h>
-    ],[
-    ],[
-      video_ps3=yes
-    ])
+    ],, [video_ps3=yes])
     AC_MSG_RESULT($video_ps3)
     if test x$video_ps3 = xyes; then
       AC_DEFINE(SDL_VIDEO_DRIVER_PS3)
@@ -1466,10 +1429,7 @@ CheckGGI()
         AC_TRY_COMPILE([
          #include <ggi/ggi.h>
          #include <ggi/gii.h>
-        ],[
-        ],[
-        video_ggi=yes
-        ])
+        ],, [video_ggi=yes])
         AC_MSG_RESULT($video_ggi)
         if test x$video_ggi = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_GGI)
@@ -1497,9 +1457,7 @@ CheckSVGA()
          if ( SCANCODE_RIGHTWIN && SCANCODE_LEFTWIN ) {
              exit(0);
          }
-        ],[
-        video_svga=yes
-        ])
+        ], [video_svga=yes])
         AC_MSG_RESULT($video_svga)
         if test x$video_svga = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_SVGALIB)
@@ -1529,9 +1487,7 @@ CheckVGL()
          bitmap.Type = VIDBUF32;
          bitmap.PixelBytes = 4;
          exit(bitmap.Bitmap);
-        ],[
-        video_vgl=yes
-        ])
+        ], [video_vgl=yes])
         AC_MSG_RESULT($video_vgl)
         if test x$video_vgl = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_VGL)
@@ -1557,9 +1513,7 @@ CheckWscons()
          #include <dev/wscons/wsdisplay_usl_io.h>
         ],[
          int wsmode = WSDISPLAYIO_MODE_DUMBFB;
-        ],[
-        video_wscons=yes
-        ])
+        ], [video_wscons=yes])
         AC_MSG_RESULT($video_wscons)
         if test x$video_wscons = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_WSCONS)
@@ -1581,10 +1535,7 @@ CheckAAlib()
         video_aalib=no
         AC_TRY_COMPILE([
          #include <aalib.h>
-        ],[
-        ],[
-        video_aalib=yes
-        ])
+        ],, [video_aalib=yes])
         AC_MSG_RESULT($video_aalib)
         if test x$video_aalib = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_AALIB)
@@ -1611,10 +1562,7 @@ CheckCaca()
             save_CFLAGS="$CFLAGS"
             AC_TRY_COMPILE([
              #include <caca.h>
-            ],[
-            ],[
-             video_caca=yes
-            ])
+            ],, [video_caca=yes])
             CFLAGS="$save_CFLAGS"
             AC_MSG_RESULT($video_caca)
             if test x$video_caca = xyes; then
@@ -1642,10 +1590,7 @@ CheckQtopia()
         CXXFLAGS="$QTOPIA_FLAGS"
         AC_TRY_COMPILE([
          #include <qpe/qpeapplication.h>
-        ],[
-        ],[
-        video_qtopia=yes
-        ])
+        ],, [video_qtopia=yes])
         CXXFLAGS="$OLD_CXX"
         AC_MSG_RESULT($video_qtopia)
         if test x$video_qtopia = xyes; then
@@ -1673,10 +1618,7 @@ CheckPicoGUI()
         video_picogui=no
         AC_TRY_COMPILE([
          #include <picogui.h>
-        ],[
-        ],[
-        video_picogui=yes
-        ])
+        ],, [video_picogui=yes])
         AC_MSG_RESULT($video_picogui)
         if test x$video_picogui = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_PICOGUI)
@@ -1757,10 +1699,7 @@ CheckOpenGLX11()
          #include <GL/gl.h>
          #include <GL/glx.h>
          #include <GL/glu.h>
-        ],[
-        ],[
-        video_opengl=yes
-        ])
+        ],, [video_opengl=yes])
         AC_MSG_RESULT($video_opengl)
         if test x$video_opengl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL)
@@ -1777,10 +1716,7 @@ CheckOpenGLQNX()
         video_opengl=no
         AC_TRY_COMPILE([
          #include <GL/gl.h>
-        ],[
-        ],[
-        video_opengl=yes
-        ])
+        ],, [video_opengl=yes])
         AC_MSG_RESULT($video_opengl)
         if test x$video_opengl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL)
@@ -1870,7 +1806,7 @@ fi
 dnl See if we can use the new unified event interface in Linux 2.4
 CheckInputEvents()
 {
-    dnl Check for Linux 2.4 unified input event interface support
+dnl Check for Linux 2.4 unified input event interface support
     AC_ARG_ENABLE(input-events,
 [AS_HELP_STRING([--enable-input-events], [use Linux 2.4 unified input interface [default=yes]])],
                   , enable_input_events=yes)
@@ -1883,9 +1819,7 @@ CheckInputEvents()
           #ifndef EVIOCGNAME
           #error EVIOCGNAME() ioctl not available
           #endif
-        ],[
-        use_input_events=yes
-        ])
+        ], [use_input_events=yes])
         AC_MSG_RESULT($use_input_events)
         if test x$use_input_events = xyes; then
             AC_DEFINE(SDL_INPUT_LINUXEV)
@@ -1904,10 +1838,7 @@ CheckTslib()
         enable_input_tslib=no
         AC_TRY_COMPILE([
           #include "tslib.h"
-        ],[
-        ],[
-        enable_input_tslib=yes
-        ])
+        ],, [enable_input_tslib=yes])
         AC_MSG_RESULT($enable_input_tslib)
         if test x$enable_input_tslib = xyes; then
             AC_DEFINE(SDL_INPUT_TSLIB)
@@ -1919,7 +1850,7 @@ CheckTslib()
 dnl See if we can use GNU pth library for threads
 CheckPTH()
 {
-    dnl Check for pth support
+dnl Check for pth support
     AC_ARG_ENABLE(pth,
 [AS_HELP_STRING([--enable-pth], [use GNU pth library for multi-threading [default=yes]])],
                   , enable_pth=yes)
@@ -1946,11 +1877,11 @@ CheckPTH()
 dnl See what type of thread model to use on Linux and Solaris
 CheckPTHREAD()
 {
-    dnl Check for pthread support
+dnl Check for pthread support
     AC_ARG_ENABLE(pthreads,
 [AS_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [default=yes]])],
                   , enable_pthreads=yes)
-    dnl This is used on Linux for glibc binary compatibility (Doh!)
+dnl This is used on Linux for glibc binary compatibility (Doh!)
     AC_ARG_ENABLE(pthread-sem,
 [AS_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [default=yes]])],
                   , enable_pthread_sem=yes)
@@ -2041,9 +1972,7 @@ CheckPTHREAD()
         ],[
          pthread_attr_t type;
          pthread_attr_init(&type);
-        ],[
-        use_pthreads=yes
-        ])
+        ], [use_pthreads=yes])
         AC_MSG_RESULT($use_pthreads)
         # Restore the compiler flags and libraries
         CFLAGS="$ac_save_cflags"; LIBS="$ac_save_libs"
@@ -2071,7 +2000,7 @@ CheckPTHREAD()
                 ],[
                   pthread_mutexattr_t attr;
                   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-                ],[
+                ], [
                 has_recursive_mutexes=yes
                 AC_DEFINE(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX)
                 ])
@@ -2083,7 +2012,7 @@ CheckPTHREAD()
                 ],[
                   pthread_mutexattr_t attr;
                   pthread_mutexattr_setkind_np(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
-                ],[
+                ], [
                 has_recursive_mutexes=yes
                 AC_DEFINE(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP)
                 ])
@@ -2097,10 +2026,7 @@ CheckPTHREAD()
                 AC_TRY_COMPILE([
                   #include <pthread.h>
                   #include <semaphore.h>
-                ],[
-                ],[
-                have_pthread_sem=yes
-                ])
+                ],, [have_pthread_sem=yes])
                 AC_MSG_RESULT($have_pthread_sem)
             fi
             if test x$have_pthread_sem = xyes; then
@@ -2111,7 +2037,7 @@ CheckPTHREAD()
                   #include <semaphore.h>
                 ],[
                   sem_timedwait(NULL, NULL);
-                ],[
+                ], [
                 have_sem_timedwait=yes
                 AC_DEFINE(HAVE_SEM_TIMEDWAIT)
                 ])
@@ -2154,10 +2080,7 @@ CheckWIN32()
     have_win32_gcc=no
     AC_TRY_COMPILE([
      #include <windows.h>
-    ],[
-    ],[
-    have_win32_gcc=yes
-    ])
+    ],, [have_win32_gcc=yes])
     AC_MSG_RESULT($have_win32_gcc)
     if test x$have_win32_gcc != xyes; then
        AC_MSG_ERROR([
@@ -2175,7 +2098,7 @@ CheckWIN32()
                 AC_DEFINE(HAVE__STRTOUI64))
     CFLAGS="$save_CFLAGS"
 
-    dnl See if the user wants to redirect standard output to files
+dnl See if the user wants to redirect standard output to files
     AC_ARG_ENABLE(stdio-redirect,
 [AS_HELP_STRING([--enable-stdio-redirect], [Redirect STDIO to files on Win32 [default=yes]])],
                   , enable_stdio_redirect=yes)
@@ -2189,6 +2112,29 @@ CheckWIN32()
         SOURCES="$SOURCES $srcdir/src/video/windib/*.c"
         have_video=yes
     fi
+}
+
+dnl Determine whether the compiler can produce OS/2 executables
+CheckOS2()
+{
+    AC_MSG_CHECKING(OS/2 compiler)
+    have_os2_gcc=no
+    AC_TRY_COMPILE([#include <os2.h>],
+     [], [have_os2_gcc=yes])
+    AC_MSG_RESULT($have_os2_gcc)
+    if test x$have_os2_gcc != xyes; then
+       AC_MSG_ERROR([
+*** Your compiler ($CC) does not produce OS/2 executables!
+       ])
+    fi
+
+dnl See whether the user has a video driver choice
+    AC_ARG_ENABLE(video-grop,
+[AS_HELP_STRING([--enable-video-grop], [use the new OS/2 gRop video driver [default=yes]])],
+                 , enable_video_grop=yes)
+    AC_ARG_ENABLE(video-fslib,
+[AS_HELP_STRING([--enable-video-fslib], [use the old OS/2 FSLib video driver [default=no]])],
+                 , enable_video_fslib=no)
 }
 
 dnl Find the DirectX includes and libraries
@@ -2236,15 +2182,19 @@ CheckDLOPEN()
          #if defined(MAC_OS_X_VERSION_MIN_REQUIRED) && MAC_OS_X_VERSION_MIN_REQUIRED <= 1020
          #error Use dlcompat for Mac OS X 10.2 compatibility
          #endif
-        ],[
-        have_dlopen=yes
-        ])
+        ], [have_dlopen=yes])
         AC_MSG_RESULT($have_dlopen)
 
         if test x$have_dlopen = xyes; then
             AC_CHECK_LIB(c, dlopen, EXTRA_LDFLAGS="$EXTRA_LDFLAGS",
-               AC_CHECK_LIB(dl, dlopen, EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl",
-                  AC_CHECK_LIB(ltdl, dlopen, EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lltdl")))
+               AC_CHECK_LIB(dl, dlopen, EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl", [have_dlopen=no])
+            )
+            if test x$have_dlopen = xno; then
+               AC_MSG_WARN([Failed finding libdl, dlopen disabled])
+            fi
+        fi
+
+        if test x$have_dlopen = xyes; then
             AC_DEFINE(SDL_LOADSO_DLOPEN)
             SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
             have_loadso=yes
@@ -2313,9 +2263,7 @@ CheckUSBHID()
           struct report_desc *repdesc;
           struct usb_ctl_report *repbuf;
           hid_kind_t hidkind;
-        ],[
-        have_usbhid=yes
-        ])
+        ], [have_usbhid=yes])
         AC_MSG_RESULT($have_usbhid)
 
         if test x$have_usbhid = xyes; then
@@ -2343,9 +2291,7 @@ CheckUSBHID()
             ],[
               struct usb_ctl_report buf;
               if (buf.ucr_data) { }
-            ],[
-            have_usbhid_ucr_data=yes
-            ])
+            ], [have_usbhid_ucr_data=yes])
             if test x$have_usbhid_ucr_data = xyes; then
                 USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
             fi
@@ -2375,9 +2321,7 @@ CheckUSBHID()
             ],[
               report_desc_t d;
               hid_start_parse(d, 1, 1);
-            ],[
-            have_usbhid_new=yes
-            ])
+            ], [have_usbhid_new=yes])
             if test x$have_usbhid_new = xyes; then
                 USB_CFLAGS="$USB_CFLAGS -DUSBHID_NEW"
             fi
@@ -2389,9 +2333,7 @@ CheckUSBHID()
               #include <machine/joystick.h>
             ],[
               struct joystick t;
-            ],[
-            have_machine_joystick=yes
-            ])
+            ], [have_machine_joystick=yes])
             if test x$have_machine_joystick = xyes; then
                 AC_DEFINE(SDL_HAVE_MACHINE_JOYSTICK_H)
             fi
@@ -2941,7 +2883,11 @@ case "$host" in
         ;;
     *-riscos)
         ARCH=riscos
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
         CheckOSS
+        CheckDLOPEN
         CheckPTHREAD
         # Set up files for the video library
         if test x$enable_video = xyes; then
@@ -2961,6 +2907,75 @@ case "$host" in
             AC_DEFINE(SDL_TIMER_RISCOS)
             SOURCES="$SOURCES $srcdir/src/timer/riscos/*.c"
             have_timers=yes
+        fi
+        ;;
+    *-*-os2*)
+        ARCH=os2
+        if test "$build" != "$host"; then # cross-compiling
+            # Default cross-compile location
+            ac_default_prefix=/@unixroot/usr/local/cross-tools/$host
+        else
+            # Look for the location of the tools and install there
+            if test "$BUILD_PREFIX" != ""; then
+                ac_default_prefix=$BUILD_PREFIX
+            fi
+        fi
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DOS2EMX_PLAIN_CHAR -I$srcdir/os2/h"
+        CheckOS2
+        CheckNASM
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+            if test x$enable_video_grop = xyes; then
+                AC_DEFINE(SDL_VIDEO_DRIVER_OS2GROP)
+                SOURCES="$SOURCES $srcdir/src/video/os2grop/*.c"
+                have_video=yes
+            fi
+            if test x$enable_video_fslib = xyes; then
+                AC_DEFINE(SDL_VIDEO_DRIVER_OS2FS)
+                SOURCES="$SOURCES $srcdir/src/video/os2fslib/*.c"
+                have_video=yes
+            fi
+        fi
+        # Set up files for the audio library
+        if test x$enable_audio = xyes; then
+            AC_DEFINE(SDL_AUDIO_DRIVER_DART)
+            SOURCES="$SOURCES $srcdir/src/audio/dart/*.c"
+            have_audio=yes
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
+        fi
+        # Set up files for the cdrom library
+        if test x$enable_cdrom = xyes; then
+            AC_DEFINE(SDL_CDROM_OS2)
+            SOURCES="$SOURCES $srcdir/src/cdrom/os2/*.c"
+            have_cdrom=yes
+        fi
+        # Set up files for the thread library
+        if test x$enable_threads = xyes; then
+            AC_DEFINE(SDL_THREAD_OS2)
+            SOURCES="$SOURCES $srcdir/src/thread/os2/*.c"
+            have_threads=yes
+        fi
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_OS2)
+            SOURCES="$SOURCES $srcdir/src/timer/os2/*.c"
+            have_timers=yes
+        fi
+        # Set up files for the shared object loading library
+        if test x$enable_loadso = xyes; then
+            AC_DEFINE(SDL_LOADSO_OS2)
+            SOURCES="$SOURCES $srcdir/src/loadso/os2/*.c"
+            have_loadso=yes
+        fi
+        # Set up files for the joystick library
+        if test x$enable_joystick = xyes; then
+            AC_DEFINE(SDL_JOYSTICK_OS2)
+            SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
+            have_joystick=yes
         fi
         ;;
     *)

@@ -29,18 +29,19 @@ set (ignore_headers
 )
 
 if (GTKDOC_FOUND)
-  include (UseGtkDoc)
-
-  gtk_doc_add_module (libinstpatch ${CMAKE_SOURCE_DIR}/libinstpatch
+  gtk_doc_add_module (libinstpatch
+    SOURCE ${CMAKE_SOURCE_DIR}/libinstpatch
     XML libinstpatch-docs.xml
     SUFFIXES c h
     IGNOREHEADERS ${ignore_headers}
-    EXTRAHEADERS ${CMAKE_CURRENT_BINARY_DIR}/../../libinstpatch/version.h
-    TYPEINITFUNC ipatch_init\(\)
+    SCANOPTS ${CMAKE_CURRENT_BINARY_DIR}/../../libinstpatch/version.h
+    SCANOBJOPTS --type-init-func=ipatch_init\(\)
     CFLAGS -I${CMAKE_SOURCE_DIR}
     LDFLAGS -L${CMAKE_CURRENT_BINARY_DIR}/../../libinstpatch -linstpatch-1.0
     LDPATH ${CMAKE_CURRENT_BINARY_DIR}/../../libinstpatch
     DEPENDS instpatch-1.0
   )
+
+  add_custom_target(documentation ALL DEPENDS doc-libinstpatch)
 endif ()
 

@@ -1,5 +1,5 @@
 #	libInstPatch
-###	Copyright (C) 1999-2020 Element Green and others
+###	Copyright (C) 1999-2021 Element Green and others
 http://www.swamiproject.org
 
 [![Build Status](https://dev.azure.com/tommbrt/tommbrt/_apis/build/status/swami.libinstpatch?branchName=master)](https://dev.azure.com/tommbrt/tommbrt/_build/latest?definitionId=1&branchName=master)

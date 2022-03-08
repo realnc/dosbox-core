@@ -136,7 +136,11 @@ struct _IpatchSLIInstCatMapEntry
 
 /* Defined in IpatchSLIInst_CatMaps.c */
 extern const char *ipatch_sli_inst_cat_strings[];
+/* getter fonction that returns pointer on ipatch_sli_inst_cat_strings table */
+extern const gchar **ipatch_sli_inst_get_cat_strings(void);
 extern const IpatchSLIInstCatMapEntry ipatch_sli_inst_cat_map[];
+/* getter fonction that returns pointer on ipatch_sli_inst_cat_map table */
+extern const IpatchSLIInstCatMapEntry * ipatch_sli_inst_get_cat_map(void);
 
 /* SoundFont instrument item */
 struct _IpatchSLIInst

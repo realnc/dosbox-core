@@ -388,6 +388,7 @@ int main(int argc, char **argv)
 	m = mpg123_new(NULL, NULL);
 	mpg123_param(m, MPG123_ADD_FLAGS, MPG123_PICTURE, 0.);
 	mpg123_param(m, MPG123_VERBOSE, param.verbose ? 4 : 0, 0.);
+	mpg123_param(m, MPG123_RESYNC_LIMIT, -1, 0.0);
 
 	for(i=loptind; i < argc; ++i)
 	{

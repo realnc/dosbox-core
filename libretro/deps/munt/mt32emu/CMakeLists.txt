@@ -1,20 +1,12 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(libmt32emu CXX)
-set(libmt32emu_DESCRIPTION "C/C++ library to emulate (approximately) the Roland MT-32, CM-32L and LAPC-I synthesiser modules")
-set(libmt32emu_URL "http://munt.sourceforge.net/")
-set(libmt32emu_VERSION_MAJOR 2)
-set(libmt32emu_VERSION_MINOR 5)
-set(libmt32emu_VERSION_PATCH 3)
-set(libmt32emu_VERSION "${libmt32emu_VERSION_MAJOR}.${libmt32emu_VERSION_MINOR}.${libmt32emu_VERSION_PATCH}")
 
-if(${munt_WITH_MT32EMU_SMF2WAV} OR ${munt_WITH_MT32EMU_QT})
-  set(libmt32emu_STANDALONE_BUILD FALSE)
-else()
-  set(libmt32emu_STANDALONE_BUILD TRUE)
-endif()
+include(cmake/project_data.cmake)
+
+include(GNUInstallDirs)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
   set(${PROJECT_NAME}_COMPILER_IS_GNU_OR_CLANG TRUE)
@@ -22,9 +14,34 @@ else()
   set(${PROJECT_NAME}_COMPILER_IS_GNU_OR_CLANG FALSE)
 endif()
 
-option(libmt32emu_SHARED "Build shared library" ${libmt32emu_STANDALONE_BUILD})
-option(libmt32emu_C_INTERFACE "Provide C-compatible API" TRUE)
+# By default, we build a shared library, unless a higher-level script defines BUILD_SHARED_LIBS.
+if(NOT DEFINED BUILD_SHARED_LIBS)
+  set(BUILD_SHARED_LIBS TRUE)
+endif()
+
+option(libmt32emu_SHARED "Build shared library" ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS ${libmt32emu_SHARED})
+
+if(BUILD_SNAPSHOTS AND NOT libmt32emu_SHARED)
+  include(../cmake/build_snapshots.cmake)
+endif()
+
+if(libmt32emu_REQUIRE_C_INTERFACE)
+  unset(libmt32emu_C_INTERFACE CACHE)
+  set(libmt32emu_C_INTERFACE TRUE)
+else()
+  option(libmt32emu_C_INTERFACE "Provide C-compatible API" TRUE)
+endif()
+
+if(libmt32emu_REQUIRE_CPP_INTERFACE OR NOT libmt32emu_SHARED)
+  unset(libmt32emu_CPP_INTERFACE CACHE)
+  set(libmt32emu_CPP_INTERFACE TRUE)
+else()
+  option(libmt32emu_CPP_INTERFACE "Provide C++ classes (compiler-specific ABI)" TRUE)
+endif()
+
 option(${PROJECT_NAME}_WITH_INTERNAL_RESAMPLER "Use built-in sample rate conversion" TRUE)
+
 if(${PROJECT_NAME}_COMPILER_IS_GNU_OR_CLANG)
   option(libmt32emu_REQUIRE_ANSI "Require ANSI C++ compatibility when compiling with GNU C++ or Clang" TRUE)
   mark_as_advanced(libmt32emu_REQUIRE_ANSI)
@@ -32,28 +49,48 @@ else()
   unset(libmt32emu_REQUIRE_ANSI CACHE)
 endif()
 
-if(munt_WITH_MT32EMU_SMF2WAV AND NOT libmt32emu_C_INTERFACE)
-  message(STATUS "Option libmt32emu_C_INTERFACE implied TRUE when building for mt32emu_smf2wav")
-  set(libmt32emu_C_INTERFACE TRUE)
+# Variable LIB_INSTALL_DIR is now deprecated, we use CMAKE_INSTALL_LIBDIR et. al.
+# However, if it is set in an existing script, we make use of its value.
+if(DEFINED LIB_INSTALL_DIR)
+  set(CMAKE_INSTALL_LIBDIR ${LIB_INSTALL_DIR})
 endif()
-
-if(${libmt32emu_SHARED} AND NOT ${munt_WITH_MT32EMU_QT})
-  option(libmt32emu_CPP_INTERFACE "Provide C++ classes (compiler-specific ABI)" TRUE)
-else(${libmt32emu_SHARED} AND NOT ${munt_WITH_MT32EMU_QT})
-  if(NOT ${libmt32emu_CPP_INTERFACE})
-    message(STATUS "Option libmt32emu_CPP_INTERFACE implied TRUE for static library builds and when building for mt32emu_qt")
-  endif(NOT ${libmt32emu_CPP_INTERFACE})
-  set(libmt32emu_CPP_INTERFACE TRUE)
-endif(${libmt32emu_SHARED} AND NOT ${munt_WITH_MT32EMU_QT})
-
-set(LIB_INSTALL_DIR lib CACHE PATH "Relative installation path to libraries")
 
 set(libmt32emu_PACKAGE_TYPE Complete CACHE STRING "Selects output binary package type: Complete, Runtime or Devel")
 mark_as_advanced(libmt32emu_PACKAGE_TYPE)
 set_property(CACHE libmt32emu_PACKAGE_TYPE PROPERTY STRINGS Complete Runtime Devel)
 
-set(libmt32emu_PKGCONFIG_INSTALL_PREFIX lib CACHE PATH "Installation path prefix for pkgconfig files")
+# Note, GNUInstallDirs provides no facility to locate pkg-config files, as they are normally placed
+# along with libraries. However, some systems use other non-GNU layouts.
+set(libmt32emu_PKGCONFIG_INSTALL_PREFIX
+  "" CACHE PATH
+  "Relative installation path prefix for pkgconfig files. If unset, defaults to $CMAKE_INSTALL_LIBDIR"
+)
 mark_as_advanced(libmt32emu_PKGCONFIG_INSTALL_PREFIX)
+if(NOT libmt32emu_PKGCONFIG_INSTALL_PREFIX)
+  set(libmt32emu_PKGCONFIG_INSTALL_PREFIX ${CMAKE_INSTALL_LIBDIR})
+endif()
+
+set(libmt32emu_PKGCONFIG_INSTALL_DIR
+  "" CACHE PATH
+  "Relative installation path for pkgconfig files. If unset, defaults to $libmt32emu_PKGCONFIG_INSTALL_PREFIX/pkgconfig"
+)
+mark_as_advanced(libmt32emu_PKGCONFIG_INSTALL_DIR)
+if(NOT libmt32emu_PKGCONFIG_INSTALL_DIR)
+  set(libmt32emu_PKGCONFIG_INSTALL_DIR ${libmt32emu_PKGCONFIG_INSTALL_PREFIX}/pkgconfig)
+endif()
+
+# TODO: Use macro GNUInstallDirs_get_absolute_install_dir when available.
+set(libmt32emu_PKGCONFIG_INSTALL_FULL_DIR
+  "" CACHE PATH
+  "Absolute installation path for pkgconfig files. If unset, defaults to $CMAKE_INSTALL_PREFIX/$libmt32emu_PKGCONFIG_INSTALL_DIR"
+)
+mark_as_advanced(libmt32emu_PKGCONFIG_INSTALL_FULL_DIR)
+if(NOT libmt32emu_PKGCONFIG_INSTALL_FULL_DIR)
+  set(libmt32emu_PKGCONFIG_INSTALL_FULL_DIR ${CMAKE_INSTALL_PREFIX}/${libmt32emu_PKGCONFIG_INSTALL_DIR})
+endif()
+
+set(libmt32emu_CMAKE_PACKAGE_INSTALL_PREFIX ${CMAKE_INSTALL_LIBDIR}/cmake)
+set(libmt32emu_CMAKE_PACKAGE_INSTALL_DIR ${libmt32emu_CMAKE_PACKAGE_INSTALL_PREFIX}/MT32Emu)
 
 if(libmt32emu_SHARED)
   option(libmt32emu_WITH_VERSION_TAGGING "Tags shared object with library version and enables runtime version check")
@@ -76,6 +113,7 @@ endif(libmt32emu_SHARED)
 set(libmt32emu_SOURCES
   src/Analog.cpp
   src/BReverbModel.cpp
+  src/Display.cpp
   src/File.cpp
   src/FileStream.cpp
   src/LA32FloatWaveGenerator.cpp
@@ -184,7 +222,6 @@ endif()
 
 if(libmt32emu_SHARED)
   set(libmt32emu_SHARED_DEFINITION "#define MT32EMU_SHARED")
-  set(libmt32emu_BUILD_TYPE SHARED)
   if(NOT OS2)
     # A workaround for the OS/2 port of GCC 9 that emits lots of warnings otherwise.
     set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -208,7 +245,6 @@ endforeach(HEADER)
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/include/mt32emu.h" "#include <mt32emu/mt32emu.h>")
 
 configure_file("src/config.h.in" "include/mt32emu/config.h")
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/include/mt32emu)
 
 if(${PROJECT_NAME}_WITH_INTERNAL_RESAMPLER)
   add_definitions(-DMT32EMU_WITH_INTERNAL_RESAMPLER)
@@ -222,52 +258,41 @@ if(${PROJECT_NAME}_WITH_INTERNAL_RESAMPLER)
   )
 else(${PROJECT_NAME}_WITH_INTERNAL_RESAMPLER)
   # Prefer using SOXR if it is available
-  find_package(LibSoxr)
-  if(LIBSOXR_FOUND)
+  find_package(SOXR 0.1.2 MODULE)
+  if(SOXR_FOUND)
     set(libmt32emu_PC_REQUIRES_PRIVATE "soxr >= 0.1.2")
     add_definitions(-DMT32EMU_WITH_LIBSOXR_RESAMPLER)
-    set(libmt32emu_EXT_LIBS ${libmt32emu_EXT_LIBS} ${LIBSOXR_LIBRARY})
-    include_directories(${LIBSOXR_INCLUDE_DIR})
-    set(${PROJECT_NAME}_SOURCES ${${PROJECT_NAME}_SOURCES}
-      src/srchelper/SoxrAdapter.cpp
-    )
-  else(LIBSOXR_FOUND)
-    message(STATUS "Could NOT find libsoxr")
-
-    # Try Samplerate if SOXR is unavailable
-    find_package(LibSamplerate)
-    if(LIBSAMPLERATE_FOUND)
+    set(libmt32emu_EXT_TARGET Soxr::soxr)
+    list(APPEND ${PROJECT_NAME}_SOURCES src/srchelper/SoxrAdapter.cpp)
+    if(NOT libmt32emu_SHARED)
+      set(libmt32emu_EXT_DEPENDENCY SOXR 0.1.2)
+      set(libmt32emu_EXT_MODULE "FindSOXR.cmake")
+    endif()
+  else(SOXR_FOUND)
+    # Try SampleRate if SOXR is unavailable
+    find_package(SampleRate 0.1.8 MODULE)
+    if(SampleRate_FOUND)
       set(libmt32emu_PC_REQUIRES_PRIVATE "samplerate >= 0.1.8")
       add_definitions(-DMT32EMU_WITH_LIBSAMPLERATE_RESAMPLER)
-      set(libmt32emu_EXT_LIBS ${libmt32emu_EXT_LIBS} ${LIBSAMPLERATE_LIBRARY})
-      include_directories(${LIBSAMPLERATE_INCLUDE_DIR})
-      set(${PROJECT_NAME}_SOURCES ${${PROJECT_NAME}_SOURCES}
-        src/srchelper/SamplerateAdapter.cpp
-      )
-    else(LIBSAMPLERATE_FOUND)
-      message(STATUS "Could NOT find libsamplerate")
-    endif(LIBSAMPLERATE_FOUND)
-  endif(LIBSOXR_FOUND)
+      set(libmt32emu_EXT_TARGET SampleRate::samplerate)
+      list(APPEND ${PROJECT_NAME}_SOURCES src/srchelper/SamplerateAdapter.cpp)
+      if(NOT libmt32emu_SHARED)
+        set(libmt32emu_EXT_DEPENDENCY SampleRate 0.1.8)
+        set(libmt32emu_EXT_MODULE "FindSampleRate.cmake")
+      endif()
+    else(SampleRate_FOUND)
+      message(STATUS "Could NOT find any sample rate conversion library, resampling unavailable")
+    endif(SampleRate_FOUND)
+  endif(SOXR_FOUND)
 endif(${PROJECT_NAME}_WITH_INTERNAL_RESAMPLER)
 
 configure_file("src/mt32emu.pc.in" "mt32emu.pc" @ONLY)
 
-add_library(mt32emu ${libmt32emu_BUILD_TYPE} ${libmt32emu_SOURCES})
+add_library(mt32emu ${libmt32emu_SOURCES})
 
-if(libmt32emu_EXT_LIBS)
-  if(libmt32emu_SHARED)
-    target_link_libraries(mt32emu
-      ${libmt32emu_EXT_LIBS}
-    )
-    unset(MT32EMU_EXT_LIBS CACHE)
-  else(libmt32emu_SHARED)
-    # Locations are exported for the benefit of a higher-level CMakeLists.txt.
-    # This is irrelevant if compiling stand-alone.
-    set(MT32EMU_EXT_LIBS ${libmt32emu_EXT_LIBS} CACHE FILEPATH "")
-  endif(libmt32emu_SHARED)
-else(libmt32emu_EXT_LIBS)
-  unset(MT32EMU_EXT_LIBS CACHE)
-endif(libmt32emu_EXT_LIBS)
+if(libmt32emu_EXT_TARGET)
+  target_link_libraries(mt32emu PRIVATE ${libmt32emu_EXT_TARGET})
+endif()
 
 set_target_properties(mt32emu
   PROPERTIES VERSION ${libmt32emu_VERSION}
@@ -289,83 +314,135 @@ if(libmt32emu_WITH_SYMBOL_VERSIONING)
   )
 endif()
 
-if(libmt32emu_PACKAGE_TYPE STREQUAL "Runtime")
-  if(libmt32emu_SHARED)
-    install(TARGETS mt32emu
-      LIBRARY DESTINATION ${LIB_INSTALL_DIR} NAMELINK_SKIP
-      RUNTIME DESTINATION bin
-    )
-  endif()
-elseif(libmt32emu_PACKAGE_TYPE STREQUAL "Devel")
-  if(WIN32 OR CYGWIN)
-    install(TARGETS mt32emu ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-  else()
-    install(TARGETS mt32emu LIBRARY DESTINATION ${LIB_INSTALL_DIR} NAMELINK_ONLY)
-  endif()
-else()
-  install(TARGETS mt32emu
-    ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
-    LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-    RUNTIME DESTINATION bin
+target_include_directories(mt32emu
+  PRIVATE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include/mt32emu>"
+  INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>"
+  INTERFACE "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+)
+
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Runtime)
+set(libmt32emu_COMPONENT_DEVEL COMPONENT Devel)
+
+install(TARGETS mt32emu EXPORT MT32EmuTargets
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} ${libmt32emu_COMPONENT_DEVEL}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} NAMELINK_SKIP
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+# TODO: Use NAMELINK_COMPONENT with CMake 3.12 instead.
+if(libmt32emu_SHARED)
+  install(TARGETS mt32emu EXPORT MT32EmuTargets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} ${libmt32emu_COMPONENT_DEVEL} NAMELINK_ONLY
   )
 endif()
 
-if(NOT libmt32emu_PACKAGE_TYPE STREQUAL "Runtime")
-  install(DIRECTORY
-    "${CMAKE_CURRENT_BINARY_DIR}/include/mt32emu"
-    DESTINATION include
-  )
+install(DIRECTORY
+  "${CMAKE_CURRENT_BINARY_DIR}/include/mt32emu"
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  ${libmt32emu_COMPONENT_DEVEL}
+)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/include/mt32emu.h
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  ${libmt32emu_COMPONENT_DEVEL}
+)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/mt32emu.pc
+  DESTINATION ${libmt32emu_PKGCONFIG_INSTALL_DIR}
+  ${libmt32emu_COMPONENT_DEVEL}
+)
+install(EXPORT MT32EmuTargets
+  DESTINATION ${libmt32emu_CMAKE_PACKAGE_INSTALL_DIR}
+  NAMESPACE MT32Emu::
+  ${libmt32emu_COMPONENT_DEVEL}
+)
+configure_file(cmake/MT32EmuConfig.cmake.in cmake/MT32EmuConfig.cmake @ONLY)
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(cmake/MT32EmuConfigVersion.cmake
+  VERSION ${libmt32emu_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/MT32EmuConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/MT32EmuConfigVersion.cmake
+  DESTINATION ${libmt32emu_CMAKE_PACKAGE_INSTALL_DIR}
+  ${libmt32emu_COMPONENT_DEVEL}
+)
+if(libmt32emu_EXT_MODULE)
   install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/include/mt32emu.h
-    DESTINATION include
-  )
-  install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/mt32emu.pc
-    DESTINATION ${libmt32emu_PKGCONFIG_INSTALL_PREFIX}/pkgconfig
+    cmake/CheckDependencies.cmake
+    cmake/${libmt32emu_EXT_MODULE}
+    DESTINATION ${libmt32emu_CMAKE_PACKAGE_INSTALL_DIR}
+    ${libmt32emu_COMPONENT_DEVEL}
   )
 endif()
 
-if(NOT(libmt32emu_SHARED AND libmt32emu_PACKAGE_TYPE STREQUAL "Devel"))
-  install(FILES
-    AUTHORS.txt COPYING.txt COPYING.LESSER.txt NEWS.txt README.md TODO.txt
-    DESTINATION share/doc/munt/libmt32emu
-  )
-endif()
+install(FILES
+  AUTHORS.txt COPYING.txt COPYING.LESSER.txt NEWS.txt README.md TODO.txt
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/munt/${PROJECT_NAME}
+)
+
+# Facilitates usage of the library in another project either through
+# an imported target or directly from the build tree.
+add_library(MT32Emu::mt32emu ALIAS mt32emu)
 
 # Locations are exported for the benefit of a higher-level CMakeLists.txt.
-# These lines are irrelevant if compiling stand-alone.
-set(MT32EMU_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include" CACHE PATH "")
-set(MT32EMU_LIBRARY $<TARGET_LINKER_FILE:mt32emu> CACHE FILEPATH "")
+# These variables are irrelevant if compiling stand-alone.
+# NOTE: This method is deprecated, the alias target should be used instead
+# to link with mt32emu from the same build tree.
+set(MT32EMU_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/include" CACHE INTERNAL "")
+set(MT32EMU_LIBRARY MT32Emu::mt32emu CACHE INTERNAL "")
+unset(MT32EMU_EXT_LIBS CACHE)
 
 # build a CPack driven installer package
 set(CPACK_PACKAGE_VERSION_MAJOR "${libmt32emu_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${libmt32emu_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${libmt32emu_VERSION_PATCH}")
 set(CPACK_PACKAGE_VENDOR "muntemu.org")
-set(CPACK_PACKAGE_CONTACT "sergm@muntemu.org")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../FreeBSD/usr/ports/audio/libmt32emu/pkg-descr")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${libmt32emu_DESCRIPTION})
+set(CPACK_PACKAGE_CONTACT "${libmt32emu_CONTACT}")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/info.txt")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${libmt32emu_DESCRIPTION_SUMMARY}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.LESSER.txt")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 # The default package file name has "-${CPACK_SYSTEM_NAME}" at the end, which doesn't match our previous releases
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${libmt32emu_VERSION}")
+
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}")
 set(CPACK_SOURCE_GENERATOR TGZ)
 set(CPACK_SOURCE_STRIP_FILES TRUE)
+
+if(libmt32emu_SHARED AND NOT libmt32emu_PACKAGE_TYPE STREQUAL "Complete")
+  # TODO: We want to create a couple of per-component packages with RPM and DEB in one go, albeit this
+  # may only be possible with CMake 3.6+ since we have to override incorrect default package names.
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR}" "${PROJECT_NAME}" "${libmt32emu_PACKAGE_TYPE}" "/")
+endif()
+
 set(CPACK_RPM_PACKAGE_GROUP "Audio/Emulators")
 set(CPACK_RPM_PACKAGE_LICENSE "LGPLv2.1+")
-set(CPACK_RPM_PACKAGE_URL ${libmt32emu_URL})
-# Normally, pkgconfig files are installed into the system directory that should pre-exist on the target system,
-# and hence cause conflict if not excluded
-set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION /usr/${libmt32emu_PKGCONFIG_INSTALL_PREFIX}/pkgconfig)
+set(CPACK_RPM_PACKAGE_URL "${libmt32emu_URL}")
+# Normally, pkgconfig file and cmake package are installed into the system directories that should
+# pre-exist on the target system, and hence cause conflict with other packages if not excluded.
+list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+  ${libmt32emu_PKGCONFIG_INSTALL_FULL_DIR}
+  ${CMAKE_INSTALL_PREFIX}/${libmt32emu_CMAKE_PACKAGE_INSTALL_PREFIX}
+)
+if(munt_SOURCE_DIR)
+  # Also publish the list for the benefit of the parent CMakeLists.txt file.
+  set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION ${CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION} PARENT_SCOPE)
+endif()
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS "ON")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE ${libmt32emu_URL})
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${libmt32emu_URL}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "sound")
-if(libmt32emu_SHARED AND libmt32emu_PACKAGE_TYPE STREQUAL "Devel")
+if(libmt32emu_PACKAGE_TYPE STREQUAL "Devel")
   set(CPACK_RPM_PACKAGE_NAME "${CMAKE_PROJECT_NAME}-devel")
   set(CPACK_RPM_FILE_NAME "${CPACK_RPM_PACKAGE_NAME}-${libmt32emu_VERSION}.rpm")
+  set(CPACK_RPM_PACKAGE_REQUIRES "${CMAKE_PROJECT_NAME} == ${libmt32emu_VERSION}")
   set(CPACK_DEBIAN_PACKAGE_NAME "${CMAKE_PROJECT_NAME}-dev")
   set(CPACK_DEBIAN_FILE_NAME "${CPACK_DEBIAN_PACKAGE_NAME}-${libmt32emu_VERSION}.deb")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CMAKE_PROJECT_NAME} (= ${libmt32emu_VERSION})")
+endif()
+if(libmt32emu_SHARED)
+  set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS "ON")
+  set(CPACK_DEBIAN_PACKAGE_GENERATE_SHLIBS_POLICY ">=")
 endif()
 
 include(CPack)

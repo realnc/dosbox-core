@@ -55,7 +55,7 @@ static gboolean ipatch_sf2_file_real_set_sample_size(IpatchSF2File *file,
 static gboolean ipatch_sf2_file_real_set_sample24_pos(IpatchSF2File *file,
         guint sample24_pos);
 
-G_DEFINE_TYPE(IpatchSF2File, ipatch_sf2_file, IPATCH_TYPE_FILE);
+G_DEFINE_TYPE(IpatchSF2File, ipatch_sf2_file, IPATCH_TYPE_FILE)
 
 
 /* SoundFont file class init function */

@@ -238,7 +238,7 @@ ipatch_dls2_info_duplicate(IpatchDLS2Info *info)
         newbag = ipatch_dls2_info_bag_new();
         newbag->fourcc = bag->fourcc;
         newbag->value = g_strdup(bag->value);
-        newinfo = g_slist_prepend(newinfo, bag);
+        newinfo = g_slist_prepend(newinfo, newbag);
 
         p = g_slist_next(p);
     }

@@ -68,7 +68,7 @@ GParamSpec *ipatch_base_pspec_changed;
 static GParamSpec *file_pspec;
 static GParamSpec *file_name_pspec;
 
-G_DEFINE_ABSTRACT_TYPE(IpatchBase, ipatch_base, IPATCH_TYPE_CONTAINER);
+G_DEFINE_ABSTRACT_TYPE(IpatchBase, ipatch_base, IPATCH_TYPE_CONTAINER)
 
 
 /**

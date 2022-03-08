@@ -304,10 +304,10 @@ _sli_to_file_set_property(GObject *object, guint property_id,
     }
 }
 
-CONVERTER_CLASS_INIT(file_to_sli);
-CONVERTER_CLASS_INIT(file_to_sli_sample);
+CONVERTER_CLASS_INIT(file_to_sli)
+CONVERTER_CLASS_INIT(file_to_sli_sample)
 
 
-CONVERTER_GET_TYPE(sli_to_file, SLIToFile);
-CONVERTER_GET_TYPE(file_to_sli, FileToSLI);
-CONVERTER_GET_TYPE(file_to_sli_sample, FileToSLISample);
+CONVERTER_GET_TYPE(sli_to_file, SLIToFile)
+CONVERTER_GET_TYPE(file_to_sli, FileToSLI)
+CONVERTER_GET_TYPE(file_to_sli_sample, FileToSLISample)

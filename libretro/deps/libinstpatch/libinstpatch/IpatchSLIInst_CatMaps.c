@@ -160,3 +160,21 @@ const IpatchSLIInstCatMapEntry ipatch_sli_inst_cat_map[] =
     { 'D', IPATCH_SLI_INST_CAT_D_SYNTH, ipatch_sli_inst_subcat_map_dsynth },
     { '@', IPATCH_SLI_INST_CAT_OTHER, NULL }
 };
+
+/**
+ * Getter fonction to access ipatch_sli_inst_cat_map[] table
+ * @return pointer on ipatch_sli_inst_cat_map[] table
+ */
+const IpatchSLIInstCatMapEntry * ipatch_sli_inst_get_cat_map(void)
+{
+    return ipatch_sli_inst_cat_map;
+}
+
+/**
+ * Getter fonction to access ipatch_sli_inst_cat_map[] table
+ * @return pointer on ipatch_sli_inst_cat_strings[] table
+ */
+const char **ipatch_sli_inst_get_cat_strings(void)
+{
+    return ipatch_sli_inst_cat_strings;
+}

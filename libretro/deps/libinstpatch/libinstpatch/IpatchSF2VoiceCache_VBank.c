@@ -236,8 +236,8 @@ _vbank_inst_to_sf2_voice_cache_convert(IpatchConverter *converter,
   _vbank_inst_to_sf2_voice_cache_convert
 
 
-CONVERTER_CLASS_INIT(vbank_inst_to_sf2_voice_cache);
-CONVERTER_CLASS_INIT(vbank_region_to_sf2_voice_cache);
+CONVERTER_CLASS_INIT(vbank_inst_to_sf2_voice_cache)
+CONVERTER_CLASS_INIT(vbank_region_to_sf2_voice_cache)
 
-CONVERTER_GET_TYPE(vbank_inst_to_sf2_voice_cache, VBankInstToSF2VoiceCache);
-CONVERTER_GET_TYPE(vbank_region_to_sf2_voice_cache, VBankRegionToSF2VoiceCache);
+CONVERTER_GET_TYPE(vbank_inst_to_sf2_voice_cache, VBankInstToSF2VoiceCache)
+CONVERTER_GET_TYPE(vbank_region_to_sf2_voice_cache, VBankRegionToSF2VoiceCache)

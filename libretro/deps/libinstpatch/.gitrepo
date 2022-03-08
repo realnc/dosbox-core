@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = https://github.com/swami/libinstpatch.git
-	branch = v1.1.5
-	commit = 7780d44c4fe766a63c03afec725e03058ce59815
-	parent = 2077d13aafae5f1d0c1877fd56e8270da207434e
+	branch = v1.1.6
+	commit = 3caacd051c28aabb74c50e6ff9eb578bf8f5fa9b
+	parent = 07cd1c44610c5e5afd552f70a21e4fff6e9ea190
 	method = merge
 	cmdver = 0.4.3

@@ -101,6 +101,8 @@ int main(int argc, char **argv)
 	{
 		ret = mpg123_param(m, MPG123_VERBOSE, param.verbose, 0.);
 		if(ret == MPG123_OK)
+			mpg123_param(m, MPG123_RESYNC_LIMIT, -1, 0.0);
+		if(ret == MPG123_OK)
 		{
 			if(param.verbose)
 			fprintf(stderr, "Info frame handling: %s\n",

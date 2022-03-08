@@ -359,17 +359,40 @@ ipatch_sample_store_swap_sample_iface_open(IpatchSampleHandle *handle,
 }
 
 /* Opens swap file (either assigned file name or temporary file) */
+/*
+ The application could set the swap file name calling following functions:
+ 1)ipatch_set_sample_store_swap_file_name(swap_filename)
+
+ 2)However, when multiple applications are calling libinstpatch it
+ is best for each application to call ipatch_set_application_name().
+ In this case, if the application do not call ipatch_set_sample_store_swap_file_name(),
+ a swap file name is build using application name as prefix of swap file name.
+ For example calling ipatch_set_sample_store_swap_file_name("swami") leads
+ to a default swap file "swami-swap_XXXXXX"
+
+ 3)If ipatch_set_sample_store_swap_file_name() or ipatch_set_application_name()
+   are not called, the default file name is "libInstPatch-swap_XXXXXX"
+
+ In case 2 and 3, the swap file directory is the one used for temporary files
+ returned by g_get_tmp_dir().
+*/
 static void
 ipatch_sample_store_swap_open_file(void)
 {
     char *template = NULL, *s;
-    GError *local_err = NULL;
 
     G_LOCK(swap);         // ++ lock swap
 
     if(swap_file_name)    // Use existing name if it was assigned
     {
-        swap_fd = g_open(swap_file_name, O_RDWR | O_CREAT, 0600);
+#ifdef G_OS_WIN32
+        /* On Windows, calling g_open leads to memory violation access on next
+           call to lseek.
+        */
+        swap_fd = _open(swap_file_name, O_RDWR | O_CREAT, _S_IREAD | _S_IWRITE);
+#else
+        swap_fd = g_open (swap_file_name, O_RDWR | O_CREAT, 0600);
+#endif
 
         if(swap_fd != -1)
         {
@@ -410,16 +433,39 @@ ipatch_sample_store_swap_open_file(void)
         }
     }
 
-    swap_fd = g_file_open_tmp(template ? template : "libInstPatch-swap_XXXXXX",
-                              &swap_file_name, &local_err);
-    g_free(template);           // -- free template string (if set)
+    /* Open swap file name in temporary directory */
+#ifdef G_OS_WIN32
 
-    if(swap_fd == -1)
+    /* On Windows, calling g_open leads to memory violation access on next
+       call to lseek.
+    */
+
+    /* ++ alloc swap_file_name */
+    swap_file_name = g_build_filename(g_get_tmp_dir(),
+                             template ? template : "libInstPatch-swap_XXXXXX",
+                             NULL);
+    swap_fd = _open(swap_file_name, O_RDWR | O_CREAT, _S_IREAD | _S_IWRITE);
+    g_free (template);          // -- free template string (if set)
+    if (swap_fd == -1)
     {
         g_critical(_("Failed to create temp sample store swap file: %s"),
-                   ipatch_gerror_message(local_err));
-        g_clear_error(&local_err);
+                     swap_file_name);
     }
+#else
+    {
+        GError *local_err = NULL;
+        swap_fd = g_file_open_tmp(template ? template : "libInstPatch-swap_XXXXXX",
+                                  &swap_file_name, &local_err);
+        g_free(template);          // -- free template string (if set)
+
+        if (swap_fd == -1)
+        {
+            g_critical(_("Failed to create temp sample store swap file: %s"),
+                       ipatch_gerror_message(local_err));
+            g_clear_error (&local_err);
+        }
+    }
+#endif
 
     G_UNLOCK(swap);       // -- unlock swap
 }
@@ -706,7 +752,15 @@ ipatch_compact_sample_store_swap(GError **err)
 
     // Create new swap file to copy existing disk samples to
     newname = g_strconcat(swap_file_name, "_new", NULL);  // ++ alloc new file name (same as existing one + _new)
-    newfd = g_open(newname, O_RDWR | O_CREAT, 0600);
+
+#ifdef G_OS_WIN32
+    /* On Windows, calling g_open leads to memory violation access on next
+       call to lseek.
+    */
+    newfd = _open (newname, O_RDWR | O_CREAT, _S_IREAD | _S_IWRITE);
+#else
+    newfd = g_open (newname, O_RDWR | O_CREAT, 0600);
+#endif
 
     if(newfd == -1)
     {

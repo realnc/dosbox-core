@@ -58,9 +58,10 @@ jobs:
     - script: |
         @ECHO ON
         SET "PATH=d:\deps\bin;%PATH%"
+        DEL /F C:\Strawberry\perl\bin\pkg-config.bat
         mkdir build && cd build || exit -1
-        cmake -G "Visual Studio 15 2017" -T "v141_xp" -DLIB_SUFFIX="" -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory) -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=0 .. || exit -1
-        cmake --build . --config Release --target install || exit -1
+        cmake -G "Visual Studio 15 2017" -T "v141_xp" -DLIB_SUFFIX="" -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory) -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=0 .. || exit -1
+        cmake --build . --config Debug --target install || exit -1
         del $(Build.ArtifactStagingDirectory)\bin\concrt*.dll
         del $(Build.ArtifactStagingDirectory)\bin\vcruntime*.dll
         del $(Build.ArtifactStagingDirectory)\bin\msvcp*.dll
@@ -97,9 +98,10 @@ jobs:
     - script: |
         @ECHO ON
         SET "PATH=d:\deps\bin;%PATH%"
+        DEL /F C:\Strawberry\perl\bin\pkg-config.bat
         mkdir build && cd build || exit -1
-        cmake -G "Visual Studio 15 2017 Win64" -T "v141_xp" -DLIB_SUFFIX="" -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory) -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=0 .. || exit -1
-        cmake --build . --config Release --target install || exit -1
+        cmake -G "Visual Studio 15 2017 Win64" -T "v141_xp" -DLIB_SUFFIX="" -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory) -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=0 .. || exit -1
+        cmake --build . --config Debug --target install || exit -1
         del $(Build.ArtifactStagingDirectory)\bin\concrt*.dll
         del $(Build.ArtifactStagingDirectory)\bin\vcruntime*.dll
         del $(Build.ArtifactStagingDirectory)\bin\msvcp*.dll
@@ -136,6 +138,7 @@ jobs:
     - script: |
         @ECHO ON
         SET "PATH=d:\deps\bin;%PATH%"
+        DEL /F C:\Strawberry\perl\bin\pkg-config.bat
         mkdir build && cd build || exit -1
         cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_INSTALL_PREFIX=$HOME/libinstpatch_install -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=0 .. || exit -1
         cmake --build . || exit 1
@@ -163,6 +166,7 @@ jobs:
     - script: |
         @ECHO ON
         SET "PATH=d:\deps\bin;%PATH%"
+        DEL /F C:\Strawberry\perl\bin\pkg-config.bat
         mkdir build && cd build || exit -1
         cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=$HOME/libinstpatch_install -DCMAKE_BUILD_TYPE=Release -DCMAKE_VERBOSE_MAKEFILE=0 .. || exit -1
         cmake --build . || exit 1

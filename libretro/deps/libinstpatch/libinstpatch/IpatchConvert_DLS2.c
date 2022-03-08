@@ -292,9 +292,9 @@ _dls2_to_file_set_property(GObject *object, guint property_id,
     }
 }
 
-CONVERTER_CLASS_INIT(file_to_dls2);
-CONVERTER_CLASS_INIT(file_to_dls2_sample);
+CONVERTER_CLASS_INIT(file_to_dls2)
+CONVERTER_CLASS_INIT(file_to_dls2_sample)
 
-CONVERTER_GET_TYPE(dls2_to_file, DLS2ToFile);
-CONVERTER_GET_TYPE(file_to_dls2, FileToDLS2);
-CONVERTER_GET_TYPE(file_to_dls2_sample, FileToDLS2Sample);
+CONVERTER_GET_TYPE(dls2_to_file, DLS2ToFile)
+CONVERTER_GET_TYPE(file_to_dls2, FileToDLS2)
+CONVERTER_GET_TYPE(file_to_dls2_sample, FileToDLS2Sample)

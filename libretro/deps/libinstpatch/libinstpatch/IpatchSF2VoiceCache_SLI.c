@@ -192,10 +192,10 @@ _sli_sample_to_sf2_voice_cache_convert(IpatchConverter *converter,
     return (TRUE);
 }
 
-CONVERTER_CLASS_INIT(sli_inst_to_sf2_voice_cache);
-CONVERTER_CLASS_INIT(sli_zone_to_sf2_voice_cache);
-CONVERTER_CLASS_INIT(sli_sample_to_sf2_voice_cache);
+CONVERTER_CLASS_INIT(sli_inst_to_sf2_voice_cache)
+CONVERTER_CLASS_INIT(sli_zone_to_sf2_voice_cache)
+CONVERTER_CLASS_INIT(sli_sample_to_sf2_voice_cache)
 
-CONVERTER_SF2_VOICE_CACHE_GET_TYPE(sli_inst_to_sf2_voice_cache, SLIInstToSF2VoiceCache);
-CONVERTER_SF2_VOICE_CACHE_GET_TYPE(sli_zone_to_sf2_voice_cache, SLIZoneToSF2VoiceCache);
-CONVERTER_SF2_VOICE_CACHE_GET_TYPE(sli_sample_to_sf2_voice_cache, SLISampleToSF2VoiceCache);
+CONVERTER_SF2_VOICE_CACHE_GET_TYPE(sli_inst_to_sf2_voice_cache, SLIInstToSF2VoiceCache)
+CONVERTER_SF2_VOICE_CACHE_GET_TYPE(sli_zone_to_sf2_voice_cache, SLIZoneToSF2VoiceCache)
+CONVERTER_SF2_VOICE_CACHE_GET_TYPE(sli_sample_to_sf2_voice_cache, SLISampleToSF2VoiceCache)

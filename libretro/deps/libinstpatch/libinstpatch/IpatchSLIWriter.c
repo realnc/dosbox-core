@@ -87,7 +87,7 @@ static gboolean ipatch_sli_writer_write_sample_data(IpatchFileHandle *handle,
         IpatchSLISample *sample,
         GError **err);
 
-G_DEFINE_TYPE(IpatchSLIWriter, ipatch_sli_writer, G_TYPE_OBJECT);
+G_DEFINE_TYPE(IpatchSLIWriter, ipatch_sli_writer, G_TYPE_OBJECT)
 
 static void
 ipatch_sli_writer_class_init(IpatchSLIWriterClass *klass)
@@ -509,7 +509,7 @@ ipatch_sli_writer_write_group(IpatchSLIWriter *writer, GPtrArray *ig, GError **e
     IpatchIter iz_iter;
     IpatchSLIInst *inst;
     IpatchSLIZone *zone;
-    IpatchSLISample *sample;
+    IpatchSLISample *sample = NULL;
     SampleHashValue *sample_info;
     GPtrArray *samples;
     IpatchSLISiIg siig;

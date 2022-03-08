@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2021 Jerome Fisher, Sergey V. Mikayev
+/* Copyright (C) 2011-2022 Jerome Fisher, Sergey V. Mikayev
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 #include "Master.h"
 
 int main(int argv, char **args) {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
 	QApplication app(argv, args);
 	app.setApplicationName("Munt mt32emu-qt");
 	app.setQuitOnLastWindowClosed(false);
@@ -35,11 +38,16 @@ int main(int argv, char **args) {
 			master.setTrayIcon(trayIcon);
 		}
 		MainWindow mainWindow(&master);
-		if (trayIcon == NULL || !master.getSettings()->value("Master/startIconized", false).toBool()) mainWindow.show();
-		if (argv > 1) master.processCommandLine(app.arguments());
-		master.startPinnedSynthRoute();
-		master.startMidiProcessing();
-		app.exec();
+		if (trayIcon == NULL || !master.getSettings()->value("Master/startIconized", false).toBool()) {
+			mainWindow.show();
+		} else {
+			mainWindow.updateFloatingDisplayVisibility();
+		}
+		if (argv < 2 || master.processCommandLine(app.arguments())) {
+			master.startPinnedSynthRoute();
+			master.startMidiProcessing();
+			app.exec();
+		}
 		master.setTrayIcon(NULL);
 		delete trayIcon;
 	}

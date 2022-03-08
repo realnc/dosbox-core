@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009, 2011 Jerome Fisher
- * Copyright (C) 2012-2021 Jerome Fisher, Sergey V. Mikayev
+ * Copyright (C) 2012-2022 Jerome Fisher, Sergey V. Mikayev
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,7 +31,11 @@
 #define MT32EMU_API_TYPE 3
 #include <mt32emu/mt32emu.h>
 
-#if MT32EMU_VERSION_MAJOR != 2 || MT32EMU_VERSION_MINOR < 2
+#if GLIB_MAJOR_VERSION != 2 || GLIB_MINOR_VERSION < 32
+#error Incompatible glib2 library version
+#endif
+
+#if !MT32EMU_IS_COMPATIBLE(2, 6)
 #error Incompatible mt32emu library version
 #endif
 
@@ -188,15 +192,18 @@ static bool parseOptions(int argc, char *argv[], Options *options) {
 		{"machine-id", 'i', 0, G_OPTION_ARG_STRING, &options->machineID, "ID of machine configuration to search ROMs for (default: any)\n"
 		 "                 any:        try cm32l first, then mt32\n"
 		 "                 mt32:       any complete set of MT-32 ROMs, the highest control ROM version found wins\n"
-		 "                 cm32l:      any complete set of CM-32L / LAPC-I ROMs, the highest control ROM version found wins\n"
+		 "                 cm32l:      any complete set of CM-32L / LAPC-I compatible ROMs, the highest control ROM version found wins\n"
 		 "                 mt32_1_04:  MT-32 with control ROM version 1.04\n"
 		 "                 mt32_1_05:  MT-32 with control ROM version 1.05\n"
 		 "                 mt32_1_06:  MT-32 with control ROM version 1.06\n"
 		 "                 mt32_1_07:  MT-32 with control ROM version 1.07\n"
 		 "                 mt32_bluer: MT-32 Blue Ridge mod version X.XX\n"
 		 "                 mt32_2_04:  MT-32 with control ROM version 2.04\n"
+		 "                 mt32_2_06:  MT-32 with control ROM version 2.06\n"
+		 "                 mt32_2_07:  MT-32 with control ROM version 2.07\n"
 		 "                 cm32l_1_00: CM-32L / LAPC-I with control ROM version 1.00\n"
-		 "                 cm32l_1_02: CM-32L / LAPC-I with control ROM version 1.02", "<machine_id>"},
+		 "                 cm32l_1_02: CM-32L / LAPC-I with control ROM version 1.02\n"
+		 "                 cm32ln_1_00: CM-32LN / CM-500 / LAPC-N with control ROM version 1.00", "<machine_id>"},
 		// buffer-size determines the maximum number of frames to be rendered by the emulator in one pass.
 		// This can have a big impact on performance (Generally more at a time=better).
 		{"buffer-size", 'b', 0, G_OPTION_ARG_INT, &bufferFrameCount, "Buffer size in frames (minimum: 1)", "<frame_count>"},  // FIXME: Show default
@@ -938,10 +945,15 @@ int main(int argc, char *argv[]) {
 	Options options;
 	MT32Emu::Service service;
 	setlocale(LC_ALL, "");
-	printf("Munt MT32Emu MIDI to Wave Conversion Utility. Version %s\n", VERSION);
+#ifdef BUILD_MT32EMU_VERSION
+	const char *mt32emuVersion = BUILD_MT32EMU_VERSION;
+#else
+	const char *mt32emuVersion = service.getLibraryVersionString();
+#endif
+	printf("Munt MT32Emu MIDI to Wave Conversion Utility. Version %s\n", MT32EMU_SMF2WAV_VERSION);
 	printf("  Copyright (C) 2009, 2011 Jerome Fisher <re_munt@kingguppy.com>\n");
-	printf("  Copyright (C) 2012-2021 Jerome Fisher, Sergey V. Mikayev\n");
-	printf("Using Munt MT32Emu Library Version %s, libsmf Version %s (with modifications)\n", service.getLibraryVersionString(), smf_get_version());
+	printf("  Copyright (C) 2012-2022 Jerome Fisher, Sergey V. Mikayev\n");
+	printf("Using Munt MT32Emu Library Version %s, libsmf Version %s (with modifications)\n", mt32emuVersion, smf_get_version());
 	if (!parseOptions(argc, argv, &options)) {
 		return -1;
 	}

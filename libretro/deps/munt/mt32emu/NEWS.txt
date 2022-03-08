@@ -1,3 +1,30 @@
+2022-03-06:
+
+	2.6.0 released.
+
+	* Added support for three more control ROMs: MT-32 v.2.06, v.2.07 and CM-32LN v.1.00.
+	* Improved CMake build script for mt32emu. Notably:
+	  * The build script now populates the relevant library target properties, so that linking
+	    the mt32emu target in a dependent project is sufficient for the build to succeed,
+	    without necessity to use any extra variables.
+	  * A complete CMake package with configuration, version and targets files is now installed
+	    onto the target system. This package simplifies configuration of the other projects,
+	    yet facilitates reliable builds with optional transitive library dependencies.
+	  * Rewritten find-modules for libraries soxr and samplerate from scratch, so that they now
+	    behave more uniformly yet can be used with added convenience.
+	  * Updated the description of the module FindMT32EMU.cmake. It now creates the IMPORTED
+	    target MT32Emu::mt32emu upon success, similarly to the other scripts. Note, this module
+	    is not recommended for use with mt32emu version 2.6 and above. (#65)
+	* Introduced display emulation support that goes beyond the existing low-level API intended
+	  for retrieving the synth state details. The startup banner and the SysEx checksum error
+	  are now shown. We now also take care of the control ROM version to emulate the most
+	  prominent quirks. Additionally, there is a limited support for displaying the emulated LCD
+	  on narrow hardware LCDs that have width of 16 characters only. (#66)
+	* Fixed emulation of a TVA quirk the old-gen devices exhibit when playing a partial with
+	  zero TVA ENV SUSTAIN LEVEL. (#82)
+	* Introduced support for configuring per-part volume levels that override the levels set via
+	  MIDI messages. (#85)
+
 2021-08-07:
 
 	2.5.3 released.

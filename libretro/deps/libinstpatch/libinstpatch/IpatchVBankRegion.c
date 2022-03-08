@@ -66,7 +66,7 @@ static void ipatch_vbank_region_real_set_item(IpatchVBankRegion *region,
         IpatchItem *item,
         gboolean sample_notify);
 
-G_DEFINE_TYPE(IpatchVBankRegion, ipatch_vbank_region, IPATCH_TYPE_ITEM);
+G_DEFINE_TYPE(IpatchVBankRegion, ipatch_vbank_region, IPATCH_TYPE_ITEM)
 
 static GParamSpec *link_item_pspec;
 

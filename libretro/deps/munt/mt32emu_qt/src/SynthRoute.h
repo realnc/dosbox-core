@@ -57,10 +57,11 @@ public:
 	void enableMultiMidiMode();
 
 	const QString getPatchName(int partNum) const;
-	void getPartStates(bool *partStates) const;
 	void getPartialStates(MT32Emu::PartialState *partialStates) const;
 	uint getPlayingNotes(unsigned int partNumber, MT32Emu::Bit8u *keys, MT32Emu::Bit8u *velocities) const;
 	uint getPartialCount() const;
+	bool getDisplayState(char *targetBuffer) const;
+	void setMainDisplayMode();
 
 	void flushMIDIQueue();
 	void playMIDIShortMessageNow(MT32Emu::Bit32u msg);
@@ -81,6 +82,7 @@ public:
 	void setReverbEnabled(bool reverbEnabled);
 	void setReverbOverridden(bool reverbOverridden);
 	void setReverbSettings(int reverbMode, int reverbTime, int reverbLevel);
+	void setPartVolumeOverride(uint partNumber, uint volumeOverride);
 	void setReversedStereoEnabled(bool enabled);
 	void setNiceAmpRampEnabled(bool enabled);
 	void setNicePanningEnabled(bool enabled);
@@ -93,6 +95,7 @@ public:
 	void setAnalogOutputMode(MT32Emu::AnalogOutputMode analogOutputMode);
 	void setRendererType(MT32Emu::RendererType rendererType);
 	void setPartialCount(int partialCount);
+	void setDisplayCompatibilityMode(DisplayCompatibilityMode displayCompatibilityMode);
 
 	void startRecordingAudio(const QString &fileName);
 	void stopRecordingAudio();
@@ -113,7 +116,9 @@ public:
 	void setSynthProfile(const SynthProfile &synthProfile, QString useSynthProfileName);
 	void getROMImages(const MT32Emu::ROMImage *&controlROMImage, const MT32Emu::ROMImage *&pcmROMImage) const;
 	bool connectSynth(const char *signal, const QObject *receiver, const char *slot) const;
+	bool disconnectSynth(const char *signal, const QObject *receiver, const char *slot) const;
 	bool connectReportHandler(const char *signal, const QObject *receiver, const char *slot) const;
+	bool disconnectReportHandler(const char *signal, const QObject *receiver, const char *slot) const;
 
 private slots:
 	void handleQSynthState(SynthState synthState);

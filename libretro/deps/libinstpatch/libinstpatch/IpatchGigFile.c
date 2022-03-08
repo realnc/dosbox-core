@@ -39,7 +39,7 @@
 static gboolean ipatch_gig_file_identify_method(IpatchFile *file,
         IpatchFileHandle *handle, GError **err);
 
-G_DEFINE_TYPE(IpatchGigFile, ipatch_gig_file, IPATCH_TYPE_DLS_FILE);
+G_DEFINE_TYPE(IpatchGigFile, ipatch_gig_file, IPATCH_TYPE_DLS_FILE)
 
 
 /* GigaSampler file class init function */

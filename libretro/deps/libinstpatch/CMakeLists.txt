@@ -7,7 +7,7 @@
 #
 
 project ( libInstPatch C )
-cmake_minimum_required ( VERSION 2.6.3 )
+cmake_minimum_required ( VERSION 3.0 )
 set ( CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake )
 
 # libInstPatch package name
@@ -16,7 +16,7 @@ set ( PACKAGE "libinstpatch" )
 # libInstPatch package version
 set ( IPATCH_VERSION_MAJOR 1 )
 set ( IPATCH_VERSION_MINOR 1 )
-set ( IPATCH_VERSION_MICRO 5 )
+set ( IPATCH_VERSION_MICRO 6 )
 set ( VERSION "${IPATCH_VERSION_MAJOR}.${IPATCH_VERSION_MINOR}.${IPATCH_VERSION_MICRO}" )
 set ( IPATCH_VERSION "\"${VERSION}\"" )
 
@@ -30,7 +30,7 @@ set ( IPATCH_VERSION "\"${VERSION}\"" )
 # if any interfaces have been removed/changed (compatibility broken): AGE=0
 # This is not exactly the same algorithm as the libtool one, but the results are the same.
 set ( LIB_VERSION_CURRENT 2 )
-set ( LIB_VERSION_AGE 1 )
+set ( LIB_VERSION_AGE 2 )
 set ( LIB_VERSION_REVISION 0 )
 set ( LIB_VERSION_INFO 
       "${LIB_VERSION_CURRENT}.${LIB_VERSION_AGE}.${LIB_VERSION_REVISION}" )
@@ -159,7 +159,7 @@ endif ()
 
 # Check for Gtk-Doc
 if (GTKDOC_ENABLED)
-  include (FindGtkDoc)
+  find_package(GtkDoc)
 endif ()
 
 # General configuration file

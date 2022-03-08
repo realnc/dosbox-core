@@ -1,5 +1,5 @@
 /* Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009 Dean Beeler, Jerome Fisher
- * Copyright (C) 2011-2021 Dean Beeler, Jerome Fisher, Sergey V. Mikayev
+ * Copyright (C) 2011-2022 Dean Beeler, Jerome Fisher, Sergey V. Mikayev
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -457,6 +457,26 @@ MT32EMU_EXPORT void mt32emu_set_reverb_output_gain(mt32emu_const_context context
 /** Returns current output gain factor for reverb wet output channels. */
 MT32EMU_EXPORT float mt32emu_get_reverb_output_gain(mt32emu_const_context context);
 
+/**
+ * Sets (or removes) an override for the current volume (output level) on a specific part.
+ * When the part volume is overridden, the MIDI controller Volume (7) on the MIDI channel this part is assigned to
+ * has no effect on the output level of this part. Similarly, the output level value set on this part via a SysEx that
+ * modifies the Patch temp structure is disregarded.
+ * To enable the override mode, argument volumeOverride should be in range 0..100, setting a value outside this range
+ * disables the previously set override, if any.
+ * Note: Setting volumeOverride to 0 mutes the part completely, meaning no sound is generated at all.
+ * This is unlike the behaviour of real devices - setting 0 volume on a part may leave it still producing
+ * sound at a very low level.
+ * Argument partNumber should be 0..7 for Part 1..8, or 8 for Rhythm.
+ */
+MT32EMU_EXPORT_V(2.6) void mt32emu_set_part_volume_override(mt32emu_const_context context, mt32emu_bit8u part_number, mt32emu_bit8u volume_override);
+/**
+ * Returns the overridden volume previously set on a specific part; a value outside the range 0..100 means no override
+ * is currently in effect.
+ * Argument partNumber should be 0..7 for Part 1..8, or 8 for Rhythm.
+ */
+MT32EMU_EXPORT_V(2.6) mt32emu_bit8u mt32emu_get_part_volume_override(mt32emu_const_context context, mt32emu_bit8u part_number);
+
 /** Swaps left and right output channels. */
 MT32EMU_EXPORT void mt32emu_set_reversed_stereo_enabled(mt32emu_const_context context, const mt32emu_boolean enabled);
 /** Returns whether left and right output channels are swapped. */
@@ -561,6 +581,40 @@ MT32EMU_EXPORT const char *mt32emu_get_patch_name(mt32emu_const_context context,
 
 /** Stores internal state of emulated synth into an array provided (as it would be acquired from hardware). */
 MT32EMU_EXPORT void mt32emu_read_memory(mt32emu_const_context context, mt32emu_bit32u addr, mt32emu_bit32u len, mt32emu_bit8u *data);
+
+/**
+ * Retrieves the current state of the emulated MT-32 display facilities.
+ * Typically, the state is updated during the rendering. When that happens, a related callback from mt32emu_report_handler_i_v1
+ * is invoked. However, there might be no need to invoke this method after each update, e.g. when the render buffer is just
+ * a few milliseconds long.
+ * The argument target_buffer must point to an array of at least 21 characters. The result is a null-terminated string.
+ * The argument narrow_lcd enables a condensed representation of the displayed information in some cases. This is mainly intended
+ * to route the result to a hardware LCD that is only 16 characters wide. Automatic scrolling of longer strings is not supported.
+ * Returns whether the MIDI MESSAGE LED is ON and fills the target_buffer parameter.
+ */
+MT32EMU_EXPORT_V(2.6) mt32emu_boolean mt32emu_get_display_state(mt32emu_const_context context, char *target_buffer, const mt32emu_boolean narrow_lcd);
+
+/**
+ * Resets the emulated LCD to the main mode (Master Volume). This has the same effect as pressing the Master Volume button
+ * while the display shows some other message. Useful for the new-gen devices as those require a special Display Reset SysEx
+ * to return to the main mode e.g. from showing a custom display message or a checksum error.
+ */
+MT32EMU_EXPORT_V(2.6) void mt32emu_set_main_display_mode(mt32emu_const_context context);
+
+/**
+ * Permits to select an arbitrary display emulation model that does not necessarily match the actual behaviour implemented
+ * in the control ROM version being used.
+ * Invoking this method with the argument set to true forces emulation of the old-gen MT-32 display features.
+ * Otherwise, emulation of the new-gen devices is enforced (these include CM-32L and LAPC-I as if these were connected to an LCD).
+ */
+MT32EMU_EXPORT_V(2.6) void mt32emu_set_display_compatibility(mt32emu_const_context context, mt32emu_boolean old_mt32_compatibility_enabled);
+/** Returns whether the currently configured features of the emulated display are compatible with the old-gen MT-32 devices. */
+MT32EMU_EXPORT_V(2.6) mt32emu_boolean mt32emu_is_display_old_mt32_compatible(mt32emu_const_context context);
+/**
+ * Returns whether the emulated display features configured by default depending on the actual control ROM version
+ * are compatible with the old-gen MT-32 devices.
+ */
+MT32EMU_EXPORT_V(2.6) mt32emu_boolean mt32emu_is_default_display_old_mt32_compatible(mt32emu_const_context context);
 
 #ifdef __cplusplus
 } // extern "C"

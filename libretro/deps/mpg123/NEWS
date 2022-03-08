@@ -1,3 +1,37 @@
+1.29.3
+------
+- libmpg123: Catch more NULL pointer arguments in LFS wrappers
+  (most prominently: mpg123_feedseek(), bug 328).
+- mpg123:
+-- Fix regression that did _not_ enable --remote-err on -s anymore.
+-- Fix typos in man page (thanks to Naglis Jonaitis).
+-- Drop mixed-up value limits on remote control SEQ command. It is up to you
+   if you want to distort your sound.
+-- Add note about equalizer frequency bands to man page.
+- build: add BUILD_PROGRAMS option to ports/cmake
+
+1.29.2
+------
+- libmpg123: Fix non-live-decoder safeguard for mpg123_framebyframe_decode()
+  (was a no-op in practice, bug 324).
+
+1.29.1
+------
+- mpg123:
+-- Keep default output encoding of s16 for raw and file outputs
+   also with the new resampler. This reverts the unintentional change in
+   1.26.0 of switching to f32 for forced output rate unless the NtoM
+   resampler is selected. In any case, you should make sure to specify
+   your desired --encoding if you depend on it.
+-- Catch error in indexing (mpg123_scan() return value was ignored
+   before, bug 322).
+- mpg123-strip: Lift the resync limit, as it should be to clean up really
+  dirty streams.
+- mpg123-id3dump: Also lift resync limit for the same reasons.
+- libout123: fix reporting of device property flags for buffer
+- libmpg123: more safeguarding against attempts to decode if decoder
+  setup failed and user ignored the returned error code (bug 322)
+
 1.29.0
 ------
 - build: added --enable-runtime-tables

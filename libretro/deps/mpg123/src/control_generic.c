@@ -741,13 +741,10 @@ int control_generic (mpg123_handle *fr)
 						if(sscanf(arg, "%lf %lf %lf", &b, &m, &t) == 3)
 						{
 							/* Consider adding mpg123_seq()... but also, on could define a nicer courve for that. */
-							if ((t >= 0) && (t <= 3))
 							for(cn=0; cn < 1; ++cn)	mpg123_eq(fr, MPG123_LEFT|MPG123_RIGHT, cn, b);
 
-							if ((m >= 0) && (m <= 3))
 							for(cn=1; cn < 2; ++cn) mpg123_eq(fr, MPG123_LEFT|MPG123_RIGHT, cn, m);
 
-							if ((b >= 0) && (b <= 3))
 							for(cn=2; cn < 32; ++cn) mpg123_eq(fr, MPG123_LEFT|MPG123_RIGHT, cn, t);
 
 							generic_sendmsg("bass: %f mid: %f treble: %f", b, m, t);

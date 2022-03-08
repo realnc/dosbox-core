@@ -325,16 +325,17 @@ ipatch_dls2_sample_item_remove_full(IpatchItem *item, gboolean full)
 {
     IpatchList *list;
     IpatchIter iter;
+    IpatchItem *region;
 
     /* ++ ref new list */
     list = ipatch_dls2_get_region_references(IPATCH_DLS2_SAMPLE(item));
     ipatch_list_init_iter(list, &iter);
 
-    item = ipatch_item_first(&iter);
+    region = ipatch_item_first(&iter);
 
-    while(item)
+    while(region)
     {
-        ipatch_item_remove(item);
+        ipatch_item_remove(region);
         item = ipatch_item_next(&iter);
     }
 
@@ -423,7 +424,7 @@ ipatch_dls2_sample_next(IpatchIter *iter)
 /**
  * ipatch_dls2_sample_set_data:
  * @sample: Sample to set sample data of
- * @sampledata: Sample data to set sample to
+ * @sampledata: Sample data to set sample to. Should be NULL or a IpatchSampleData object
  *
  * Set a sample's sample data object.
  */
@@ -444,10 +445,12 @@ ipatch_dls2_sample_real_set_data(IpatchDLS2Sample *sample,
     IpatchSampleData *old_sampledata;
 
     g_return_val_if_fail(IPATCH_IS_DLS2_SAMPLE(sample), FALSE);
-    g_return_val_if_fail(IPATCH_IS_SAMPLE_DATA(sampledata), FALSE);
-
-    g_object_ref(sampledata);	/* ++ ref for sample */
-    ipatch_sample_data_used(sampledata);    /* ++ inc use count */
+    if(sampledata != NULL)
+    {
+        g_return_val_if_fail (IPATCH_IS_SAMPLE_DATA (sampledata), FALSE);
+        g_object_ref (sampledata);	/* ++ ref for sample */
+        ipatch_sample_data_used (sampledata);   /* ++ inc use count */
+    }
 
     IPATCH_ITEM_WLOCK(sample);
     old_sampledata = sample->sample_data;

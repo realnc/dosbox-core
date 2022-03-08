@@ -37,7 +37,7 @@
 static gboolean ipatch_sli_file_identify(IpatchFile *file,
         IpatchFileHandle *handle, GError **err);
 
-G_DEFINE_TYPE(IpatchSLIFile, ipatch_sli_file, IPATCH_TYPE_FILE);
+G_DEFINE_TYPE(IpatchSLIFile, ipatch_sli_file, IPATCH_TYPE_FILE)
 
 
 /* Spectralis file class init function */

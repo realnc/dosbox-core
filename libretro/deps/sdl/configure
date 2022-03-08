@@ -823,6 +823,7 @@ CXXCPP
 ac_ct_CXX
 CXXFLAGS
 CXX
+LT_EXTRA
 LT_AGE
 LT_REVISION
 LT_CURRENT
@@ -998,6 +999,8 @@ enable_pth
 enable_pthreads
 enable_pthread_sem
 enable_stdio_redirect
+enable_video_grop
+enable_video_fslib
 enable_directx
 enable_gapi
 enable_sdl_dlopen
@@ -1732,6 +1735,8 @@ Optional Features:
   --enable-pthreads       use POSIX threads for multi-threading [default=yes]
   --enable-pthread-sem    use pthread semaphores [default=yes]
   --enable-stdio-redirect Redirect STDIO to files on Win32 [default=yes]
+  --enable-video-grop     use the new OS/2 gRop video driver [default=yes]
+  --enable-video-fslib    use the old OS/2 FSLib video driver [default=no]
   --enable-directx        use DirectX for Win32 audio/video [default=yes]
   --enable-gapi           use GAPI for WinCE video [default=no]
   --enable-sdl-dlopen     use dlopen for shared object loading [default=yes]
@@ -4279,7 +4284,6 @@ SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 
 
-# libtool versioning
 case `pwd` in
   *\ * | *\	*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5
@@ -4830,13 +4834,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4833: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4837: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4836: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4840: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4839: output\"" >&5)
+  (eval echo "\"\$as_me:4843: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -5243,7 +5247,7 @@ mingw* | pw32*)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
-cegcc)
+cegcc*)
   # use the weaker test based on 'objdump'. See mingw*.
   lt_cv_deplibs_check_method='file_magic file format pe-arm-.*little(.*architecture: arm)?'
   lt_cv_file_magic_cmd='$OBJDUMP -f'
@@ -5381,6 +5385,9 @@ sysv4 | sysv4.3*)
   ;;
 
 tpf*)
+  lt_cv_deplibs_check_method=pass_all
+  ;;
+os2*)
   lt_cv_deplibs_check_method=pass_all
   ;;
 esac
@@ -6046,7 +6053,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6049 "configure"' > conftest.$ac_ext
+  echo '#line 6056 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -6766,16 +6773,11 @@ $as_echo "$lt_cv_ld_exported_symbols_list" >&6; }
       _lt_dar_allow_undefined='${wl}-undefined ${wl}suppress' ;;
     darwin1.*)
       _lt_dar_allow_undefined='${wl}-flat_namespace ${wl}-undefined ${wl}suppress' ;;
-    darwin*) # darwin 5.x on
-      # if running on 10.5 or later, the deployment target defaults
-      # to the OS version, if on x86, and 10.4, the deployment
-      # target defaults to 10.4. Don't you love it?
-      case ${MACOSX_DEPLOYMENT_TARGET-10.0},$host in
-	10.0,*86*-darwin8*|10.0,*-darwin[91]*)
-	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
-	10.[012]*)
+    darwin*)
+      case ${MACOSX_DEPLOYMENT_TARGET},$host in
+	10.[012],*|,*powerpc*-darwin[5-8]*)
 	  _lt_dar_allow_undefined='${wl}-flat_namespace ${wl}-undefined ${wl}suppress' ;;
-	10.*)
+	*)
 	  _lt_dar_allow_undefined='${wl}-undefined ${wl}dynamic_lookup' ;;
       esac
     ;;
@@ -6815,7 +6817,7 @@ done
 enable_win32_dll=yes
 
 case $host in
-*-*-cygwin* | *-*-mingw* | *-*-pw32* | *-cegcc*)
+*-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-cegcc*)
   if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}as", so it can be a program name with args.
 set dummy ${ac_tool_prefix}as; ac_word=$2
@@ -7609,11 +7611,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7612: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7614: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7616: \$? = $ac_status" >&5
+   echo "$as_me:7618: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -7687,6 +7689,11 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       # Although the cygwin gcc ignores -fPIC, still need this for old-style
       # (--disable-auto-import) libraries
       lt_prog_compiler_pic='-DDLL_EXPORT'
+      case $host_os in
+      os2*)
+	lt_prog_compiler_static='${wl}-static'
+	;;
+      esac
       ;;
 
     darwin* | rhapsody*)
@@ -7754,6 +7761,11 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       # This hack is so that the source file can tell whether it is being
       # built for inclusion in a dll (and should export symbols for example).
       lt_prog_compiler_pic='-DDLL_EXPORT'
+      case $host_os in
+      os2*)
+	lt_prog_compiler_static='${wl}-static'
+	;;
+      esac
       ;;
 
     hpux9* | hpux10* | hpux11*)
@@ -7948,11 +7960,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7951: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7963: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7955: \$? = $ac_status" >&5
+   echo "$as_me:7967: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8053,11 +8065,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8056: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8068: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8060: \$? = $ac_status" >&5
+   echo "$as_me:8072: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8108,11 +8120,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8111: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8123: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8115: \$? = $ac_status" >&5
+   echo "$as_me:8127: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8322,6 +8334,34 @@ _LT_EOF
       else
 	ld_shlibs=no
       fi
+      ;;
+
+    os2*)
+      hardcode_libdir_flag_spec='-L$libdir'
+      hardcode_minus_L=yes
+      allow_undefined_flag=unsupported
+      shrext_cmds=".dll"
+      archive_cmds='$ECHO "LIBRARY ${soname%$shared_ext} INITINSTANCE TERMINSTANCE" > $output_objdir/$libname.def~
+	$ECHO "DESCRIPTION \"$libname\"" >> $output_objdir/$libname.def~
+	$ECHO "DATA MULTIPLE NONSHARED">> $output_objdir/$libname.def~
+	$ECHO EXPORTS >> $output_objdir/$libname.def~
+	emxexp $libobjs | $SED /"_DLL_InitTerm"/d >> $output_objdir/$libname.def~
+	$CC -Zdll -Zcrtdll -o $output_objdir/$soname $libobjs $deplibs $compiler_flags $output_objdir/$libname.def~
+	emximp -o $lib $output_objdir/$libname.def'
+      archive_expsym_cmds='$ECHO "LIBRARY ${soname%$shared_ext} INITINSTANCE TERMINSTANCE" > $output_objdir/$libname.def~
+	$ECHO "DESCRIPTION \"$libname\"" >> $output_objdir/$libname.def~
+	$ECHO "DATA MULTIPLE NONSHARED">> $output_objdir/$libname.def~
+	$ECHO EXPORTS >> $output_objdir/$libname.def~
+	prefix_cmds="$SED"~
+	if test "x`$SED 1q $export_symbols`" = xEXPORTS; then
+	  prefix_cmds="$prefix_cmds -e 1d";
+	fi~
+	prefix_cmds="$prefix_cmds -e \"s/^\(.*\)$/_\1/g\""~
+	cat $export_symbols | $prefix_cmds >> $output_objdir/$libname.def~
+	$CC -Zdll -Zcrtdll -o $output_objdir/$soname $libobjs $deplibs $compiler_flags $output_objdir/$libname.def~
+	emximp -o $lib $output_objdir/$libname.def'
+      old_archive_from_new_cmds='emximp -o $output_objdir/${libname}_dll.a $output_objdir/$libname.def'
+      enable_shared_with_static_runtimes=yes
       ;;
 
     interix[3-9]*)
@@ -8964,8 +9004,28 @@ rm -f core conftest.err conftest.$ac_objext \
       hardcode_libdir_flag_spec='-L$libdir'
       hardcode_minus_L=yes
       allow_undefined_flag=unsupported
-      archive_cmds='$ECHO "LIBRARY $libname INITINSTANCE" > $output_objdir/$libname.def~$ECHO "DESCRIPTION \"$libname\"" >> $output_objdir/$libname.def~$ECHO DATA >> $output_objdir/$libname.def~$ECHO " SINGLE NONSHARED" >> $output_objdir/$libname.def~$ECHO EXPORTS >> $output_objdir/$libname.def~emxexp $libobjs >> $output_objdir/$libname.def~$CC -Zdll -Zcrtdll -o $lib $libobjs $deplibs $compiler_flags $output_objdir/$libname.def'
-      old_archive_from_new_cmds='emximp -o $output_objdir/$libname.a $output_objdir/$libname.def'
+      shrext_cmds=".dll"
+      archive_cmds='$ECHO "LIBRARY ${soname%$shared_ext} INITINSTANCE TERMINSTANCE" > $output_objdir/$libname.def~
+	$ECHO "DESCRIPTION \"$libname\"" >> $output_objdir/$libname.def~
+	$ECHO "DATA MULTIPLE NONSHARED">> $output_objdir/$libname.def~
+	$ECHO EXPORTS >> $output_objdir/$libname.def~
+	emxexp $libobjs | $SED /"_DLL_InitTerm"/d >> $output_objdir/$libname.def~
+	$CC -Zdll -Zcrtdll -o $output_objdir/$soname $libobjs $deplibs $compiler_flags $output_objdir/$libname.def~
+	emximp -o $lib $output_objdir/$libname.def'
+      archive_expsym_cmds='$ECHO "LIBRARY ${soname%$shared_ext} INITINSTANCE TERMINSTANCE" > $output_objdir/$libname.def~
+	$ECHO "DESCRIPTION \"$libname\"" >> $output_objdir/$libname.def~
+	$ECHO "DATA MULTIPLE NONSHARED">> $output_objdir/$libname.def~
+	$ECHO EXPORTS >> $output_objdir/$libname.def~
+	prefix_cmds="$SED"~
+	if test "x`$SED 1q $export_symbols`" = xEXPORTS; then
+	  prefix_cmds="$prefix_cmds -e 1d";
+	fi~
+	prefix_cmds="$prefix_cmds -e \"s/^\(.*\)$/_\1/g\""~
+	cat $export_symbols | $prefix_cmds >> $output_objdir/$libname.def~
+	$CC -Zdll -Zcrtdll -o $output_objdir/$soname $libobjs $deplibs $compiler_flags $output_objdir/$libname.def~
+	emximp -o $lib $output_objdir/$libname.def'
+      old_archive_from_new_cmds='emximp -o $output_objdir/${libname}_dll.a $output_objdir/$libname.def'
+      enable_shared_with_static_runtimes=yes
       ;;
 
     osf3*)
@@ -9925,9 +9985,34 @@ os2*)
   libname_spec='$name'
   shrext_cmds=".dll"
   need_lib_prefix=no
-  library_names_spec='$libname${shared_ext} $libname.a'
+  # OS/2 limits length of a DLL basename up to 8 characters.
+  # So there is need to use a short name instead of a original
+  # name longer than 8 characters. And replace '.' with '_'.
+# SDL customization: removed versioning support.
+# version_type=windows
+# need_version=no
+# soname_spec='`test -n "$os2dllname" && libname="$os2dllname";
+#   v=$($ECHO ${release}${versuffix} | tr -d .-);
+#   n=$($ECHO $libname | cut -b -$((8 - ${#v})) | tr . _);
+#   $ECHO ${n}${v}`${shared_ext}'
+  soname_spec='`test -n "$os2dllname" && libname="$os2dllname"; $ECHO $libname | cut -b -8 | tr . _`${shared_ext}'
+  library_names_spec='${libname}_dll.$libext'
   dynamic_linker='OS/2 ld.exe'
-  shlibpath_var=LIBPATH
+  shlibpath_var=BEGINLIBPATH
+  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
+  sys_lib_dlsearch_path_spec="$sys_lib_search_path_spec"
+  postinstall_cmds='base_file=`basename \$file`~
+    dlpath=`$SHELL 2>&1 -c '\''. $dir/'\''\$base_file'\''i; $ECHO \$dlname'\''`~
+    dldir=$destdir/`dirname \$dlpath`~
+    test -d \$dldir || mkdir -p \$dldir~
+    $install_prog $dir/$dlname \$dldir/$dlname~
+    chmod a+x \$dldir/$dlname~
+    if test -n '\''$stripme'\'' && test -n '\''$striplib'\''; then
+      eval '\''$striplib \$dldir/$dlname'\'' || exit \$?;
+    fi'
+  postuninstall_cmds='dldll=`$SHELL 2>&1 -c '\''. $file; $ECHO \$dlname'\''`~
+    dlpath=$dir/\$dldll~
+    $RM \$dlpath'
   ;;
 
 osf3* | osf4* | osf5*)
@@ -10478,7 +10563,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10481 "configure"
+#line 10566 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10574,7 +10659,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 10577 "configure"
+#line 10662 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -10806,6 +10891,7 @@ LT_RELEASE=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION
 LT_CURRENT=`expr $SDL_MICRO_VERSION - $SDL_INTERFACE_AGE`
 LT_REVISION=$SDL_INTERFACE_AGE
 LT_AGE=`expr $SDL_BINARY_AGE - $SDL_INTERFACE_AGE`
+LT_EXTRA=""
 
 
 
@@ -12780,6 +12866,34 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 
 	;;
 
+      os2*)
+	hardcode_libdir_flag_spec_CXX='-L$libdir'
+	hardcode_minus_L_CXX=yes
+	allow_undefined_flag_CXX=unsupported
+	shrext_cmds=".dll"
+	archive_cmds_CXX='$ECHO "LIBRARY ${soname%$shared_ext} INITINSTANCE TERMINSTANCE" > $output_objdir/$libname.def~
+	  $ECHO "DESCRIPTION \"$libname\"" >> $output_objdir/$libname.def~
+	  $ECHO "DATA MULTIPLE NONSHARED">> $output_objdir/$libname.def~
+	  $ECHO EXPORTS >> $output_objdir/$libname.def~
+	  emxexp $libobjs | $SED /"_DLL_InitTerm"/d >> $output_objdir/$libname.def~
+	  $CC -Zdll -Zcrtdll -o $output_objdir/$soname $libobjs $deplibs $compiler_flags $output_objdir/$libname.def~
+	  emximp -o $lib $output_objdir/$libname.def'
+	archive_expsym_cmds_CXX='$ECHO "LIBRARY ${soname%$shared_ext} INITINSTANCE TERMINSTANCE" > $output_objdir/$libname.def~
+	  $ECHO "DESCRIPTION \"$libname\"" >> $output_objdir/$libname.def~
+	  $ECHO "DATA MULTIPLE NONSHARED">> $output_objdir/$libname.def~
+	  $ECHO EXPORTS >> $output_objdir/$libname.def~
+	  prefix_cmds="$SED"~
+	  if test "x`$SED 1q $export_symbols`" = xEXPORTS; then
+	    prefix_cmds="$prefix_cmds -e 1d";
+	  fi~
+	  prefix_cmds="$prefix_cmds -e \"s/^\(.*\)$/_\1/g\""~
+	  cat $export_symbols | $prefix_cmds >> $output_objdir/$libname.def~
+	  $CC -Zdll -Zcrtdll -o $output_objdir/$soname $libobjs $deplibs $compiler_flags $output_objdir/$libname.def~
+	  emximp -o $lib $output_objdir/$libname.def'
+	old_archive_from_new_cmds_CXX='emximp -o $output_objdir/${libname}_dll.a $output_objdir/$libname.def'
+	enable_shared_with_static_runtimes_CXX=yes
+	;;
+
       dgux*)
         case $cc_basename in
           ec++*)
@@ -13686,6 +13800,11 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       # Although the cygwin gcc ignores -fPIC, still need this for old-style
       # (--disable-auto-import) libraries
       lt_prog_compiler_pic_CXX='-DDLL_EXPORT'
+      case $host_os in
+      os2*)
+	lt_prog_compiler_static_CXX='${wl}-static'
+	;;
+      esac
       ;;
     darwin* | rhapsody*)
       # PIC is the default on this platform
@@ -13989,11 +14108,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13992: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14111: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:13996: \$? = $ac_status" >&5
+   echo "$as_me:14115: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14088,11 +14207,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14091: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14210: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14095: \$? = $ac_status" >&5
+   echo "$as_me:14214: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14140,11 +14259,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14143: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:14262: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14147: \$? = $ac_status" >&5
+   echo "$as_me:14266: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -14839,9 +14958,34 @@ os2*)
   libname_spec='$name'
   shrext_cmds=".dll"
   need_lib_prefix=no
-  library_names_spec='$libname${shared_ext} $libname.a'
+  # OS/2 limits length of a DLL basename up to 8 characters.
+  # So there is need to use a short name instead of a original
+  # name longer than 8 characters. And replace '.' with '_'.
+# SDL customization: removed versioning support.
+# version_type=windows
+# need_version=no
+# soname_spec='`test -n "$os2dllname" && libname="$os2dllname";
+#   v=$($ECHO ${release}${versuffix} | tr -d .-);
+#   n=$($ECHO $libname | cut -b -$((8 - ${#v})) | tr . _);
+#   $ECHO ${n}${v}`${shared_ext}'
+  soname_spec='`test -n "$os2dllname" && libname="$os2dllname"; $ECHO $libname | cut -b -8 | tr . _`${shared_ext}'
+  library_names_spec='${libname}_dll.$libext'
   dynamic_linker='OS/2 ld.exe'
-  shlibpath_var=LIBPATH
+  shlibpath_var=BEGINLIBPATH
+  sys_lib_search_path_spec="/lib /usr/lib /usr/local/lib"
+  sys_lib_dlsearch_path_spec="$sys_lib_search_path_spec"
+  postinstall_cmds='base_file=`basename \$file`~
+    dlpath=`$SHELL 2>&1 -c '\''. $dir/'\''\$base_file'\''i; $ECHO \$dlname'\''`~
+    dldir=$destdir/`dirname \$dlpath`~
+    test -d \$dldir || mkdir -p \$dldir~
+    $install_prog $dir/$dlname \$dldir/$dlname~
+    chmod a+x \$dldir/$dlname~
+    if test -n '\''$stripme'\'' && test -n '\''$striplib'\''; then
+      eval '\''$striplib \$dldir/$dlname'\'' || exit \$?;
+    fi'
+  postuninstall_cmds='dldll=`$SHELL 2>&1 -c '\''. $file; $ECHO \$dlname'\''`~
+    dlpath=$dir/\$dldll~
+    $RM \$dlpath'
   ;;
 
 osf3* | osf4* | osf5*)
@@ -15427,6 +15571,15 @@ case "$host" in
         BASE_CFLAGS="-I/usr/include/mingw -mno-cygwin"
         BASE_LDFLAGS="-mno-cygwin"
         ;;
+    *-*-os2*)
+        # disable static builds on os/2
+        enable_static=no
+        # -DBUILD_SDL is needed for DECLSPEC
+        BASE_CFLAGS="-DBUILD_SDL"
+        BASE_LDFLAGS=""
+        # SDL-1.2 has been built as SDL12.dll
+        LT_EXTRA="-os2dllname SDL12"
+        ;;
     *)
         BASE_CFLAGS="-D_GNU_SOURCE=1"
         BASE_LDFLAGS=""
@@ -15641,7 +15794,7 @@ if test x$enable_libc = xyes; then
     $as_echo "#define HAVE_LIBC 1" >>confdefs.h
 
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
 $as_echo_n "checking for ANSI C header files... " >&6; }
 if ${ac_cv_header_stdc+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -15767,7 +15920,7 @@ fi
 done
 
 
-        ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
+    ac_fn_c_check_type "$LINENO" "size_t" "ac_cv_type_size_t" "$ac_includes_default"
 if test "x$ac_cv_type_size_t" = xyes; then :
 
 else
@@ -15791,11 +15944,7 @@ fi
         have_inttypes=yes
     fi
 
-        case "$host" in
-    *-*-cygwin* | *-*-mingw*)
-        ;;
-    *)
-        # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
+    # The Ultrix 4.2 mips builtin alloca declared by alloca.h only works
 # for constant arguments.  Useless!
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working alloca.h" >&5
 $as_echo_n "checking for working alloca.h... " >&6; }
@@ -15981,8 +16130,6 @@ _ACEOF
 
 fi
 
-        ;;
-    esac
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working memcmp" >&5
 $as_echo_n "checking for working memcmp... " >&6; }
@@ -16178,7 +16325,6 @@ if test "x$ac_cv_func_mprotect" = xyes; then :
 int
 main ()
 {
-
 
   ;
   return 0;
@@ -16684,9 +16830,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_oss=yes
-
+  have_oss=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         fi
@@ -17009,9 +17153,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_dmedia=yes
-
+  have_dmedia=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dmedia" >&5
@@ -17029,7 +17171,7 @@ $as_echo "$have_dmedia" >&6; }
 
 CheckMME()
 {
-        case $ARCH in
+    case $ARCH in
         osf)
             ;;
         *)
@@ -17060,9 +17202,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_mme=yes
-
+  have_mme=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         CFLAGS="$save_CFLAGS"
@@ -17644,9 +17784,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            audio_arts=yes
-
+  audio_arts=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             CFLAGS="$save_CFLAGS"
@@ -17757,7 +17895,6 @@ $as_echo_n "checking for NAS audio support... " >&6; }
             NAS_CFLAGS="-I/usr/X11R6/include/"
             NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
 
-
         elif test -r /usr/freeware/include/nas/audiolib.h; then
             have_nas=yes
             NAS_LIBS="-lnas -lXt"
@@ -17861,10 +17998,9 @@ fi
     fi
 }
 
-# NASM is available from: http://nasm.sourceforge.net
 CheckNASM()
 {
-        case $host in
+    case $host in
         i?86*)
             ;;
         *)
@@ -17873,7 +18009,7 @@ CheckNASM()
             ;;
     esac
 
-            # The cast to long int works around a bug in the HP C Compiler
+    # The cast to long int works around a bug in the HP C Compiler
 # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
 # declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
 # This bug is HP SR number 8606223364.
@@ -17910,7 +18046,7 @@ _ACEOF
         return
     fi
 
-        # Check whether --enable-nasm was given.
+    # Check whether --enable-nasm was given.
 if test "${enable_nasm+set}" = set; then :
   enableval=$enable_nasm;
 else
@@ -17941,6 +18077,9 @@ $as_echo "$CompileNASM_ret" >&6; }
                   ;;
               macosx)
                   NASMFLAGS="-f macho"
+                  ;;
+              os2)
+                  NASMFLAGS="-f aout"
                   ;;
               *)
                   NASMFLAGS="-f elf32"
@@ -17999,7 +18138,7 @@ fi
             SOURCES="$SOURCES $srcdir/src/hermes/*.asm"
             NASMFLAGS="$NASMFLAGS -I $srcdir/src/hermes/"
 
-                        echo "GLOBAL _bar:function hidden" > symbol-visibility
+            echo "GLOBAL _bar:function hidden" > symbol-visibility
             echo "_bar:" >> symbol-visibility
             CompileNASM symbol-visibility && NASMFLAGS="$NASMFLAGS -DHIDDEN_VISIBILITY"
 
@@ -18007,7 +18146,7 @@ fi
 
 
             case "$host" in
-                # this line is needed for QNX, because it's not defined the __ELF__
+                # this is needed for QNX, because it does not define __ELF__
                 *-*-qnx*)
                      EXTRA_CFLAGS="$EXTRA_CFLAGS -D__ELF__";;
                 *-*-solaris*)
@@ -18047,7 +18186,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -18076,15 +18214,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_gcc_altivec=yes
-
+  have_gcc_altivec=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_altivec" >&5
@@ -18119,7 +18254,7 @@ fi
         altivec_CFLAGS="-faltivec"
         CFLAGS="$save_CFLAGS $altivec_CFLAGS"
 
-                        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Altivec with GCC -faltivec option" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Altivec with GCC -faltivec option" >&5
 $as_echo_n "checking for Altivec with GCC -faltivec option... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
@@ -18132,20 +18267,16 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_gcc_altivec=yes
-
+  have_gcc_altivec=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_altivec" >&5
 $as_echo "$have_gcc_altivec" >&6; }
-
         CFLAGS="$save_CFLAGS"
 
         if test x$have_gcc_altivec = xyes; then
@@ -18153,7 +18284,7 @@ $as_echo "$have_gcc_altivec" >&6; }
 
             EXTRA_CFLAGS="$EXTRA_CFLAGS $altivec_CFLAGS"
         else
-                    CheckAltivec
+            CheckAltivec
         fi
     fi
 }
@@ -18276,15 +18407,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_fvisibility=yes
-
+  have_gcc_fvisibility=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_fvisibility" >&5
@@ -18306,22 +18434,17 @@ $as_echo_n "checking for GCC -Wall option... " >&6; }
     CFLAGS="$save_CFLAGS -Wall"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
-    int x = 0;
-
+int x = 0;
 int
 main ()
 {
-
 
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_gcc_Wall=yes
-
+  have_gcc_Wall=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_Wall" >&5
@@ -18331,7 +18454,7 @@ $as_echo "$have_gcc_Wall" >&6; }
     if test x$have_gcc_Wall = xyes; then
         EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall"
 
-                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for necessary GCC -Wno-multichar option" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for necessary GCC -Wno-multichar option" >&5
 $as_echo_n "checking for necessary GCC -Wno-multichar option... " >&6; }
         need_gcc_Wno_multichar=no
         case "$host" in
@@ -19458,7 +19581,6 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
@@ -19509,9 +19631,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_photon=yes
-
+  video_photon=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_photon" >&5
@@ -19560,15 +19680,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_carbon=yes
-
+  have_carbon=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_carbon" >&5
@@ -19594,7 +19711,7 @@ fi
 
     if test x$enable_video = xyes -a x$enable_video_cocoa = xyes; then
         save_CFLAGS="$CFLAGS"
-                CFLAGS="$CFLAGS -x objective-c"
+        CFLAGS="$CFLAGS -x objective-c"
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Cocoa framework" >&5
 $as_echo_n "checking for Cocoa framework... " >&6; }
         have_cocoa=no
@@ -19607,15 +19724,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_cocoa=yes
-
+  have_cocoa=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_cocoa" >&5
@@ -19666,15 +19780,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_fbcon=yes
-
+  video_fbcon=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_fbcon" >&5
@@ -19831,15 +19942,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_ps2gs=yes
-
+  video_ps2gs=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_ps2gs" >&5
@@ -19877,15 +19985,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-      video_ps3=yes
-
+  video_ps3=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_ps3" >&5
@@ -19924,15 +20029,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_ggi=yes
-
+  video_ggi=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_ggi" >&5
@@ -19980,9 +20082,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_svga=yes
-
+  video_svga=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_svga" >&5
@@ -20032,9 +20132,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_vgl=yes
-
+  video_vgl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_vgl" >&5
@@ -20080,9 +20178,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_wscons=yes
-
+  video_wscons=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_wscons" >&5
@@ -20119,15 +20215,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_aalib=yes
-
+  video_aalib=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_aalib" >&5
@@ -20209,15 +20302,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-             video_caca=yes
-
+  video_caca=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             CFLAGS="$save_CFLAGS"
@@ -20265,15 +20355,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_cxx_try_compile "$LINENO"; then :
-
-        video_qtopia=yes
-
+  video_qtopia=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         CXXFLAGS="$OLD_CXX"
@@ -20321,15 +20408,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_picogui=yes
-
+  video_picogui=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_picogui" >&5
@@ -20479,15 +20563,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl=yes
-
+  video_opengl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl" >&5
@@ -20516,15 +20597,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        video_opengl=yes
-
+  video_opengl=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl" >&5
@@ -20715,7 +20793,7 @@ fi
 
 CheckInputEvents()
 {
-        # Check whether --enable-input-events was given.
+    # Check whether --enable-input-events was given.
 if test "${enable_input_events+set}" = set; then :
   enableval=$enable_input_events;
 else
@@ -20744,9 +20822,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        use_input_events=yes
-
+  use_input_events=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_events" >&5
@@ -20780,15 +20856,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        enable_input_tslib=yes
-
+  enable_input_tslib=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_input_tslib" >&5
@@ -20803,7 +20876,7 @@ $as_echo "$enable_input_tslib" >&6; }
 
 CheckPTH()
 {
-        # Check whether --enable-pth was given.
+    # Check whether --enable-pth was given.
 if test "${enable_pth+set}" = set; then :
   enableval=$enable_pth;
 else
@@ -20875,14 +20948,14 @@ $as_echo "$use_pth" >&6; }
 
 CheckPTHREAD()
 {
-        # Check whether --enable-pthreads was given.
+    # Check whether --enable-pthreads was given.
 if test "${enable_pthreads+set}" = set; then :
   enableval=$enable_pthreads;
 else
   enable_pthreads=yes
 fi
 
-        # Check whether --enable-pthread-sem was given.
+    # Check whether --enable-pthread-sem was given.
 if test "${enable_pthread_sem+set}" = set; then :
   enableval=$enable_pthread_sem;
 else
@@ -20989,9 +21062,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-
-        use_pthreads=yes
-
+  use_pthreads=yes
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -21092,15 +21163,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-                have_pthread_sem=yes
-
+  have_pthread_sem=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_pthread_sem" >&5
@@ -21182,15 +21250,12 @@ int
 main ()
 {
 
-
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-    have_win32_gcc=yes
-
+  have_win32_gcc=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_win32_gcc" >&5
@@ -21239,7 +21304,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
     CFLAGS="$save_CFLAGS"
 
-        # Check whether --enable-stdio-redirect was given.
+    # Check whether --enable-stdio-redirect was given.
 if test "${enable_stdio_redirect+set}" = set; then :
   enableval=$enable_stdio_redirect;
 else
@@ -21257,6 +21322,50 @@ fi
         SOURCES="$SOURCES $srcdir/src/video/windib/*.c"
         have_video=yes
     fi
+}
+
+CheckOS2()
+{
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking OS/2 compiler" >&5
+$as_echo_n "checking OS/2 compiler... " >&6; }
+    have_os2_gcc=no
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <os2.h>
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  have_os2_gcc=yes
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_os2_gcc" >&5
+$as_echo "$have_os2_gcc" >&6; }
+    if test x$have_os2_gcc != xyes; then
+       as_fn_error $? "
+*** Your compiler ($CC) does not produce OS/2 executables!
+       " "$LINENO" 5
+    fi
+
+    # Check whether --enable-video-grop was given.
+if test "${enable_video_grop+set}" = set; then :
+  enableval=$enable_video_grop;
+else
+  enable_video_grop=yes
+fi
+
+    # Check whether --enable-video-fslib was given.
+if test "${enable_video_fslib+set}" = set; then :
+  enableval=$enable_video_fslib;
+else
+  enable_video_fslib=no
+fi
+
 }
 
 CheckDIRECTX()
@@ -21342,9 +21451,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_dlopen=yes
-
+  have_dlopen=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dlopen" >&5
@@ -21429,50 +21536,19 @@ $as_echo "$ac_cv_lib_dl_dlopen" >&6; }
 if test "x$ac_cv_lib_dl_dlopen" = xyes; then :
   EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl"
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -lltdl" >&5
-$as_echo_n "checking for dlopen in -lltdl... " >&6; }
-if ${ac_cv_lib_ltdl_dlopen+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lltdl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
+  have_dlopen=no
+fi
 
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char dlopen ();
-int
-main ()
-{
-return dlopen ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ltdl_dlopen=yes
-else
-  ac_cv_lib_ltdl_dlopen=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ltdl_dlopen" >&5
-$as_echo "$ac_cv_lib_ltdl_dlopen" >&6; }
-if test "x$ac_cv_lib_ltdl_dlopen" = xyes; then :
-  EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lltdl"
-fi
 
 fi
 
-fi
+            if test x$have_dlopen = xno; then
+               { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Failed finding libdl, dlopen disabled" >&5
+$as_echo "$as_me: WARNING: Failed finding libdl, dlopen disabled" >&2;}
+            fi
+        fi
 
+        if test x$have_dlopen = xyes; then
             $as_echo "#define SDL_LOADSO_DLOPEN 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/loadso/dlopen/*.c"
@@ -21702,9 +21778,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-        have_usbhid=yes
-
+  have_usbhid=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_usbhid" >&5
@@ -21748,9 +21822,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_usbhid_ucr_data=yes
-
+  have_usbhid_ucr_data=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             if test x$have_usbhid_ucr_data = xyes; then
@@ -21796,9 +21868,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_usbhid_new=yes
-
+  have_usbhid_new=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             if test x$have_usbhid_new = xyes; then
@@ -21826,9 +21896,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-            have_machine_joystick=yes
-
+  have_machine_joystick=yes
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             if test x$have_machine_joystick = xyes; then
@@ -22477,7 +22545,11 @@ case "$host" in
         ;;
     *-riscos)
         ARCH=riscos
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
         CheckOSS
+        CheckDLOPEN
         CheckPTHREAD
         # Set up files for the video library
         if test x$enable_video = xyes; then
@@ -22500,6 +22572,83 @@ case "$host" in
 
             SOURCES="$SOURCES $srcdir/src/timer/riscos/*.c"
             have_timers=yes
+        fi
+        ;;
+    *-*-os2*)
+        ARCH=os2
+        if test "$build" != "$host"; then # cross-compiling
+            # Default cross-compile location
+            ac_default_prefix=/@unixroot/usr/local/cross-tools/$host
+        else
+            # Look for the location of the tools and install there
+            if test "$BUILD_PREFIX" != ""; then
+                ac_default_prefix=$BUILD_PREFIX
+            fi
+        fi
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DOS2EMX_PLAIN_CHAR -I$srcdir/os2/h"
+        CheckOS2
+        CheckNASM
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+
+        # Set up files for the video library
+        if test x$enable_video = xyes; then
+            if test x$enable_video_grop = xyes; then
+                $as_echo "#define SDL_VIDEO_DRIVER_OS2GROP 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/video/os2grop/*.c"
+                have_video=yes
+            fi
+            if test x$enable_video_fslib = xyes; then
+                $as_echo "#define SDL_VIDEO_DRIVER_OS2FS 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/video/os2fslib/*.c"
+                have_video=yes
+            fi
+        fi
+        # Set up files for the audio library
+        if test x$enable_audio = xyes; then
+            $as_echo "#define SDL_AUDIO_DRIVER_DART 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/dart/*.c"
+            have_audio=yes
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lmmpm2"
+        fi
+        # Set up files for the cdrom library
+        if test x$enable_cdrom = xyes; then
+            $as_echo "#define SDL_CDROM_OS2 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/cdrom/os2/*.c"
+            have_cdrom=yes
+        fi
+        # Set up files for the thread library
+        if test x$enable_threads = xyes; then
+            $as_echo "#define SDL_THREAD_OS2 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/thread/os2/*.c"
+            have_threads=yes
+        fi
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            $as_echo "#define SDL_TIMER_OS2 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/timer/os2/*.c"
+            have_timers=yes
+        fi
+        # Set up files for the shared object loading library
+        if test x$enable_loadso = xyes; then
+            $as_echo "#define SDL_LOADSO_OS2 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/loadso/os2/*.c"
+            have_loadso=yes
+        fi
+        # Set up files for the joystick library
+        if test x$enable_joystick = xyes; then
+            $as_echo "#define SDL_JOYSTICK_OS2 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/joystick/os2/*.c"
+            have_joystick=yes
         fi
         ;;
     *)

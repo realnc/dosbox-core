@@ -237,7 +237,8 @@ int buffer_open(out123_handle *ao, const char* driver, const char* device)
 		/* Retrieve driver and device name. */
 		return ( xfer_read_string(ao, XF_WRITER, &ao->driver)
 		      || xfer_read_string(ao, XF_WRITER, &ao->device)
-		      || xfer_read_string(ao, XF_WRITER, &ao->realname) );
+		      || xfer_read_string(ao, XF_WRITER, &ao->realname)
+		      || !GOOD_READVAL(writerfd, ao->propflags) );
 	else
 		return -1;
 }
@@ -736,7 +737,8 @@ int buffer_loop(out123_handle *ao)
 						xfermem_putcmd(my_fd, XF_CMD_OK);
 						if(  xfer_write_string(ao, XF_READER, ao->driver)
 						  || xfer_write_string(ao, XF_READER, ao->device)
-						  || xfer_write_string(ao, XF_READER, ao->realname ) )
+						  || xfer_write_string(ao, XF_READER, ao->realname )
+						  || !GOOD_WRITEVAL(my_fd, ao->propflags) )
 							return 2;
 					}
 					else

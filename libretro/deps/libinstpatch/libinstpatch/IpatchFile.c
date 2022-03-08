@@ -105,7 +105,7 @@ static IpatchFileIOFuncs null_iofuncs =
     NULL				/* get_size method */
 };
 
-G_DEFINE_TYPE(IpatchFile, ipatch_file, IPATCH_TYPE_ITEM);
+G_DEFINE_TYPE(IpatchFile, ipatch_file, IPATCH_TYPE_ITEM)
 
 /* Lock and hash for file pool */
 G_LOCK_DEFINE_STATIC(ipatch_file_pool);

@@ -64,7 +64,7 @@ ipatch_vbank_inst_container_init_iter(IpatchContainer *container,
                                       IpatchIter *iter, GType type);
 
 
-G_DEFINE_TYPE(IpatchVBankInst, ipatch_vbank_inst, IPATCH_TYPE_CONTAINER);
+G_DEFINE_TYPE(IpatchVBankInst, ipatch_vbank_inst, IPATCH_TYPE_CONTAINER)
 
 static GType inst_child_types[2] = { 0 };
 static GParamSpec *name_pspec, *bank_pspec, *program_pspec;

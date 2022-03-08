@@ -422,10 +422,10 @@ _sf2_to_file_set_property(GObject *object, guint property_id,
     }
 }
 
-CONVERTER_CLASS_INIT(file_to_sf2);
-CONVERTER_CLASS_INIT(file_to_sf2_sample);
+CONVERTER_CLASS_INIT(file_to_sf2)
+CONVERTER_CLASS_INIT(file_to_sf2_sample)
 
-CONVERTER_GET_TYPE(sf2_to_file, SF2ToFile);
-CONVERTER_GET_TYPE(file_to_sf2, FileToSF2);
-CONVERTER_GET_TYPE(file_to_sf2_sample, FileToSF2Sample);
+CONVERTER_GET_TYPE(sf2_to_file, SF2ToFile)
+CONVERTER_GET_TYPE(file_to_sf2, FileToSF2)
+CONVERTER_GET_TYPE(file_to_sf2_sample, FileToSF2Sample)
 

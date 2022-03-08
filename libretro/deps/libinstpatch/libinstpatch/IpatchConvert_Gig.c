@@ -146,11 +146,11 @@ _file_to_gig_convert(IpatchConverter *converter, GError **err)
 
 #define _file_to_gig_sample_convert _file_to_dls2_sample_convert;
 
-CONVERTER_CLASS_INIT(gig_to_file);
-CONVERTER_GET_TYPE(gig_to_file, GigToFile);
+CONVERTER_CLASS_INIT(gig_to_file)
+CONVERTER_GET_TYPE(gig_to_file, GigToFile)
 
 CONVERTER_CLASS_INIT(file_to_gig);
-CONVERTER_GET_TYPE(file_to_gig, FileToGig);
+CONVERTER_GET_TYPE(file_to_gig, FileToGig)
 
-CONVERTER_CLASS_INIT(file_to_gig_sample);
-CONVERTER_GET_TYPE(file_to_gig_sample, FileToGigSample);
+CONVERTER_CLASS_INIT(file_to_gig_sample)
+CONVERTER_GET_TYPE(file_to_gig_sample, FileToGigSample)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2021 Jerome Fisher, Sergey V. Mikayev
+/* Copyright (C) 2011-2022 Jerome Fisher, Sergey V. Mikayev
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -212,8 +212,16 @@ bool SynthRoute::connectSynth(const char *signal, const QObject *receiver, const
 	return QObject::connect(&qSynth, signal, receiver, slot);
 }
 
+bool SynthRoute::disconnectSynth(const char *signal, const QObject *receiver, const char *slot) const {
+	return QObject::disconnect(&qSynth, signal, receiver, slot);
+}
+
 bool SynthRoute::connectReportHandler(const char *signal, const QObject *receiver, const char *slot) const {
 	return QObject::connect(qSynth.getReportHandler(), signal, receiver, slot);
+}
+
+bool SynthRoute::disconnectReportHandler(const char *signal, const QObject *receiver, const char *slot) const {
+	return QObject::disconnect(qSynth.getReportHandler(), signal, receiver, slot);
 }
 
 bool SynthRoute::pushMIDIShortMessage(MidiSession &midiSession, Bit32u msg, MasterClockNanos refNanos) {
@@ -275,17 +283,16 @@ bool SynthRoute::playMIDISysex(MidiSession &midiSession, const Bit8u *sysex, Bit
 }
 
 void SynthRoute::discardMidiBuffers() {
-	if (!multiMidiMode) return;
-	QMutexLocker midiSessionsLocker(&midiSessionsMutex);
-	QVarLengthArray<QMidiBuffer *, 16> streamBuffers;
+	if (multiMidiMode) {
+		QMutexLocker midiSessionsLocker(&midiSessionsMutex);
 
-	for (int i = 0; i < midiSessions.size(); i++) {
-		QMidiBuffer *midiBuffer = midiSessions[i]->getQMidiBuffer();
-		while (midiBuffer->retieveEvents()) {
-			midiBuffer->discardEvents();
+		for (int i = 0; i < midiSessions.size(); i++) {
+			QMidiBuffer *midiBuffer = midiSessions[i]->getQMidiBuffer();
+			while (midiBuffer->retrieveEvents()) {
+				midiBuffer->discardEvents();
+			}
 		}
 	}
-
 	qSynth.flushMIDIQueue();
 }
 
@@ -297,22 +304,20 @@ void SynthRoute::flushMIDIQueue() {
 // When renderingPassFrameLength == 0, all pending messages are merged.
 void SynthRoute::mergeMidiStreams(uint renderingPassFrameLength) {
 	quint64 renderingPassEndTimestamp;
-	{
-		if (renderingPassFrameLength > 0) {
-			RealtimeReadLocker audioStreamLocker(audioStreamLock);
-			// Occasionally, audioStream may appear NULL during startup.
-			if (!audioStreamLocker.isLocked() || audioStream == NULL) return;
-			renderingPassEndTimestamp = audioStream->computeMIDITimestamp(renderingPassFrameLength);
-		} else {
-			renderingPassEndTimestamp = std::numeric_limits<quint64>::max();
-		}
+	if (renderingPassFrameLength > 0) {
+		RealtimeReadLocker audioStreamLocker(audioStreamLock);
+		// Occasionally, audioStream may appear NULL during startup.
+		if (!audioStreamLocker.isLocked() || audioStream == NULL) return;
+		renderingPassEndTimestamp = audioStream->computeMIDITimestamp(renderingPassFrameLength);
+	} else {
+		renderingPassEndTimestamp = std::numeric_limits<quint64>::max();
 	}
 
 	QMutexLocker midiSessionsLocker(&midiSessionsMutex);
 	QVarLengthArray<QMidiBuffer *, 16> streamBuffers;
 	for (int i = 0; i < midiSessions.size(); i++) {
 		QMidiBuffer *midiBuffer = midiSessions[i]->getQMidiBuffer();
-		if (midiBuffer->retieveEvents() && midiBuffer->getEventTimestamp() < renderingPassEndTimestamp) {
+		if (midiBuffer->retrieveEvents() && midiBuffer->getEventTimestamp() < renderingPassEndTimestamp) {
 			streamBuffers.append(midiBuffer);
 		}
 	}
@@ -413,6 +418,10 @@ void SynthRoute::setReverbSettings(int reverbMode, int reverbTime, int reverbLev
 	qSynth.setReverbSettings(reverbMode, reverbTime, reverbLevel);
 }
 
+void SynthRoute::setPartVolumeOverride(uint partNumber, uint volumeOverride) {
+	qSynth.setPartVolumeOverride(partNumber, volumeOverride);
+}
+
 void SynthRoute::setReversedStereoEnabled(bool enabled) {
 	qSynth.setReversedStereoEnabled(enabled);
 }
@@ -461,6 +470,10 @@ void SynthRoute::setPartialCount(int partialCount) {
 	qSynth.setPartialCount(partialCount);
 }
 
+void SynthRoute::setDisplayCompatibilityMode(DisplayCompatibilityMode displayCompatibilityMode) {
+	qSynth.setDisplayCompatibilityMode(displayCompatibilityMode);
+}
+
 void SynthRoute::getSynthProfile(SynthProfile &synthProfile) const {
 	qSynth.getSynthProfile(synthProfile);
 }
@@ -481,16 +494,20 @@ const QString SynthRoute::getPatchName(int partNum) const {
 	return qSynth.getPatchName(partNum);
 }
 
-void SynthRoute::getPartStates(bool *partStates) const {
-	qSynth.getPartStates(partStates);
-}
-
 void SynthRoute::getPartialStates(PartialState *partialStates) const {
 	qSynth.getPartialStates(partialStates);
 }
 
 uint SynthRoute::getPlayingNotes(unsigned int partNumber, MT32Emu::Bit8u *keys, MT32Emu::Bit8u *velocities) const {
 	return qSynth.getPlayingNotes(partNumber, keys, velocities);
+}
+
+bool SynthRoute::getDisplayState(char *targetBuffer) const {
+	return qSynth.getDisplayState(targetBuffer);
+}
+
+void SynthRoute::setMainDisplayMode() {
+	qSynth.setMainDisplayMode();
 }
 
 void SynthRoute::startRecordingAudio(const QString &fileName) {

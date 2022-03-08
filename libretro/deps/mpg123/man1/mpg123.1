@@ -59,7 +59,7 @@ the input file. Normally,
 tries to keep the playback alive at all costs, including skipping invalid material and searching new header when something goes wrong.
 With this switch you can make it bail out on data errors
 (and perhaps spare your ears a bad time). Note that this switch has been renamed from \-\-resync.
-The old name still works, but is not advertised or recommened to use (subject to removal in future).
+The old name still works, but is not advertised or recommended to use (subject to removal in future).
 .TP
 .BR \-F ", " \-\^\-no\-frankenstein
 Disable support for Frankenstein streams. Normally, mpg123 stays true to the concept of MPEG audio being
@@ -90,7 +90,7 @@ from the respective servers.  See also the
 ``HTTP SUPPORT'' section.
 .TP
 \fB\-u \fIauth\fR, \fB\-\^\-auth \fIauth
-HTTP authentication to use when recieving files via HTTP.
+HTTP authentication to use when receiving files via HTTP.
 The format used is user:password.
 .TP
 \fB\-\^\-ignore\-mime
@@ -131,7 +131,7 @@ last one will be recognized).
 \fB\-l \fIn\fR, \fB\-\^\-listentry \fIn
 Of the playlist, play specified entry only. 
 .I n
-is the number of entry starting at 1. A value of 0 is the default and means playling the whole list,  a negative value means showing of the list of titles with their numbers...
+is the number of entry starting at 1. A value of 0 is the default and means playing the whole list,  a negative value means showing of the list of titles with their numbers...
 .TP
 \fB\-\^\-continue
 Enable playlist continuation mode. This changes frame skipping to apply only to the first track and also continues to play following tracks in playlist after the selected one. Also, the option to play a number of frames only applies to the whole playlist. Basically, this tries to treat the playlist more like one big stream (like, an audio book).
@@ -229,7 +229,7 @@ Forces reopen of the audiodevice after ever song
 .BR \-\-cpu\ \fIdecoder\-type
 Selects a certain decoder (optimized for specific CPU), for example i586 or MMX.
 The list of available decoders can vary; depending on the build and what your CPU supports.
-This options is only availabe when the build actually includes several optimized decoders.
+This option is only available when the build actually includes several optimized decoders.
 .TP
 .BR \-\-test\-cpu
 Tests your CPU and prints a list of possible choices for \-\-cpu.
@@ -335,6 +335,10 @@ whitespace.  They specify the multipliers for left and right channel of
 a certain frequency band, respectively.  The first line corresponds to the
 lowest, the 32nd to the highest frequency band.
 Note that you can control the equalizer interactively with the generic control interface.
+Also note that these are the 32 bands of the MPEG codec, not spaced like you
+would see for a usual graphic equalizer. The upside is that there is zero computational
+cost in addition to decoding. The downside is that you roughly have bass in band 0,
+(upper) mids in band 1, treble in all others.
 .TP
 \fB\-\^\-gapless
 Enable code that cuts (junk) samples at beginning and end of tracks, enabling gapless transitions between MPEG files when encoder padding and codec delays would prevent it.
@@ -431,9 +435,7 @@ Issue ``help'' to get a full list of commands and syntax.
 .TP
 .BR \-\^\-remote\-err
 Print responses for generic control mode to standard error, not standard out.
-This is automatically triggered when using 
-.B -s
-N.
+This is automatically triggered when using \fB-s\fR.
 .TP
 \fB\-\-fifo \fIpath
 Create a fifo / named pipe on the given path and use that for reading commands instead of standard input.

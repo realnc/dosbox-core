@@ -15,9 +15,8 @@ class QDropEvent;
 class Master : public QObject {
 friend int main(int argv, char **args);
 	Q_OBJECT
-private:
-	static void showCommandLineHelp();
 
+private:
 	QList<SynthRoute *> synthRoutes;
 	QList<AudioDriver *> audioDrivers;
 	QList<const AudioDevice *> audioDevices;
@@ -48,7 +47,8 @@ public:
 	static void isSupportedDropEvent(QDropEvent *e);
 	static QStringList parseMidiListFromUrls(const QList<QUrl> urls);
 	static QStringList parseMidiListFromPathName(const QString pathName);
-	static const QString getROMPathName(const QDir &romDir, QString romFileName);
+	static const QByteArray getROMPathNameLocal(const QDir &romDir, const QString romFileName);
+	static void showCommandLineHelp();
 
 	// May only be called from the application thread
 	const QList<const AudioDevice *> getAudioDevices();
@@ -68,7 +68,12 @@ public:
 	void setPinned(SynthRoute *synthRoute);
 	void startPinnedSynthRoute();
 	void startMidiProcessing();
-	void processCommandLine(QStringList args);
+	bool processCommandLine(const QStringList args);
+	void handleCLIOptionProfile(const QStringList &args, int &argIx);
+	void handleCLIOptionMaxSessions(const QStringList &args, int &argIx);
+	void handleCLICommandPlay(const QStringList &args, int &argIx);
+	void handleCLICommandConvert(const QStringList &args, int &argIx);
+	bool handleCLICommandReset(const QStringList &args, int &argIx);
 	bool canCreateMidiPort();
 	bool canDeleteMidiPort(MidiSession *midiSession);
 	bool canSetMidiPortProperties(MidiSession *midiSession);
@@ -88,7 +93,6 @@ signals:
 	void synthRouteAdded(SynthRoute *route, const AudioDevice *audioDevice, bool pinnable);
 	void synthRouteRemoved(SynthRoute *route);
 	void synthRoutePinned();
-	void synthRoutePinnable();
 	void romsLoadFailed(bool &recoveryAttempted);
 	void playMidiFiles(const QStringList &);
 	void convertMidiFiles(const QStringList &);

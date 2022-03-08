@@ -301,8 +301,8 @@ _gig_inst_to_sf2_voice_cache_convert(IpatchConverter *converter, GError **err)
 #define _gig_sample_to_sf2_voice_cache_convert \
   _dls2_sample_to_sf2_voice_cache_convert
 
-CONVERTER_CLASS_INIT(gig_inst_to_sf2_voice_cache);
-CONVERTER_CLASS_INIT(gig_sample_to_sf2_voice_cache);
+CONVERTER_CLASS_INIT(gig_inst_to_sf2_voice_cache)
+CONVERTER_CLASS_INIT(gig_sample_to_sf2_voice_cache)
 
-CONVERTER_SF2_VOICE_CACHE_GET_TYPE(gig_inst_to_sf2_voice_cache, GigInstToSF2VoiceCache);
-CONVERTER_SF2_VOICE_CACHE_GET_TYPE(gig_sample_to_sf2_voice_cache, GigSampleToSF2VoiceCache);
+CONVERTER_SF2_VOICE_CACHE_GET_TYPE(gig_inst_to_sf2_voice_cache, GigInstToSF2VoiceCache)
+CONVERTER_SF2_VOICE_CACHE_GET_TYPE(gig_sample_to_sf2_voice_cache, GigSampleToSF2VoiceCache)

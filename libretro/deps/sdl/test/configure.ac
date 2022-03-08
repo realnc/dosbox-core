@@ -3,7 +3,7 @@ AC_INIT
 AC_CONFIG_SRCDIR([loopwave.c])
 
 dnl Detect the canonical build and host environments
-AC_CONFIG_AUX_DIRS($srcdir/../build-scripts)
+AC_CONFIG_AUX_DIR([../build-scripts])
 AC_CANONICAL_HOST
 
 dnl Check for tools
@@ -24,7 +24,7 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS="-lGL"
         ;;
-    *-*-darwin* )
+    *-*-darwin*)
         EXE=""
         MATHLIB=""
         SYS_GL_LIBS="-Wl,-framework,OpenGL"
@@ -49,8 +49,13 @@ case "$host" in
             SYS_GL_LIBS="-lOSMesa"
         fi
         ;;
-    *-*-riscos* )
+    *-*-riscos*)
         EXE=",e1f"
+        MATHLIB=""
+        SYS_GL_LIBS=""
+        ;;
+    *-*-os2*)
+        EXE=".exe"
         MATHLIB=""
         SYS_GL_LIBS=""
         ;;

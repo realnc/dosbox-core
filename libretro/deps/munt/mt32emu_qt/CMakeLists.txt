@@ -1,12 +1,17 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(mt32emu-qt)
-set(mt32emu_qt_VERSION_MAJOR 1)
-set(mt32emu_qt_VERSION_MINOR 8)
-set(mt32emu_qt_VERSION_PATCH 0)
-set(mt32emu_qt_VERSION "${mt32emu_qt_VERSION_MAJOR}.${mt32emu_qt_VERSION_MINOR}.${mt32emu_qt_VERSION_PATCH}")
+
+include(cmake/project_data.cmake)
+
+if(BUILD_SNAPSHOTS AND libmt32emu_SNAPSHOT_VERSION)
+  include(../cmake/build_snapshots.cmake)
+  add_definitions(-DBUILD_MT32EMU_VERSION="${libmt32emu_SNAPSHOT_VERSION}")
+endif()
+
+include(GNUInstallDirs)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
   set(LINUX_FOUND TRUE)
@@ -24,7 +29,7 @@ if(MSVC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL Clang)
   mark_as_advanced(${PROJECT_NAME}_PRECOMPILED_HEADER)
 endif()
 
-add_definitions(-DAPP_VERSION="${mt32emu_qt_VERSION}")
+add_definitions(-DMT32EMU_QT_VERSION="${mt32emu_qt_VERSION}")
 add_definitions(-DBUILD_SYSTEM="${CMAKE_SYSTEM_NAME}")
 
 include(CheckIncludeFiles)
@@ -54,6 +59,7 @@ set(mt32emu_qt_SOURCES
   src/SynthStateMonitor.cpp
   src/SynthWidget.cpp
   src/MidiPlayerDialog.cpp
+  src/FloatingDisplay.cpp
 
   src/audiodrv/AudioDriver.cpp
   src/audiodrv/AudioFileWriterDriver.cpp
@@ -80,9 +86,11 @@ set(mt32emu_qt_RESOURCES
 
 if(CMAKE_SYSTEM_NAME STREQUAL Windows OR CYGWIN)
   add_definitions(-DWITH_WIN32_MIDI_DRIVER -DWITH_WINMM_AUDIO_DRIVER -DWITH_WINMMTIMER)
-  list(APPEND mt32emu_qt_SOURCES src/mididrv/Win32Driver.cpp)
-  list(APPEND mt32emu_qt_SOURCES src/audiodrv/WinMMAudioDriver.cpp)
-  set(EXT_LIBS ${EXT_LIBS} winmm)
+  list(APPEND mt32emu_qt_SOURCES
+    src/mididrv/Win32Driver.cpp
+    src/audiodrv/WinMMAudioDriver.cpp
+  )
+  list(APPEND EXT_LIBS winmm)
   if(NOT CYGWIN AND mt32emu-qt_WITH_DEBUG_WINCONSOLE)
     add_definitions(-DWITH_WINCONSOLE)
   else()
@@ -98,127 +106,112 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin)
   set(CMAKE_MACOSX_BUNDLE True)
 else()
   list(APPEND mt32emu_qt_SOURCES src/mididrv/OSSMidiPortDriver.cpp)
-  set(EXT_LIBS ${EXT_LIBS} pthread)
+  list(APPEND EXT_LIBS pthread)
   if(OS2)
-    set(EXT_LIBS ${EXT_LIBS} cx)
+    list(APPEND EXT_LIBS cx)
   endif()
   CHECK_CXX_SYMBOL_EXISTS(clock_nanosleep time.h CLOCK_NANOSLEEP_FOUND)
   if(CLOCK_NANOSLEEP_FOUND)
     add_definitions(-DWITH_POSIX_CLOCK_NANOSLEEP)
     check_library_exists(rt clock_nanosleep "" CLOCK_NANOSLEEP_IN_RT_FOUND)
     if(CLOCK_NANOSLEEP_IN_RT_FOUND)
-      set(EXT_LIBS ${EXT_LIBS} rt)
+      list(APPEND EXT_LIBS rt)
     endif(CLOCK_NANOSLEEP_IN_RT_FOUND)
   endif(CLOCK_NANOSLEEP_FOUND)
 endif()
 
 if(mt32emu-qt_WITH_QT5)
-  find_package(Qt5Widgets)
+  find_package(Qt5Widgets CONFIG)
   if(NOT Qt5Widgets_FOUND)
-    find_package(Qt4 4.5.3 REQUIRED)
+    find_package(Qt4 4.5.3 MODULE REQUIRED)
   endif()
 else(mt32emu-qt_WITH_QT5)
-  find_package(Qt4 4.5.3)
+  find_package(Qt4 4.5.3 MODULE)
   if(NOT Qt4_FOUND)
-    find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5Widgets REQUIRED CONFIG)
   endif()
 endif(mt32emu-qt_WITH_QT5)
 
 if(Qt5Widgets_FOUND)
-  set(EXT_LIBS ${EXT_LIBS} Qt5::Widgets)
-  find_package(Qt5Multimedia QUIET)
+  list(APPEND EXT_LIBS Qt5::Widgets)
+  find_package(Qt5Multimedia QUIET CONFIG)
   if(NOT(Qt5Core_VERSION VERSION_LESS 5.7.0))
     message(STATUS "Found Qt5Core version ${Qt5Core_VERSION}, C++11 required")
     set(mt32emu-qt_REQUIRED_CPP11 True)
   endif()
 else(Qt5Widgets_FOUND)
-  set(EXT_LIBS ${EXT_LIBS} Qt4::QtGui)
+  list(APPEND EXT_LIBS Qt4::QtGui)
 endif(Qt5Widgets_FOUND)
 
 if(QT_QTMULTIMEDIA_FOUND OR Qt5Multimedia_FOUND)
   add_definitions(-DWITH_QT_AUDIO_DRIVER)
-  set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
-    src/audiodrv/QtAudioDriver.cpp
-  )
+  list(APPEND mt32emu_qt_SOURCES src/audiodrv/QtAudioDriver.cpp)
   if(Qt5Multimedia_FOUND)
-    set(EXT_LIBS ${EXT_LIBS} Qt5::Multimedia)
+    list(APPEND EXT_LIBS Qt5::Multimedia)
   else()
-    set(EXT_LIBS ${EXT_LIBS} Qt4::QtMultimedia)
+    list(APPEND EXT_LIBS Qt4::QtMultimedia)
   endif()
-else()
-  find_package(QtMobility)
+elseif(NOT Qt5Widgets_FOUND)
+  find_package(QtMobility MODULE)
   if(QT_MOBILITY_MULTIMEDIAKIT_FOUND)
     add_definitions(-DWITH_QT_AUDIO_DRIVER -DUSE_QT_MULTIMEDIAKIT)
     include_directories(${QT_MOBILITY_MULTIMEDIAKIT_INCLUDE_DIR} ${QT_MOBILITY_INCLUDE_DIR})
-    set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
-      src/audiodrv/QtAudioDriver.cpp
-    )
-    set(EXT_LIBS ${EXT_LIBS} ${QT_MOBILITY_MULTIMEDIAKIT_LIBRARY})
+    list(APPEND mt32emu_qt_SOURCES src/audiodrv/QtAudioDriver.cpp)
+    list(APPEND EXT_LIBS ${QT_MOBILITY_MULTIMEDIAKIT_LIBRARY})
   endif()
 endif()
 
-find_package(MT32EMU REQUIRED)
-set(EXT_LIBS ${EXT_LIBS} ${MT32EMU_LIBRARIES})
-include_directories(${MT32EMU_INCLUDE_DIRS})
+if(NOT(munt_SOURCE_DIR AND TARGET MT32Emu::mt32emu))
+  find_package(MT32Emu 2.6 CONFIG REQUIRED)
+endif()
+list(APPEND EXT_LIBS MT32Emu::mt32emu)
 
-find_package(PORTAUDIO)
+find_package(PORTAUDIO 19 MODULE)
 if(PORTAUDIO_FOUND)
   add_definitions(-DWITH_PORT_AUDIO_DRIVER)
-  set(EXT_LIBS ${EXT_LIBS} ${PORTAUDIO_LIBRARIES})
-  include_directories(${PORTAUDIO_INCLUDE_DIRS})
-  set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
-    src/audiodrv/PortAudioDriver.cpp
-  )
+  list(APPEND EXT_LIBS portaudio)
+  list(APPEND mt32emu_qt_SOURCES src/audiodrv/PortAudioDriver.cpp)
 endif()
 
-find_package(ALSA)
+find_package(ALSA MODULE)
 if(ALSA_FOUND)
   add_definitions(-DWITH_ALSA_AUDIO_DRIVER)
-  set(EXT_LIBS ${EXT_LIBS} ${ALSA_LIBRARIES})
+  list(APPEND EXT_LIBS ${ALSA_LIBRARIES})
   include_directories(${ALSA_INCLUDE_DIRS})
-  set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
-    src/audiodrv/AlsaAudioDriver.cpp
-  )
+  list(APPEND mt32emu_qt_SOURCES src/audiodrv/AlsaAudioDriver.cpp)
   if(mt32emu-qt_WITH_ALSA_MIDI_SEQUENCER)
     add_definitions(-DWITH_ALSA_MIDI_DRIVER)
-    set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
-      src/mididrv/ALSADriver.cpp
-    )
+    list(APPEND mt32emu_qt_SOURCES src/mididrv/ALSADriver.cpp)
   endif()
 endif()
 
-find_package(PulseAudio)
-if(PULSEAUDIO_FOUND)
+find_package(PulseAudio MODULE)
+if(PulseAudio_FOUND)
   add_definitions(-DWITH_PULSE_AUDIO_DRIVER)
   if(mt32emu-qt_USE_PULSEAUDIO_DYNAMIC_LOADING)
     add_definitions(-DUSE_PULSEAUDIO_DYNAMIC_LOADING)
     check_library_exists(dl dlopen "" SEPARATE_DL_FOUND)
     if(SEPARATE_DL_FOUND)
-      set(EXT_LIBS ${EXT_LIBS} dl)
+      list(APPEND EXT_LIBS dl)
     endif()
   else()
-    set(EXT_LIBS ${EXT_LIBS} ${PULSEAUDIO_LIBRARIES})
+    list(APPEND EXT_LIBS PulseAudio::simple)
   endif()
-  include_directories(${PULSEAUDIO_INCLUDE_DIRS})
-  set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
-    src/audiodrv/PulseAudioDriver.cpp
-  )
+  list(APPEND mt32emu_qt_SOURCES src/audiodrv/PulseAudioDriver.cpp)
 endif()
 
 check_include_files(sys/soundcard.h SYS_SOUNDCARD_FOUND)
 if(SYS_SOUNDCARD_FOUND)
   add_definitions(-DWITH_OSS_AUDIO_DRIVER)
-  set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
-    src/audiodrv/OSSAudioDriver.cpp
-  )
+  list(APPEND mt32emu_qt_SOURCES src/audiodrv/OSSAudioDriver.cpp)
 endif()
 
-find_package(JACK)
+find_package(JACK MODULE)
 if(JACK_FOUND)
   add_definitions(-DWITH_JACK_MIDI_DRIVER -DWITH_JACK_AUDIO_DRIVER)
-  set(EXT_LIBS ${EXT_LIBS} ${JACK_LIBRARIES})
+  list(APPEND EXT_LIBS Jack::jack)
   include_directories(${JACK_INCLUDE_DIRS})
-  set(mt32emu_qt_SOURCES ${mt32emu_qt_SOURCES}
+  list(APPEND mt32emu_qt_SOURCES
     src/JACKClient.cpp
     src/mididrv/JACKMidiDriver.cpp
     src/audiodrv/JACKAudioDriver.cpp
@@ -330,9 +323,7 @@ if(${PROJECT_NAME}_PRECOMPILED_HEADER)
   endif(NOT CMAKE_VERSION VERSION_LESS 3.16)
 endif(${PROJECT_NAME}_PRECOMPILED_HEADER)
 
-target_link_libraries(mt32emu-qt
-  ${EXT_LIBS}
-)
+target_link_libraries(mt32emu-qt PRIVATE ${EXT_LIBS})
 
 if(WIN32)
   set_target_properties(mt32emu-qt
@@ -340,19 +331,26 @@ if(WIN32)
   )
 endif()
 
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Runtime)
+
 install(TARGETS
   mt32emu-qt
-  DESTINATION bin
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(UNIX AND NOT APPLE)
-  install(FILES res/mt32emu-qt.desktop DESTINATION share/applications)
-  install(FILES res/munt.png DESTINATION share/pixmaps)
+  install(FILES res/mt32emu-qt.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+  foreach(${PROJECT_NAME}_ICON_RESOLUTION 16x16;24x24;32x32;48x48;64x64;72x72;96x96;128x128;256x256)
+    install(FILES res/icons/${${PROJECT_NAME}_ICON_RESOLUTION}/munt.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/${${PROJECT_NAME}_ICON_RESOLUTION}/apps)
+    # These directories pre-exist on a freedesktop-conforming system and cause conflict if not excluded
+    list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/icons/hicolor/${${PROJECT_NAME}_ICON_RESOLUTION})
+    list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION ${CMAKE_INSTALL_FULL_DATAROOTDIR}/icons/hicolor/${${PROJECT_NAME}_ICON_RESOLUTION}/apps)
+  endforeach(${PROJECT_NAME}_ICON_RESOLUTION)
 endif(UNIX AND NOT APPLE)
 
 install(FILES
   AUTHORS.txt COPYING.txt NEWS.txt README.md TODO.txt
-  DESTINATION share/doc/munt/mt32emu-qt
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/munt/${PROJECT_NAME}
 )
 
 # build a CPack driven installer package
@@ -361,9 +359,9 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${mt32emu_qt_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${mt32emu_qt_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${mt32emu_qt_VERSION_PATCH}")
 set(CPACK_PACKAGE_VENDOR "muntemu.org")
-set(CPACK_PACKAGE_CONTACT "sergm@muntemu.org")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../FreeBSD/usr/ports/audio/mt32emu_qt/pkg-descr")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Main MT-32 emulation application using libmt32emu")
+set(CPACK_PACKAGE_CONTACT "${mt32emu_qt_CONTACT}")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/info.txt")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${mt32emu_qt_DESCRIPTION_SUMMARY}")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_STRIP_FILES TRUE)
@@ -375,10 +373,18 @@ set(CPACK_SOURCE_STRIP_FILES TRUE)
 set(CPACK_PACKAGE_EXECUTABLES mt32emu-qt;Munt\ MT-32\ Sound\ Module\ Emulator)
 set(CPACK_RPM_PACKAGE_GROUP "Audio/Emulators")
 set(CPACK_RPM_PACKAGE_LICENSE "GPLv3+")
-set(CPACK_RPM_PACKAGE_URL "http://munt.sourceforge.net/")
-# These two directories pre-exist on a freedesktop-conforming system and cause conflict if not excluded
-set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION /usr/share/applications /usr/share/pixmaps)
+set(CPACK_RPM_PACKAGE_URL "${mt32emu_qt_URL}")
+# These directories pre-exist on a freedesktop-conforming system and cause conflict if not excluded
+list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+  ${CMAKE_INSTALL_FULL_DATAROOTDIR}/applications
+  ${CMAKE_INSTALL_FULL_DATAROOTDIR}/icons
+  ${CMAKE_INSTALL_FULL_DATAROOTDIR}/icons/hicolor
+)
+if(munt_SOURCE_DIR)
+  # Also publish the list for the benefit of the parent CMakeLists.txt file.
+  set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION ${CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION} PARENT_SCOPE)
+endif()
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS "ON")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "http://munt.sourceforge.net/")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${mt32emu_qt_URL}")
 set(CPACK_DEBIAN_PACKAGE_SECTION "sound")
 include(CPack)

@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = https://github.com/FluidSynth/fluidsynth.git
-	branch = db5db4b845d153840afcb003ef8252cd40b8acdd
-	commit = db5db4b845d153840afcb003ef8252cd40b8acdd
-	parent = c609f66162eb21afdc74cf26deee3d27f2f075ac
+	branch = v2.2.5
+	commit = 59fdc3795b55a388cddac631d05b7b0e58c6d85c
+	parent = b5c044d33e3d2b0816eca39851245cf3a2c68106
 	method = merge
 	cmdver = 0.4.3

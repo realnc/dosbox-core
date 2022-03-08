@@ -775,7 +775,7 @@ ipatch_dls2_region_set_info(IpatchDLS2Region *region, guint32 fourcc,
 /**
  * ipatch_dls2_region_set_sample:
  * @region: Region to set sample of
- * @sample: Sample to set region to
+ * @sample: Sample to set region to. Should be NULL or a IpatchDLS2Sample object
  *
  * Sets the referenced sample of a region.
  */
@@ -784,7 +784,10 @@ ipatch_dls2_region_set_sample(IpatchDLS2Region *region,
                               IpatchDLS2Sample *sample)
 {
     g_return_if_fail(IPATCH_IS_DLS2_REGION(region));
-    g_return_if_fail(IPATCH_IS_DLS2_SAMPLE(sample));
+    if(sample != NULL)
+    {
+        g_return_if_fail (IPATCH_IS_DLS2_SAMPLE (sample));
+    }
 
     ipatch_dls2_region_real_set_sample(region, sample, TRUE);
 }

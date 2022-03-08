@@ -38,7 +38,7 @@ static void ipatch_riff_update_positions(IpatchRiff *riff);
 static gboolean verify_chunk_idstr(char idstr[4]);
 
 
-G_DEFINE_TYPE(IpatchRiff, ipatch_riff, G_TYPE_OBJECT);
+G_DEFINE_TYPE(IpatchRiff, ipatch_riff, G_TYPE_OBJECT)
 
 
 static void

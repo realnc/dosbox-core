@@ -40,7 +40,7 @@
 static gboolean ipatch_snd_file_identify(IpatchFile *file, IpatchFileHandle *handle,
         GError **err);
 
-G_DEFINE_TYPE(IpatchSndFile, ipatch_snd_file, IPATCH_TYPE_FILE);
+G_DEFINE_TYPE(IpatchSndFile, ipatch_snd_file, IPATCH_TYPE_FILE)
 
 
 /* Get type of dynamic libsndfile file format enum (register it as needed) */

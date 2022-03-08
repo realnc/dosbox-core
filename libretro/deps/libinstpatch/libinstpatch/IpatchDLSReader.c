@@ -530,6 +530,9 @@ ipatch_dls_reader_fixup(IpatchDLSReader *reader, GError **err)
     g_hash_table_destroy(fixup_hash);  /* destroy fixup hash */
     reader->needs_fixup = FALSE;
 
+    /* reset changed state (set by ipatch_dls_reader_fixup()*/
+    g_object_set (IPATCH_BASE(reader->dls), "changed", FALSE, NULL);
+
     return (TRUE);
 }
 

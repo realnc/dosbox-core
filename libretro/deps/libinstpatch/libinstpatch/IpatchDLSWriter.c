@@ -106,7 +106,7 @@ static gboolean gig_write_dimension_info(IpatchDLSWriter *writer,
 static gboolean gig_write_group_names(IpatchDLSWriter *writer, GError **err);
 
 
-G_DEFINE_TYPE(IpatchDLSWriter, ipatch_dls_writer, IPATCH_TYPE_RIFF);
+G_DEFINE_TYPE(IpatchDLSWriter, ipatch_dls_writer, IPATCH_TYPE_RIFF)
 
 
 static void
@@ -286,6 +286,11 @@ ipatch_dls_writer_save(IpatchDLSWriter *writer, GError **err)
         goto err;
     }
 
+    /* reset flag "changed" to false. set flag "saved" to true */
+    g_object_set (writer->orig_dls,
+                  "changed", FALSE, /* file and object are in sync */
+                  "saved", TRUE,    /* has now been saved */
+                  NULL);
     /* </DLS > */
 
     return (TRUE);

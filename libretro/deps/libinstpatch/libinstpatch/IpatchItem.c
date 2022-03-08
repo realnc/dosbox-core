@@ -1715,7 +1715,7 @@ item_lookup_unique_bag(GType type)
         }
         else
         {
-            unique = unique = NULL;    /* indicate no unique properties */
+            unique = NULL;    /* indicate no unique properties */
         }
 
         g_hash_table_insert(unique_prop_cache, GUINT_TO_POINTER(type), unique);

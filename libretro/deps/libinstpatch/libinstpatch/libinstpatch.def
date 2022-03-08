@@ -1,4 +1,3 @@
-LIBRARY
 EXPORTS
 
 ipatch_close
@@ -60,6 +59,7 @@ ipatch_container_append
 ipatch_container_count
 ipatch_container_get_child_types
 ipatch_container_get_children
+ipatch_container_get_children_list
 ipatch_container_get_type
 ipatch_container_get_virtual_types
 ipatch_container_init_iter
@@ -365,6 +365,7 @@ ipatch_file_write_u64
 ipatch_file_write_u8
 ipatch_find_converter
 ;ipatch_find_paste_handler
+ipatch_glist_unref_free
 ipatch_gerror_message
 ;ipatch_get_conversion_dest_types
 ;ipatch_get_conversion_src_types
@@ -883,9 +884,13 @@ ipatch_sf2_zone_next
 ipatch_strconcat_num
 
 ipatch_sli_get_type
-ipatch_sli_inst_cat_strings
+;ipatch_sli_inst_cat_strings
+;getter fonction that returns pointer on ipatch_sli_inst_cat_strings table
+ipatch_sli_inst_get_cat_strings
 ipatch_sli_sample_get_type
-ipatch_sli_inst_cat_map
+;ipatch_sli_inst_cat_map
+;getter fonction that returns pointer on ipatch_sli_inst_cat_map table
+ipatch_sli_inst_get_cat_map
 ipatch_sli_inst_get_category_as_path
 ipatch_sli_inst_get_type
 ipatch_sli_zone_get_type

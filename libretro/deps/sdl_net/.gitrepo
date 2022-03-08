@@ -5,8 +5,8 @@
 ;
 [subrepo]
 	remote = https://github.com/libsdl-org/SDL_net.git
-	branch = 7190d91beb2a07c265289edae8c3030f0bf39912
-	commit = 7190d91beb2a07c265289edae8c3030f0bf39912
-	parent = 852c3560ba0b642061760296b38b55f1e0d37bcb
+	branch = 87cf58228daa81208ab15c12cc44922dff90260d
+	commit = 87cf58228daa81208ab15c12cc44922dff90260d
+	parent = 41ee53bbfb005df02eda7c98a40f2abf957f14b1
 	method = merge
 	cmdver = 0.4.3

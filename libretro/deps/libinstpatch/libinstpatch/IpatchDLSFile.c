@@ -40,7 +40,7 @@
 static gboolean ipatch_dls_file_identify(IpatchFile *file, IpatchFileHandle *handle,
         GError **err);
 
-G_DEFINE_TYPE(IpatchDLSFile, ipatch_dls_file, IPATCH_TYPE_FILE);
+G_DEFINE_TYPE(IpatchDLSFile, ipatch_dls_file, IPATCH_TYPE_FILE)
 
 
 static void

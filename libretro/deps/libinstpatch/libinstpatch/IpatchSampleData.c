@@ -1065,7 +1065,7 @@ ipatch_sample_data_get_cache_sample(IpatchSampleData *sampledata, int format,
     GSList *p, *prev = NULL;
     int src_format;
     guint32 maskval, src_channel_map;
-    CachingInfo *cinfo;   /* Silence gcc (why?) */
+    CachingInfo *cinfo = NULL;   /* Silence gcc (why?) */
     CachingInfo *new_cinfo = NULL;
     int rate;
     int i;

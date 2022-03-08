@@ -74,7 +74,7 @@ static IpatchItem *
 ipatch_vbank_base_find_item_by_locale(IpatchBase *base, int bank, int program);
 
 
-G_DEFINE_TYPE(IpatchVBank, ipatch_vbank, IPATCH_TYPE_BASE);
+G_DEFINE_TYPE(IpatchVBank, ipatch_vbank, IPATCH_TYPE_BASE)
 
 static GType vbank_child_types[2] = { 0 };
 

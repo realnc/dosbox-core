@@ -88,6 +88,7 @@ libretro-build-windows-x64:
     - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
     - sleep 1
     - touch libretro/deps/mpg123/configure
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
@@ -121,6 +122,7 @@ libretro-build-windows-i686:
     - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
     - sleep 1
     - touch libretro/deps/mpg123/configure
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - i686-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
@@ -152,6 +154,7 @@ libretro-build-linux-x64:
     - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
     - sleep 1
     - touch libretro/deps/mpg123/configure
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
@@ -183,6 +186,7 @@ libretro-build-linux-i686:
     - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
     - sleep 1
     - touch libretro/deps/mpg123/configure
+    - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
@@ -219,6 +223,7 @@ libretro-build-osx-x64:
     - mkdir static_libs
     - ln -s "${HOMEBREW_PREFIX}"/{lib,opt/libffi/lib}/*.a static_libs/
     - popd
+    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
     - export LDFLAGS="-L \"$PWD/libretro/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs"
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}

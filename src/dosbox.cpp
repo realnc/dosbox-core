@@ -43,11 +43,14 @@
 #include "render.h"
 #include "pci_bus.h"
 #ifdef __LIBRETRO__
+#include "CoreOptions.h"
+#include "deps/textflowcpp/TextFlow.hpp"
 #include "libretro.h"
 #include "libretro_core_options.h"
 #include "libretro_dosbox.h"
 #include "midi_bassmidi.h"
 #include "midi_fluidsynth.h"
+#include <fmt/format.h>
 #ifdef WITH_PINHACK
 #include "pinhack.h"
 scrollhack pinhack;
@@ -795,18 +798,30 @@ void DOSBOX_Init(void) {
 	    true);
 	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_X, Property::Changeable::Always, 100);
 	Pint->SetMinMax(1, 127);
-	Pint->Set_help("Horizontal mouse sensitivity in percent. (min 1, max 127)");
+	Pint->Set_help(TextFlow::Column(
+	                   retro::core_options.option(CORE_OPT_MOUSE_SPEED_X)->descAndInfo()
+	                   + fmt::format(" (min {}, max {})", Pint->getMin(), Pint->getMax()))
+	                   .width(70)
+	                   .toString());
 	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_Y, Property::Changeable::Always, 100);
 	Pint->SetMinMax(1, 127);
-	Pint->Set_help("Vertical mouse sensitivity in percent. (min 1, max 127)");
+	Pint->Set_help(TextFlow::Column(
+	                   retro::core_options.option(CORE_OPT_MOUSE_SPEED_Y)->descAndInfo()
+	                   + fmt::format(" (min {}, max {})", Pint->getMin(), Pint->getMax()))
+	                   .width(70)
+	                   .toString());
 	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_MULT, Property::Changeable::Always, 1);
 	Pint->SetMinMax(1, 5);
-	Pint->Set_help("Mouse speed multiplier. (min 1, max 5)");
+	Pint->Set_help(TextFlow::Column(
+	                   retro::core_options.option(CORE_OPT_MOUSE_SPEED_MULT)->descAndInfo()
+	                   + fmt::format(" (min {}, max {})", Pint->getMin(), Pint->getMax()))
+	                   .width(70)
+	                   .toString());
 	Pbool = secprop->Add_bool(CORE_OPT_MOUSE_SPEED_HACK, Property::Changeable::Always, false);
 	Pbool->Set_help(
-	    "A hack that modifies vertical mouse sensitivity depending on the current\n"
-	    "video mode. For games that have inconsistent mouse speed because they use\n"
-	    "multiple video modes");
+	    TextFlow::Column(retro::core_options.option(CORE_OPT_MOUSE_SPEED_HACK)->descAndInfo())
+	        .width(70)
+	        .toString());
 #endif
 
 	secprop=control->AddSection_prop("serial",&SERIAL_Init,true);

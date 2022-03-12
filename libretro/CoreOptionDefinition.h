@@ -32,6 +32,11 @@ public:
     [[nodiscard]]
     auto info() const noexcept -> const std::string&;
 
+    /* Returns the description and information strings separated by a newline.
+     */
+    [[nodiscard]]
+    auto descAndInfo() const noexcept -> std::string;
+
     [[nodiscard]]
     auto defaultValue() const noexcept -> const CoreOptionValue&;
 
@@ -109,6 +114,11 @@ inline auto CoreOptionDefinition::desc() const noexcept -> const std::string&
 inline auto CoreOptionDefinition::info() const noexcept -> const std::string&
 {
     return info_;
+}
+
+inline auto CoreOptionDefinition::descAndInfo() const noexcept -> std::string
+{
+    return desc() + '\n' + info();
 }
 
 inline auto CoreOptionDefinition::defaultValue() const noexcept -> const CoreOptionValue&

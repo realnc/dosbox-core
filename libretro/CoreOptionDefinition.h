@@ -29,8 +29,12 @@ public:
     [[nodiscard]]
     auto desc() const noexcept -> const std::string&;
 
+    void setDesc(std::string new_desc) noexcept;
+
     [[nodiscard]]
     auto info() const noexcept -> const std::string&;
+
+    void setInfo(std::string new_info) noexcept;
 
     /* Returns the description and information strings separated by a newline.
      */
@@ -111,9 +115,19 @@ inline auto CoreOptionDefinition::desc() const noexcept -> const std::string&
     return desc_;
 }
 
+inline void CoreOptionDefinition::setDesc(std::string new_desc) noexcept
+{
+    desc_ = std::move(new_desc);
+}
+
 inline auto CoreOptionDefinition::info() const noexcept -> const std::string&
 {
     return info_;
+}
+
+inline void CoreOptionDefinition::setInfo(std::string new_info) noexcept
+{
+    info_ = std::move(new_info);
 }
 
 inline auto CoreOptionDefinition::descAndInfo() const noexcept -> std::string

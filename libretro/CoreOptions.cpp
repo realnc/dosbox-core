@@ -71,6 +71,22 @@ void CoreOptions::updateFrontend()
     } else {
         updateFrontendV0();
     }
+
+    // The frontend resets the visibility status of all options when re-submitting them, so we have
+    // to restore it again manually.
+    for (const auto& opt_or_cat : options_and_categories_) {
+        if (std::holds_alternative<CoreOptionDefinition>(opt_or_cat)) {
+            const auto& opt = std::get<CoreOptionDefinition>(opt_or_cat);
+            retro_core_option_display option_display{opt.key().c_str(), opt.is_visible_};
+            env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+        } else {
+            const auto& cat = std::get<CoreOptionCategory>(opt_or_cat);
+            for (const auto& opt : cat.options()) {
+                retro_core_option_display option_display{opt.key().c_str(), opt.is_visible_};
+                env_cb_(RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY, &option_display);
+            }
+        }
+    }
 }
 
 auto CoreOptions::setVisible(const std::string_view key, const bool visible) noexcept -> bool

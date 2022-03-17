@@ -62,7 +62,7 @@ private:
 
 inline CoreOptionValue::CoreOptionValue(std::string value, std::string label) noexcept
     : value_str_(std::move(value))
-    , label_(std::move(label))
+    , label_(label.empty() ? value_str_ : std::move(label))
 { }
 
 inline CoreOptionValue::CoreOptionValue(const char* const value, std::string label) noexcept
@@ -155,6 +155,10 @@ inline CoreOptionValue::CoreOptionValue(
         // Can't happen.
         retro::logError("Internal error in {} line {}.", __FILE__, __LINE__);
         std::terminate();
+    }
+
+    if (label_.empty()) {
+        label_ = value_str_;
     }
 }
 

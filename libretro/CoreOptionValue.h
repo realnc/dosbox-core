@@ -35,6 +35,15 @@ public:
     auto label() const noexcept -> const std::string&;
 
     [[nodiscard]]
+    auto isString() const noexcept -> bool;
+
+    [[nodiscard]]
+    auto isInt() const noexcept -> bool;
+
+    [[nodiscard]]
+    auto isBool() const noexcept -> bool;
+
+    [[nodiscard]]
     auto operator==(const CoreOptionValue& other) const noexcept -> bool;
 
 private:
@@ -106,6 +115,21 @@ inline auto CoreOptionValue::toFloat() const noexcept -> float
 inline auto CoreOptionValue::label() const noexcept -> const std::string&
 {
     return label_;
+}
+
+inline bool CoreOptionValue::isString() const noexcept
+{
+    return std::holds_alternative<std::monostate>(value_);
+}
+
+inline bool CoreOptionValue::isInt() const noexcept
+{
+    return std::holds_alternative<int>(value_);
+}
+
+inline bool CoreOptionValue::isBool() const noexcept
+{
+    return std::holds_alternative<bool>(value_);
 }
 
 inline auto CoreOptionValue::operator==(const CoreOptionValue& other) const noexcept -> bool

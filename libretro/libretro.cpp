@@ -59,7 +59,8 @@ bool startup_state_numlock;
 bool autofire;
 static bool dosbox_initialiazed = false;
 
-std::set<std::string> locked_dosbox_variables;
+std::set<std::string> disabled_dosbox_variables;
+std::set<std::string> disabled_core_options;
 
 Bit32u MIXER_RETRO_GetFrequency();
 void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
@@ -278,12 +279,13 @@ auto update_dosbox_variable(
         return false;
     }
 
-    if (locked_dosbox_variables.count(var_string) != 0
-        && retro::core_options[CORE_OPT_OPTION_HANDLING].toString() == "disable changed")
+    if (disabled_dosbox_variables.count(var_string) != 0
+        && retro::core_options[CORE_OPT_OPTION_HANDLING].toString() == "disable")
     {
         return false;
     }
 
+    disable_core_opt_sync = true;
     Section* section = control->GetSection(section_string);
     Section_prop* secprop = static_cast<Section_prop*>(section);
     if (secprop) {
@@ -296,6 +298,7 @@ auto update_dosbox_variable(
             section->ExecuteInit(false);
         }
     }
+    disable_core_opt_sync = false;
     retro::logDebug("Variable {}::{} updated to {}.", section_string, var_string, val_string);
     return ret;
 }
@@ -493,6 +496,11 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     updated |=
         core_options.setVisible(pad_map_regex, core_options[CORE_OPT_SHOW_KB_MAP_OPTIONS].toBool());
 
+    for (const auto& option_name : disabled_core_options) {
+        if (core_options.option(option_name)) {
+            updated |= core_options.setVisible(option_name, false);
+        }
+    }
     return updated;
 }
 
@@ -592,6 +600,10 @@ void core_autoexec()
 static void check_cpu_cycle_variables()
 {
     using namespace retro;
+
+    if (disabled_dosbox_variables.count("cycles") != 0) {
+        return;
+    }
 
     const auto& mode = core_options[CORE_OPT_CPU_CYCLES_MODE].toString();
     const int realmode_cycles = core_options[CORE_OPT_CPU_CYCLES_REALMODE].toInt()
@@ -733,10 +745,6 @@ static void check_variables()
     use_frame_duping = core_options[CORE_OPT_FRAME_DUPING].toBool();
     use_spinlock = core_options[CORE_OPT_THREAD_SYNC].toString() == "spin";
     useSpinlockThreadSync(use_spinlock);
-
-    if (core_options[CORE_OPT_OPTION_HANDLING].toString() == "all off") {
-        return;
-    }
 
     if (!dosbox_initialiazed) {
         update_dosbox_variable(

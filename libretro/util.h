@@ -22,6 +22,12 @@ inline auto upper_case(std::string str) noexcept -> std::string
     return str;
 }
 
+template <typename First, typename... T>
+auto is_equal_to_one_of(const First& first, const T&... t) -> bool
+{
+    return ((first == t) || ...);
+}
+
 /*
 
 Copyright (C) 2020 Nikos Chantziaras <realnc@gmail.com>

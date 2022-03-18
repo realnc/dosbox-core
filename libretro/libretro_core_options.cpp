@@ -1,7 +1,154 @@
 // This is copyrighted software. More information is at the end of this file.
-#include "CoreOptions.h"
 #include "libretro_core_options.h"
+#include "CoreOptions.h"
 #include "libretro_dosbox.h"
+#include "log.h"
+#include "setup.h"
+#include "util.h"
+
+inline constexpr const char* LOCKED_OPTION_INFO =
+    "This option has been locked due to a .conf file setting or a DOSBox command.";
+inline constexpr const char* LOCKED_OPTION_DESC = "[Locked]";
+
+bool disable_core_opt_sync = false;
+static std::set<std::string> locked_core_options;
+
+static bool sync_special_option(const std::string_view prop, const Value& new_val)
+{
+    if (is_equal_to_one_of(
+            prop, "language", "captures", "frameskip", "cycleup", "cycledown", "nosound", "rate",
+            "oplrate", "ultradir", "pcrate", "tandyrate", "joysticktype", "autofire", "swap34",
+            "buttonwrap", "circularinput", "deadzone", "serial1", "serial2", "serial3", "serial4",
+            "keyboardlayout", "mt32.romdir", "pinhackexpandwidth"))
+    {
+        // We simply ignore all of these. They have no effect on any of the core options.
+        return true;
+    }
+
+    const bool disable_option =
+        retro::core_options[CORE_OPT_OPTION_HANDLING].toString() == "disable";
+
+    if (prop == "cycles") {
+        for (const auto& opt_name :
+             {CORE_OPT_CPU_CYCLES_MODE, CORE_OPT_CPU_CYCLES_MULTIPLIER_REALMODE,
+              CORE_OPT_CPU_CYCLES_REALMODE, CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE_REALMODE,
+              CORE_OPT_CPU_CYCLES_FINE_REALMODE, CORE_OPT_CPU_CYCLES_LIMIT,
+              CORE_OPT_CPU_CYCLES_MULTIPLIER, CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE,
+              CORE_OPT_CPU_CYCLES_FINE})
+        {
+            disabled_core_options.insert(opt_name);
+            retro::core_options.setVisible(opt_name, false);
+        }
+
+        if (disable_option) {
+            disabled_core_options.insert(CORE_OPT_CPU_CYCLES);
+            retro::core_options.setVisible(CORE_OPT_CPU_CYCLES, false);
+        } else {
+            auto* opt = retro::core_options.option(CORE_OPT_CPU_CYCLES);
+            if (locked_core_options.count(CORE_OPT_CPU_CYCLES) == 0) {
+                opt->setDesc(fmt::format("{} CPU cycles", LOCKED_OPTION_DESC));
+                opt->setInfo(fmt::format("Emulated CPU cycles.\n\n{}", LOCKED_OPTION_INFO));
+                locked_core_options.insert(CORE_OPT_CPU_CYCLES);
+            }
+            retro::CoreOptionValue val(new_val.ToString(), new_val.ToString());
+            retro::core_options.option(CORE_OPT_CPU_CYCLES)->setValues({val}, val);
+        }
+    } else if (prop == "pinhackexpandheight") {
+        retro::core_options.setCurrentValue(CORE_OPT_PINHACKEXPANDHEIGHT_FINE, 0);
+        disabled_core_options.insert(CORE_OPT_PINHACKEXPANDHEIGHT_FINE);
+        retro::core_options.setVisible(CORE_OPT_PINHACKEXPANDHEIGHT_FINE, false);
+        if (disable_option) {
+            disabled_core_options.insert(CORE_OPT_PINHACKEXPANDHEIGHT_COARSE);
+            retro::core_options.setVisible(CORE_OPT_PINHACKEXPANDHEIGHT_COARSE, false);
+        } else {
+            auto* opt = retro::core_options.option(CORE_OPT_PINHACKEXPANDHEIGHT_COARSE);
+            opt->clearValues();
+            opt->addValue({static_cast<int>(new_val), new_val.ToString()});
+
+            if (locked_core_options.count(CORE_OPT_PINHACKEXPANDHEIGHT_COARSE) == 0) {
+                opt->setDesc(fmt::format("{} Expand height", LOCKED_OPTION_DESC, opt->desc()));
+                if (opt->info().empty()) {
+                    opt->setInfo(LOCKED_OPTION_INFO);
+                } else if (opt->info().find("\n\n") != std::string::npos) {
+                    opt->setInfo(fmt::format("{}\n\n{}", opt->info(), LOCKED_OPTION_INFO));
+                } else {
+                    opt->setInfo(fmt::format("{}\n{}", opt->info(), LOCKED_OPTION_INFO));
+                }
+                locked_core_options.insert(CORE_OPT_PINHACKEXPANDHEIGHT_COARSE);
+            }
+        }
+    } else {
+        return false;
+    }
+
+    retro::core_options.updateFrontend();
+    return true;
+}
+
+void sync_core_opts_to_conf(const std::string& conf_prop, const Value& new_val)
+{
+    if (disable_core_opt_sync) {
+        return;
+    }
+
+    disabled_dosbox_variables.insert(conf_prop);
+
+    if (sync_special_option(conf_prop, new_val)) {
+        return;
+    }
+
+    auto* const core_option = retro::core_options.option(conf_prop);
+    if (!core_option) {
+        return;
+    }
+
+    const auto& option_handling = retro::core_options[CORE_OPT_OPTION_HANDLING].toString();
+    if (option_handling == "disable") {
+        disabled_core_options.insert(conf_prop);
+        retro::core_options.setVisible(conf_prop, false);
+        return;
+    } else if (option_handling != "lock") {
+        retro::logError(
+            "Internal error in {} line {}: invalid option handling setting.", __FILE__, __LINE__);
+        return;
+    }
+
+    auto locked_value = [&]() -> retro::CoreOptionValue {
+        switch (new_val.type) {
+        case Value::V_BOOL:
+            return {static_cast<bool>(new_val), new_val.ToString()};
+        case Value::V_INT:
+            return {static_cast<int>(new_val), new_val.ToString()};
+        case Value::V_STRING: {
+            std::string val_string = static_cast<const char*>(new_val);
+            if (val_string.empty()) {
+                val_string = "none";
+            }
+            return {val_string, val_string};
+        }
+        default:
+            return {new_val.ToString(), new_val.ToString()};
+        }
+    }();
+    core_option->clearValues();
+    core_option->addValue(locked_value);
+    retro::core_options.updateFrontend();
+    retro::core_options.setCurrentValue(conf_prop, locked_value);
+    core_option->setDefaultValue(locked_value);
+
+    if (locked_core_options.count(core_option->key()) == 0) {
+        core_option->setDesc(fmt::format("{} {}", LOCKED_OPTION_DESC, core_option->desc()));
+        if (core_option->info().empty()) {
+            core_option->setInfo(LOCKED_OPTION_INFO);
+        } else if (core_option->info().find("\n\n") != std::string::npos) {
+            core_option->setInfo(fmt::format("{}\n\n{}", core_option->info(), LOCKED_OPTION_INFO));
+        } else {
+            core_option->setInfo(fmt::format("{}\n{}", core_option->info(), LOCKED_OPTION_INFO));
+        }
+        locked_core_options.insert(core_option->key());
+    }
+    retro::core_options.updateFrontend();
+}
 
 // clang-format off
 
@@ -22,16 +169,14 @@
 
 #define MOUSE_SPEED_FACTORS \
     { \
-        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", \
-        "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", \
-        "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", \
-        "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", \
-        "59", "60", "61", "62", "63", "64", "65", "66", "67", "68", "69", "70", "71", "72", \
-        "73", "74", "75", "76", "77", "78", "79", "80", "81", "82", "83", "84", "85", "86", \
-        "87", "88", "89", "90", "91", "92", "93", "94", "95", "96", "97", "98", "99", "100", \
-        "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "111", "112", \
-        "113", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", \
-        "125", "126", "127" \
+          1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,  13,  14,  15,  16,  17,  18, \
+         19,  20,  21,  22,  23,  24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36, \
+         37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54, \
+         55,  56,  57,  58,  59,  60,  61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71,  72, \
+         73,  74,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84,  85,  86,  87,  88,  89,  90, \
+         91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, \
+        109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, \
+        127 \
     }
 
 #define PINHACK_EXPAND_FINE_VALUES \
@@ -149,25 +294,29 @@ static const std::initializer_list<retro::CoreOptionValue> retro_keyboard_ids {
 
 namespace retro {
 
-#if 1
 CoreOptions core_options {
     "dosbox_core_",
 
     CoreOptionDefinition {
         CORE_OPT_OPTION_HANDLING,
         "Core option handling",
-        "Disabling all core options can be useful if you prefer to use dosbox .conf files to set "
-            "configuration settings. Note that you don't need to disable all options if your .conf "
-            "file only contains an [autoexec] section. Disabling only core options that have been "
-            "changed within dosbox (using the 'config -set' DOS command, for example) prevents "
-            "those changes from getting reverted to the values set in the core options. This is "
-            "the default and recommended setting.",
+        "When configuring emulation settings using the loaded .conf file's INI properties or with "
+            "DOSBox commands (like \"config -set\",) there will be conflicts with the core options. "
+            "This setting specifies how those conflicts should be handled.\n"
+            "\n"
+            "Lock changed options: Lock the core option to a single value. No changes will be "
+            "allowed through the core options UI. The core option becomes purely informational, "
+            "simply displaying the current value that was set in the .conf file or through DOSBox "
+            "commands.\n"
+            "\n"
+            "Disable changed options: Disable and hide the core option. Its current value will not "
+            "be changed. If the frontend doesn't support option hiding, changing the option will "
+            "have no effect.",
         {
-            {"disable changed", "disable options changed within dosbox"},
-            {"all on", "enable all options (restart)"},
-            {"all off", "disable all options (restart)"},
+            { "lock", "lock changed options" },
+            { "disable", "disable changed options" },
         },
-        "disable changed"
+        "lock"
     },
     CoreOptionDefinition {
         CORE_OPT_ADV_OPTIONS,
@@ -389,13 +538,19 @@ CoreOptions core_options {
                 "default to avoid problems with some games, though few games might require a higher "
                 "value.",
             {
-                { 4, "4MB" },
-                { 8, "8MB" },
-                { 16, "16MB" },
-                { 24, "24MB" },
-                { 32, "32MB" },
-                { 48, "48MB" },
-                { 64, "64MB" },
+                { 1, "1MB" },   { 2, "2MB" },   { 3, "3MB" },   { 4, "4MB" },   { 5, "5MB" },
+                { 6, "6MB" },   { 7, "7MB" },   { 8, "8MB" },   { 9, "9MB" },   { 10, "10MB" },
+                { 11, "11MB" }, { 12, "12MB" }, { 13, "13MB" }, { 14, "14MB" }, { 15, "15MB" },
+                { 16, "16MB" }, { 17, "17MB" }, { 18, "18MB" }, { 19, "19MB" }, { 20, "20MB" },
+                { 21, "21MB" }, { 22, "22MB" }, { 23, "23MB" }, { 24, "24MB" }, { 25, "25MB" },
+                { 26, "26MB" }, { 27, "27MB" }, { 28, "28MB" }, { 29, "29MB" }, { 30, "30MB" },
+                { 31, "31MB" }, { 32, "32MB" }, { 33, "33MB" }, { 34, "34MB" }, { 35, "35MB" },
+                { 36, "36MB" }, { 37, "37MB" }, { 38, "38MB" }, { 39, "39MB" }, { 40, "40MB" },
+                { 41, "41MB" }, { 42, "42MB" }, { 43, "43MB" }, { 44, "44MB" }, { 45, "45MB" },
+                { 46, "46MB" }, { 47, "47MB" }, { 48, "48MB" }, { 49, "49MB" }, { 50, "50MB" },
+                { 51, "51MB" }, { 52, "52MB" }, { 53, "53MB" }, { 54, "54MB" }, { 55, "55MB" },
+                { 56, "56MB" }, { 57, "57MB" }, { 58, "58MB" }, { 59, "59MB" }, { 60, "60MB" },
+                { 61, "61MB" }, { 62, "62MB" }, { 63, "63MB" },
             },
             16
         },
@@ -676,14 +831,14 @@ CoreOptions core_options {
             "Horizontal mouse speed",
             "Experiment with this value if the mouse is too fast when moving left/right.",
             MOUSE_SPEED_FACTORS,
-            "100"
+            100
         },
         CoreOptionDefinition {
             CORE_OPT_MOUSE_SPEED_Y,
             "Vertical mouse speed",
             "Experiment with this value if the mouse is too fast when moving up/down.",
             MOUSE_SPEED_FACTORS,
-            "100"
+            100
         },
         CoreOptionDefinition {
             CORE_OPT_MOUSE_SPEED_MULT,
@@ -2281,7 +2436,6 @@ CoreOptions core_options {
         },
     },
 };
-#endif
 
 // clang-format on
 

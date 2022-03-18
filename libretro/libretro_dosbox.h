@@ -46,12 +46,10 @@ extern std::array<bool, RETRO_INPUT_PORTS_MAX> connected;
 extern std::array<bool, RETRO_INPUT_PORTS_MAX> gamepad;
 extern bool libretro_supports_bitmasks;
 extern std::array<int16_t, RETRO_INPUT_PORTS_MAX> joypad_bits;
-extern std::set<std::string> locked_dosbox_variables;
 
-namespace retro {
-class CoreOptions;
-extern CoreOptions core_options;
-} // namespace retro
+extern std::set<std::string> disabled_dosbox_variables;
+extern std::set<std::string> disabled_core_options;
+extern bool disable_core_opt_sync;
 
 constexpr std::tuple<retro_key, KBD_KEYS> retro_dosbox_map[]{
     {RETROK_1, KBD_1},

@@ -18,6 +18,7 @@
 
 
 #ifdef __LIBRETRO__
+#include "libretro_core_options.h"
 #include "libretro_dosbox.h"
 #endif
 #include "dosbox.h"
@@ -651,7 +652,15 @@ bool Section_prop::HandleInputline(string const& gegevens){
 	trim(name);trim(val);
 	for(it tel = properties.begin();tel != properties.end();++tel){
 		if (!strcasecmp((*tel)->propname.c_str(),name.c_str())){
+#ifdef __LIBRETRO__
+			const bool ret = (*tel)->SetValue(val);
+			if (ret) {
+				sync_core_opts_to_conf((*tel)->propname, (*tel)->GetValue());
+			}
+			return ret;
+#else
 			return (*tel)->SetValue(val);
+#endif
 		}
 	}
 	return false;

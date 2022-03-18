@@ -1,4 +1,15 @@
 // This is copyrighted software. More information is at the end of this file.
+#pragma once
+#include <string>
+
+namespace retro {
+class CoreOptions;
+extern CoreOptions core_options;
+} // namespace retro
+
+class Value;
+
+void sync_core_opts_to_conf(const std::string& conf_prop, const Value& new_val);
 
 inline constexpr const char* CORE_OPT_OPTION_HANDLING = "option_handling";
 inline constexpr const char* CORE_OPT_ADV_OPTIONS = "adv_options";
@@ -15,20 +26,20 @@ inline constexpr const char* CORE_OPT_DEFAULT_MOUNT_FREESIZE = "default_mount_fr
 inline constexpr const char* CORE_OPT_SAVE_OVERLAY = "save_overlay";
 
 inline constexpr const char* CORE_OPTCAT_VIDEO_EMULATION = "video_emulation";
-inline constexpr const char* CORE_OPT_MACHINE_TYPE = "machine_type";
+inline constexpr const char* CORE_OPT_MACHINE_TYPE = "machine";
 inline constexpr const char* CORE_OPT_MACHINE_HERCULES_PALETTE = "machine_hercules_palette";
 inline constexpr const char* CORE_OPT_MACHINE_CGA_COMPOSITE_MODE = "machine_cga_composite_mode";
 inline constexpr const char* CORE_OPT_MACHINE_CGA_MODEL = "machine_cga_model";
 inline constexpr const char* CORE_OPT_VOODOO = "voodoo";
-inline constexpr const char* CORE_OPT_VOODOO_MEMORY_SIZE = "voodoo_memory_size";
+inline constexpr const char* CORE_OPT_VOODOO_MEMORY_SIZE = "voodoomem";
 
 inline constexpr const char* CORE_OPTCAT_SPECS = "specs";
-inline constexpr const char* CORE_OPT_MEMORY_SIZE = "memory_size";
+inline constexpr const char* CORE_OPT_MEMORY_SIZE = "memsize";
 inline constexpr const char* CORE_OPT_XMS = "xms";
 inline constexpr const char* CORE_OPT_EMS = "ems";
 inline constexpr const char* CORE_OPT_UMB = "umb";
-inline constexpr const char* CORE_OPT_CPU_CORE = "cpu_core";
-inline constexpr const char* CORE_OPT_CPU_TYPE = "cpu_type";
+inline constexpr const char* CORE_OPT_CPU_CORE = "core";
+inline constexpr const char* CORE_OPT_CPU_TYPE = "cputype";
 inline constexpr const char* CORE_OPT_CPU_CYCLES_MODE = "cpu_cycles_mode";
 inline constexpr const char* CORE_OPT_CPU_CYCLES_MULTIPLIER_REALMODE =
     "cpu_cycles_multiplier_realmode";
@@ -43,12 +54,12 @@ inline constexpr const char* CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE = "cpu_cycles_m
 inline constexpr const char* CORE_OPT_CPU_CYCLES_FINE = "cpu_cycles_fine";
 
 inline constexpr const char* CORE_OPTCAT_SCALING = "scaling";
-inline constexpr const char* CORE_OPT_ASPECT_CORRECTION = "aspect_correction";
+inline constexpr const char* CORE_OPT_ASPECT_CORRECTION = "aspect";
 inline constexpr const char* CORE_OPT_SCALER = "scaler";
 
 inline constexpr const char* CORE_OPTCAT_INPUT = "input";
 inline constexpr const char* CORE_OPT_JOYSTICK_FORCE_2AXIS = "joystick_force_2axis";
-inline constexpr const char* CORE_OPT_JOYSTICK_TIMED = "joystick_timed";
+inline constexpr const char* CORE_OPT_JOYSTICK_TIMED = "timed";
 inline constexpr const char* CORE_OPT_EMULATED_MOUSE_DEADZONE = "emulated_mouse_deadzone";
 inline constexpr const char* CORE_OPT_MOUSE_SPEED_X = "mouse_speed_x";
 inline constexpr const char* CORE_OPT_MOUSE_SPEED_Y = "mouse_speed_y";
@@ -113,14 +124,14 @@ inline constexpr const char* CORE_OPT_PAD1_MAP_RALEFT = "pad1_map_raleft";
 inline constexpr const char* CORE_OPT_PAD1_MAP_RARIGHT = "pad1_map_raright";
 
 inline constexpr const char* CORE_OPTCAT_SOUND_CARD = "sound_card";
-inline constexpr const char* CORE_OPT_SBLASTER_TYPE = "sblaster_type";
-inline constexpr const char* CORE_OPT_SBLASTER_BASE = "sblaster_base";
-inline constexpr const char* CORE_OPT_SBLASTER_IRQ = "sblaster_irq";
-inline constexpr const char* CORE_OPT_SBLASTER_DMA = "sblaster_dma";
-inline constexpr const char* CORE_OPT_SBLASTER_HDMA = "sblaster_hdma";
+inline constexpr const char* CORE_OPT_SBLASTER_TYPE = "sbtype";
+inline constexpr const char* CORE_OPT_SBLASTER_BASE = "sbbase";
+inline constexpr const char* CORE_OPT_SBLASTER_IRQ = "irq";
+inline constexpr const char* CORE_OPT_SBLASTER_DMA = "dma";
+inline constexpr const char* CORE_OPT_SBLASTER_HDMA = "hdma";
 inline constexpr const char* CORE_OPT_SBMIXER = "sbmixer";
-inline constexpr const char* CORE_OPT_SBLASTER_OPL_MODE = "sblaster_opl_mode";
-inline constexpr const char* CORE_OPT_SBLASTER_OPL_EMU = "sblaster_opl_emu";
+inline constexpr const char* CORE_OPT_SBLASTER_OPL_MODE = "oplmode";
+inline constexpr const char* CORE_OPT_SBLASTER_OPL_EMU = "oplemu";
 inline constexpr const char* CORE_OPT_GUS = "gus";
 inline constexpr const char* CORE_OPT_GUSBASE = "gusbase";
 inline constexpr const char* CORE_OPT_GUSIRQ = "gusirq";
@@ -132,9 +143,9 @@ inline constexpr const char* CORE_OPT_BLOCKSIZE = "blocksize";
 inline constexpr const char* CORE_OPT_PREBUFFER = "prebuffer";
 
 inline constexpr const char* CORE_OPTCAT_MIDI = "midi";
-inline constexpr const char* CORE_OPT_MPU_TYPE = "mpu_type";
-inline constexpr const char* CORE_OPT_MIDI_DRIVER = "midi_driver";
-inline constexpr const char* CORE_OPT_MIDI_PORT = "midi_port";
+inline constexpr const char* CORE_OPT_MPU_TYPE = "mpu401";
+inline constexpr const char* CORE_OPT_MIDI_DRIVER = "mididevice";
+inline constexpr const char* CORE_OPT_MIDI_PORT = "midiconfig";
 inline constexpr const char* CORE_OPT_BASSMIDI_SOUNDFONT = "bassmidi.soundfont";
 inline constexpr const char* CORE_OPT_BASSMIDI_SFVOLUME = "bassmidi.sfvolume";
 inline constexpr const char* CORE_OPT_BASSMIDI_VOICES = "bassmidi.voices";

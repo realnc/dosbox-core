@@ -188,6 +188,16 @@ static auto make_retro_core_option_v2_definition(
     return def;
 }
 
+static auto option_has_empty_string_value(const CoreOptionDefinition& option) -> bool
+{
+    for (const auto& val : option) {
+        if (val.isString() && val.toString().empty()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void CoreOptions::updateRetroOptions()
 {
     retro_options_v2_.clear();
@@ -198,8 +208,16 @@ void CoreOptions::updateRetroOptions()
     for (const auto& option_or_category : options_and_categories_) {
         if (std::holds_alternative<CoreOptionDefinition>(option_or_category)) {
             const auto& option = std::get<CoreOptionDefinition>(option_or_category);
-            retro_options_v2_.push_back(
-                make_retro_core_option_v2_definition(nullptr, option, option.desc().c_str()));
+            const bool has_empty_value = option_has_empty_string_value(option);
+            if (option.isEmpty()) {
+                retro::logError("Tried to submit \"{}\" option with no values.", option.key());
+            } else if (has_empty_value) {
+                retro::logError(
+                    "Tried to submit \"{}\" option containing empty string value.", option.key());
+            } else {
+                retro_options_v2_.push_back(
+                    make_retro_core_option_v2_definition(nullptr, option, option.desc().c_str()));
+            }
         } else {
             const auto& category = std::get<CoreOptionCategory>(option_or_category);
             retro_core_option_v2_category retro_category{};
@@ -208,10 +226,19 @@ void CoreOptions::updateRetroOptions()
             retro_category.info = category.info().c_str();
             retro_categories_v2_.push_back(retro_category);
             for (const auto& option : category.options()) {
-                categorized_option_descriptions_.emplace_back(
-                    category.desc() + ": " + option.desc());
-                retro_options_v2_.push_back(make_retro_core_option_v2_definition(
-                    &category, option, categorized_option_descriptions_.back().c_str()));
+                const bool has_empty_value = option_has_empty_string_value(option);
+                if (option.isEmpty()) {
+                    retro::logError("Tried to submit \"{}\" option with no values.", option.key());
+                } else if (has_empty_value) {
+                    retro::logError(
+                        "Tried to submit \"{}\" option containing empty string value.",
+                        option.key());
+                } else {
+                    categorized_option_descriptions_.emplace_back(
+                        category.desc() + ": " + option.desc());
+                    retro_options_v2_.push_back(make_retro_core_option_v2_definition(
+                        &category, option, categorized_option_descriptions_.back().c_str()));
+                }
             }
         }
     }

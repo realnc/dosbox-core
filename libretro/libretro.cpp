@@ -1229,6 +1229,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     }
 
     samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
+    update_core_option_visibility();
     return true;
 }
 

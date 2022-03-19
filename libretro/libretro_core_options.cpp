@@ -19,7 +19,7 @@ static std::set<std::string> locked_core_options;
 void init_libretro_conf_properties()
 {
     auto* secprop = control->AddSection_prop(
-        "mouse",
+        "dosbox-core",
         [](Section* const conf) {
             const auto* const section = static_cast<Section_prop*>(conf);
             const auto mult = section->Get_int(CORE_OPT_MOUSE_SPEED_MULT);

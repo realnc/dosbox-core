@@ -934,7 +934,15 @@ void DOSBOX_Init(void) {
 		"You can put your MOUNT lines here.\n"
 	);
 	MSG_Add("CONFIGFILE_INTRO",
+#ifdef __LIBRETRO__
+	        "# This is a configuration file for DOSBox-core. Options that are set in this\n"
+	        "# file will override their corresponding core options. If you want to configure\n"
+	        "# emulation settings using core options instead of this .conf file, you should\n"
+	        "# delete or comment-out those settings so that their corresponding core options\n"
+	        "# will be used instead.\n#\n"
+#else
 	        "# This is the configuration file for DOSBox %s. (Please use the latest version of DOSBox)\n"
+#endif
 	        "# Lines starting with a # are comment lines and are ignored by DOSBox.\n"
 	        "# They are used to (briefly) document the effect of each option.\n");
 	MSG_Add("CONFIG_SUGGESTED_VALUES", "Possible values");

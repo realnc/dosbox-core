@@ -43,14 +43,9 @@
 #include "render.h"
 #include "pci_bus.h"
 #ifdef __LIBRETRO__
-#include "CoreOptions.h"
-#include "deps/textflowcpp/TextFlow.hpp"
-#include "libretro.h"
 #include "libretro_core_options.h"
-#include "libretro_dosbox.h"
 #include "midi_bassmidi.h"
 #include "midi_fluidsynth.h"
-#include <fmt/format.h>
 #ifdef WITH_PINHACK
 #include "pinhack.h"
 scrollhack pinhack;
@@ -451,6 +446,9 @@ void DOSBOX_Init(void) {
 	const char *irqsgus[] = { "5", "3", "7", "9", "10", "11", "12", 0 };
 	const char *dmasgus[] = { "3", "0", "1", "5", "6", "7", 0 };
 
+#ifdef __LIBRETRO__
+	init_libretro_conf_properties();
+#endif
 
 	/* Setup all the different modules making up DOSBox */
 	const char* machines[] = {
@@ -784,45 +782,6 @@ void DOSBOX_Init(void) {
 	Pint = secprop->Add_int("deadzone",Property::Changeable::WhenIdle,10);
 	Pint->SetMinMax(0,100);
 	Pint->Set_help("the percentage of motion to ignore. 100 turns the stick into a digital one.");
-
-#ifdef __LIBRETRO__
-	secprop = control->AddSection_prop(
-	    "mouse",
-	    [](Section* const conf) {
-		    const auto* const section = static_cast<Section_prop*>(conf);
-		    const auto mult = section->Get_int(CORE_OPT_MOUSE_SPEED_MULT);
-		    mouse_speed_factor_x = section->Get_int(CORE_OPT_MOUSE_SPEED_X) * mult / 100.0f;
-		    mouse_speed_factor_y = section->Get_int(CORE_OPT_MOUSE_SPEED_Y) * mult / 100.0f;
-		    update_mouse_speed_fix();
-	    },
-	    true);
-	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_X, Property::Changeable::Always, 100);
-	Pint->SetMinMax(1, 127);
-	Pint->Set_help(TextFlow::Column(
-	                   retro::core_options.option(CORE_OPT_MOUSE_SPEED_X)->descAndInfo()
-	                   + fmt::format(" (min {}, max {})", Pint->getMin(), Pint->getMax()))
-	                   .width(70)
-	                   .toString());
-	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_Y, Property::Changeable::Always, 100);
-	Pint->SetMinMax(1, 127);
-	Pint->Set_help(TextFlow::Column(
-	                   retro::core_options.option(CORE_OPT_MOUSE_SPEED_Y)->descAndInfo()
-	                   + fmt::format(" (min {}, max {})", Pint->getMin(), Pint->getMax()))
-	                   .width(70)
-	                   .toString());
-	Pint = secprop->Add_int(CORE_OPT_MOUSE_SPEED_MULT, Property::Changeable::Always, 1);
-	Pint->SetMinMax(1, 5);
-	Pint->Set_help(TextFlow::Column(
-	                   retro::core_options.option(CORE_OPT_MOUSE_SPEED_MULT)->descAndInfo()
-	                   + fmt::format(" (min {}, max {})", Pint->getMin(), Pint->getMax()))
-	                   .width(70)
-	                   .toString());
-	Pbool = secprop->Add_bool(CORE_OPT_MOUSE_SPEED_HACK, Property::Changeable::Always, false);
-	Pbool->Set_help(
-	    TextFlow::Column(retro::core_options.option(CORE_OPT_MOUSE_SPEED_HACK)->descAndInfo())
-	        .width(70)
-	        .toString());
-#endif
 
 	secprop=control->AddSection_prop("serial",&SERIAL_Init,true);
 	const char* serials[] = { "dummy", "disabled", "modem", "nullmodem",

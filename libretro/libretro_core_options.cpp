@@ -1,10 +1,13 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "libretro_core_options.h"
 #include "CoreOptions.h"
+#include "control.h"
+#include "deps/textflowcpp/TextFlow.hpp"
 #include "libretro_dosbox.h"
 #include "log.h"
 #include "setup.h"
 #include "util.h"
+#include <fmt/format.h>
 
 inline constexpr const char* LOCKED_OPTION_INFO =
     "This option has been locked due to a .conf file setting or a DOSBox command.";
@@ -12,6 +15,50 @@ inline constexpr const char* LOCKED_OPTION_DESC = "[Locked]";
 
 bool disable_core_opt_sync = false;
 static std::set<std::string> locked_core_options;
+
+void init_libretro_conf_properties()
+{
+    auto* secprop = control->AddSection_prop(
+        "mouse",
+        [](Section* const conf) {
+            const auto* const section = static_cast<Section_prop*>(conf);
+            const auto mult = section->Get_int(CORE_OPT_MOUSE_SPEED_MULT);
+            mouse_speed_factor_x = section->Get_int(CORE_OPT_MOUSE_SPEED_X) * mult / 100.0f;
+            mouse_speed_factor_y = section->Get_int(CORE_OPT_MOUSE_SPEED_Y) * mult / 100.0f;
+            update_mouse_speed_fix();
+        },
+        true);
+    auto* int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_X, Property::Changeable::Always, 100);
+    int_prop->SetMinMax(1, 127);
+    int_prop->Set_help(
+        TextFlow::Column(
+            retro::core_options.option(CORE_OPT_MOUSE_SPEED_X)->descAndInfo()
+            + fmt::format(" (min {}, max {})", int_prop->getMin(), int_prop->getMax()))
+            .width(70)
+            .toString());
+    int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_Y, Property::Changeable::Always, 100);
+    int_prop->SetMinMax(1, 127);
+    int_prop->Set_help(
+        TextFlow::Column(
+            retro::core_options.option(CORE_OPT_MOUSE_SPEED_Y)->descAndInfo()
+            + fmt::format(" (min {}, max {})", int_prop->getMin(), int_prop->getMax()))
+            .width(70)
+            .toString());
+    int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_MULT, Property::Changeable::Always, 1);
+    int_prop->SetMinMax(1, 5);
+    int_prop->Set_help(
+        TextFlow::Column(
+            retro::core_options.option(CORE_OPT_MOUSE_SPEED_MULT)->descAndInfo()
+            + fmt::format(" (min {}, max {})", int_prop->getMin(), int_prop->getMax()))
+            .width(70)
+            .toString());
+    auto* bool_prop =
+        secprop->Add_bool(CORE_OPT_MOUSE_SPEED_HACK, Property::Changeable::Always, false);
+    bool_prop->Set_help(
+        TextFlow::Column(retro::core_options.option(CORE_OPT_MOUSE_SPEED_HACK)->descAndInfo())
+            .width(70)
+            .toString());
+}
 
 static bool sync_special_option(const std::string_view prop, const Value& new_val)
 {

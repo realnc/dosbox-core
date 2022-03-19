@@ -9,6 +9,7 @@ extern CoreOptions core_options;
 
 class Value;
 
+void init_libretro_conf_properties();
 void sync_core_opts_to_conf(const std::string& conf_prop, const Value& new_val);
 
 inline constexpr const char* CORE_OPT_OPTION_HANDLING = "option_handling";

@@ -31,25 +31,28 @@ void init_libretro_conf_properties()
     auto* int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_X, Property::Changeable::Always, 100);
     int_prop->SetMinMax(1, 127);
     int_prop->Set_help(
-        TextFlow::Column(
-            retro::core_options.option(CORE_OPT_MOUSE_SPEED_X)->descAndInfo()
-            + fmt::format(" (min {}, max {})", int_prop->getMin(), int_prop->getMax()))
+        TextFlow::Column(fmt::format(
+                             "{} (min {}, max {})",
+                             retro::core_options.option(CORE_OPT_MOUSE_SPEED_X)->descAndInfo(),
+                             int_prop->getMin(), int_prop->getMax()))
             .width(70)
             .toString());
     int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_Y, Property::Changeable::Always, 100);
     int_prop->SetMinMax(1, 127);
     int_prop->Set_help(
-        TextFlow::Column(
-            retro::core_options.option(CORE_OPT_MOUSE_SPEED_Y)->descAndInfo()
-            + fmt::format(" (min {}, max {})", int_prop->getMin(), int_prop->getMax()))
+        TextFlow::Column(fmt::format(
+                             "{} (min {}, max {})",
+                             retro::core_options.option(CORE_OPT_MOUSE_SPEED_Y)->descAndInfo(),
+                             int_prop->getMin(), int_prop->getMax()))
             .width(70)
             .toString());
     int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_MULT, Property::Changeable::Always, 1);
     int_prop->SetMinMax(1, 5);
     int_prop->Set_help(
-        TextFlow::Column(
-            retro::core_options.option(CORE_OPT_MOUSE_SPEED_MULT)->descAndInfo()
-            + fmt::format(" (min {}, max {})", int_prop->getMin(), int_prop->getMax()))
+        TextFlow::Column(fmt::format(
+                             "{} (min {}, max {})",
+                             retro::core_options.option(CORE_OPT_MOUSE_SPEED_MULT)->descAndInfo(),
+                             int_prop->getMin(), int_prop->getMax()))
             .width(70)
             .toString());
     auto* bool_prop =

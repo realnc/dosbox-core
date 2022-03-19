@@ -836,7 +836,7 @@ static void check_variables()
              {CORE_OPT_MOUSE_SPEED_X, CORE_OPT_MOUSE_SPEED_Y, CORE_OPT_MOUSE_SPEED_MULT,
               CORE_OPT_MOUSE_SPEED_HACK})
         {
-            update_dosbox_variable(false, "mouse", option, core_options[option].toString());
+            update_dosbox_variable(false, "dosbox-core", option, core_options[option].toString());
         }
 
         update_dosbox_variable(false, "cpu", "cputype", core_options[CORE_OPT_CPU_TYPE].toString());

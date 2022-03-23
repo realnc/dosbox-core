@@ -1458,10 +1458,10 @@ CoreOptions core_options {
             "Enable Disney Sound Source",
             "Enable Disney Sound Source Emulation.",
             {
-                { "on", "true" },
-                { "off", "false" },
+                true,
+                false,
             },
-            "off"
+            false
         },
         CoreOptionDefinition {
             CORE_OPT_BLOCKSIZE,

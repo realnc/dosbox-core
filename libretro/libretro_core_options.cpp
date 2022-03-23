@@ -135,6 +135,52 @@ static bool sync_special_option(const std::string_view prop, const Value& new_va
     return true;
 }
 
+static auto find_existing_option_value(
+    const retro::CoreOptionDefinition& core_option, const Value& new_val)
+    -> const retro::CoreOptionValue*
+{
+    for (const auto& val : core_option) {
+        if (new_val.type == Value::V_BOOL && static_cast<bool>(new_val) == val.toBool()) {
+            return &val;
+        }
+        if (new_val.type == Value::V_INT && static_cast<int>(new_val) == val.toInt()) {
+            return &val;
+        }
+        if (new_val.type == Value::V_STRING && static_cast<const char*>(new_val) == val.toString())
+        {
+            return &val;
+        }
+        if (new_val.ToString() == val.toString()) {
+            return &val;
+        }
+    }
+    return nullptr;
+}
+
+static auto make_locked_option_value(
+    const retro::CoreOptionDefinition& core_option, const Value& new_val) -> retro::CoreOptionValue
+{
+    if (const auto* existing_value = find_existing_option_value(core_option, new_val)) {
+        return *existing_value;
+    }
+
+    switch (new_val.type) {
+    case Value::V_BOOL:
+        return {static_cast<bool>(new_val), new_val.ToString()};
+    case Value::V_INT:
+        return {static_cast<int>(new_val), new_val.ToString()};
+    case Value::V_STRING: {
+        std::string val_string = static_cast<const char*>(new_val);
+        if (val_string.empty()) {
+            val_string = "none";
+        }
+        return {val_string, val_string};
+    }
+    default:
+        return {new_val.ToString(), new_val.ToString()};
+    }
+}
+
 void sync_core_opts_to_conf(const std::string& conf_prop, const Value& new_val)
 {
     if (disable_core_opt_sync) {
@@ -163,23 +209,7 @@ void sync_core_opts_to_conf(const std::string& conf_prop, const Value& new_val)
         return;
     }
 
-    auto locked_value = [&]() -> retro::CoreOptionValue {
-        switch (new_val.type) {
-        case Value::V_BOOL:
-            return {static_cast<bool>(new_val), new_val.ToString()};
-        case Value::V_INT:
-            return {static_cast<int>(new_val), new_val.ToString()};
-        case Value::V_STRING: {
-            std::string val_string = static_cast<const char*>(new_val);
-            if (val_string.empty()) {
-                val_string = "none";
-            }
-            return {val_string, val_string};
-        }
-        default:
-            return {new_val.ToString(), new_val.ToString()};
-        }
-    }();
+    auto locked_value = make_locked_option_value(*core_option, new_val);
     core_option->clearValues();
     core_option->addValue(locked_value);
     retro::core_options.updateFrontend();

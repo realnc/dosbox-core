@@ -909,11 +909,8 @@ static void check_variables()
 
         update_dosbox_variable(false, "speaker", "tandy", core_options[CORE_OPT_TANDY].toString());
 
-        if (!dosbox_initialiazed) {
-            const auto& disney_val = core_options[CORE_OPT_DISNEY].toString();
-            update_dosbox_variable(false, "speaker", "disney", disney_val);
-            disney_init = disney_val == "on";
-        }
+        disney_init = core_options[CORE_OPT_DISNEY].toBool();
+        update_dosbox_variable(false, "speaker", "disney", disney_init ? "true" : "false");
 
         check_vkbd_variables();
         check_pinhack_variables();

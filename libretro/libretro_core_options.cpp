@@ -210,11 +210,7 @@ void sync_core_opts_to_conf(const std::string& conf_prop, const Value& new_val)
     }
 
     auto locked_value = make_locked_option_value(*core_option, new_val);
-    core_option->clearValues();
-    core_option->addValue(locked_value);
-    retro::core_options.updateFrontend();
-    retro::core_options.setCurrentValue(conf_prop, locked_value);
-    core_option->setDefaultValue(locked_value);
+    core_option->setValues({locked_value}, locked_value);
 
     if (locked_core_options.count(core_option->key()) == 0) {
         core_option->setDesc(fmt::format("{} {}", LOCKED_OPTION_DESC, core_option->desc()));

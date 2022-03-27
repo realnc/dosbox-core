@@ -10,8 +10,10 @@ COMMONFLAGS += -DWITH_FLUIDSYNTH
 $(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATCH)) $(GLIB)
 	mkdir -p "$(FLUIDSYNTH_BUILD_DIR)"
 	cd "$(FLUIDSYNTH_BUILD_DIR)" \
-	&& CFLAGS= CXXFLAGS= \
-	    LDFLAGS="-L$(DEPS_BIN_DIR)/lib"$(if $(filter $(platform),osx)," -framework Foundation") \
+	&& unset CFLAGS \
+	&& unset CXXFLAGS \
+	&& unset LDFLAGS \
+	&& LDFLAGS="-L$(DEPS_BIN_DIR)/lib"$(if $(filter $(platform),osx)," -framework Foundation") \
 	    $(CMAKE) \
 	    -DCMAKE_BUILD_TYPE=Release \
 	    -DBUILD_SHARED_LIBS=OFF \

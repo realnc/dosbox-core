@@ -8,7 +8,10 @@ $(FLAC): $(OGG)
 	cd "$(CURDIR)/deps/flac/" && ./autogen.sh
 	mkdir -p $(FLAC_BUILD_DIR)
 	cd $(FLAC_BUILD_DIR) \
-	&& CFLAGS= CXXFLAGS= LDFLAGS= "$(CURDIR)/deps/flac/configure" \
+	&& unset CFLAGS \
+	&& unset CXXFLAGS \
+	&& unset LDFLAGS \
+	&& "$(CURDIR)/deps/flac/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-shared \
@@ -27,6 +30,9 @@ $(FLAC): $(OGG)
 # $(FLAC): $(OGG)
 # 	mkdir -p $(FLAC_BUILD_DIR)
 # 	cd $(FLAC_BUILD_DIR) \
+#	&& unset CFLAGS \
+#	&& unset CXXFLAGS \
+#	&& unset LDFLAGS \
 # 	&& $(CMAKE) \
 # 	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
 # 	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \

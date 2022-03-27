@@ -7,7 +7,10 @@ SDLNET = $(DEPS_BIN_DIR)/lib/pkgconfig/SDL_net.pc
 $(SDLNET): $(SDL)
 	mkdir -p "$(SDLNET_BUILD_DIR)"
 	cd "$(SDLNET_BUILD_DIR)" \
-	&& $(if $(filter $(platform),osx),CC=clang CXX=clang++) CFLAGS= CXXFLAGS= LDFLAGS= \
+	&& unset CFLAGS \
+	&& unset CXXFLAGS \
+	&& unset LDFLAGS \
+	&& $(if $(filter $(platform),osx),CC=clang CXX=clang++) \
 	    "$(CURDIR)/deps/sdl_net/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \

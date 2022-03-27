@@ -8,7 +8,10 @@ $(OPUSFILE): $(OGG) $(OPUS)
 	cd "$(CURDIR)/deps/opusfile/" && ./autogen.sh
 	mkdir -p $(OPUSFILE_BUILD_DIR)
 	cd $(OPUSFILE_BUILD_DIR) \
-	&& CFLAGS= CXXFLAGS= LDFLAGS= "$(CURDIR)/deps/opusfile/configure" \
+	&& unset CFLAGS \
+	&& unset CXXFLAGS \
+	&& unset LDFLAGS \
+	&& "$(CURDIR)/deps/opusfile/configure" \
 	    --host=$(TARGET_TRIPLET) \
 	    --prefix="$(DEPS_BIN_DIR)" \
 	    --disable-shared \

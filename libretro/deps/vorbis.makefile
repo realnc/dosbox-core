@@ -7,7 +7,10 @@ VORBIS = $(DEPS_BIN_DIR)/lib/pkgconfig/vorbis.pc
 $(VORBIS): $(OGG)
 	mkdir -p $(VORBIS_BUILD_DIR)
 	cd $(VORBIS_BUILD_DIR) \
-	&& CFLAGS= CXXFLAGS= LDFLAGS= $(CMAKE) \
+	&& unset CFLAGS \
+	&& unset CXXFLAGS \
+	&& unset LDFLAGS \
+	&& $(CMAKE) \
 	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
 	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \

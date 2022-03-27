@@ -63,6 +63,7 @@ std::set<std::string> disabled_dosbox_variables;
 std::set<std::string> disabled_core_options;
 
 Bit32u MIXER_RETRO_GetFrequency();
+auto MIXER_RETRO_GetAvailableSamples() noexcept -> Bitu;
 void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
 
 extern Bit8u herc_pal;
@@ -111,8 +112,8 @@ static float currentFPS = default_fps;
 static float current_aspect_ratio = 0;
 
 /* audio variables */
-static uint8_t audioData[829 * 4]; // 49716hz max
-static uint32_t samplesPerFrame = 735;
+static std::vector<uint8_t> retro_audio_buffer;
+static uint32_t retro_audio_buffer_frames = 0;
 struct retro_midi_interface retro_midi_interface;
 bool use_retro_midi = false;
 bool have_retro_midi = false;
@@ -303,9 +304,23 @@ auto update_dosbox_variable(
     return ret;
 }
 
+static auto queue_audio() -> Bitu
+{
+    const auto available_audio_frames = MIXER_RETRO_GetAvailableSamples();
+    if (available_audio_frames > 0) {
+        const auto size_bytes = available_audio_frames * 4;
+        if (size_bytes > retro_audio_buffer.size()) {
+            retro_audio_buffer.reserve(size_bytes);
+            retro::logDebug("Output audio buffer resized to {} bytes.\n", size_bytes);
+        }
+        MIXER_CallBack(nullptr, retro_audio_buffer.data(), size_bytes);
+    }
+    return available_audio_frames;
+}
+
 static void leave_thread(const Bitu /*val*/)
 {
-    MIXER_CallBack(nullptr, audioData, samplesPerFrame * 4);
+    retro_audio_buffer_frames = queue_audio();
     switchThread();
 
     if (!run_synced) {
@@ -1045,6 +1060,8 @@ void retro_init()
 {
     use_libretro_log_cb();
 
+    retro_audio_buffer.reserve(8192);
+
     RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_XRGB8888;
     retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
     if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &RDOSGFXcolorMode)) {
@@ -1221,7 +1238,6 @@ auto retro_load_game(const retro_game_info* const game) -> bool
         disk_control::mount(std::move(disk_load_image));
     }
 
-    samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
     update_core_option_visibility();
     return true;
 }
@@ -1293,15 +1309,13 @@ void retro_run()
     dosbox_frontbuffer_uploaded = true;
 
     if (run_synced) {
-        MIXER_CallBack(nullptr, audioData, samplesPerFrame * 4);
+        retro_audio_buffer_frames = queue_audio();
     }
-    /* Upload audio */
-    audio_batch_cb((int16_t*)audioData, samplesPerFrame);
+    audio_batch_cb((int16_t*)retro_audio_buffer.data(), retro_audio_buffer_frames);
 
     if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
         retro_midi_interface.flush();
     }
-    samplesPerFrame = MIXER_RETRO_GetFrequency() / currentFPS;
 }
 
 void retro_reset()

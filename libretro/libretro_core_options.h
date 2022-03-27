@@ -140,8 +140,6 @@ inline constexpr const char* CORE_OPT_GUSDMA = "gusdma";
 inline constexpr const char* CORE_OPT_PCSPEAKER = "pcspeaker";
 inline constexpr const char* CORE_OPT_TANDY = "tandy";
 inline constexpr const char* CORE_OPT_DISNEY = "disney";
-inline constexpr const char* CORE_OPT_BLOCKSIZE = "blocksize";
-inline constexpr const char* CORE_OPT_PREBUFFER = "prebuffer";
 
 inline constexpr const char* CORE_OPTCAT_MIDI = "midi";
 inline constexpr const char* CORE_OPT_MPU_TYPE = "mpu401";

@@ -790,10 +790,6 @@ static void check_variables()
             svgaCard = SVGA_None;
         }
         update_dosbox_variable(false, "dosbox", "machine", machine_type);
-        update_dosbox_variable(
-            false, "mixer", "blocksize", core_options[CORE_OPT_BLOCKSIZE].toString());
-        update_dosbox_variable(
-            false, "mixer", "prebuffer", core_options[CORE_OPT_PREBUFFER].toString());
 
 #ifdef WITH_VOODOO
         update_dosbox_variable(false, "pci", "voodoo", core_options[CORE_OPT_VOODOO].toString());

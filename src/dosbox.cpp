@@ -618,15 +618,28 @@ void DOSBOX_Init(void) {
 	Pint->Set_values(rates);
 	Pint->Set_help("Mixer sample rate, setting any device's rate higher than this will probably lower their sound quality.");
 
+#ifdef __LIBRETRO__
+	const char* blocksizes[] = {"2048", 0};
+	Pint = secprop->Add_int("blocksize", Property::Changeable::OnlyAtStart, 2048);
+	Pint->Set_values(blocksizes);
+	Pint->Set_help("Mixer block size. In DOSBox-core, this does not affect audio latency and is fixed to 2048 ");
+#else
 	const char *blocksizes[] = {
 		 "1024", "2048", "4096", "8192", "512", "256", 0};
 	Pint = secprop->Add_int("blocksize",Property::Changeable::OnlyAtStart,1024);
 	Pint->Set_values(blocksizes);
 	Pint->Set_help("Mixer block size, larger blocks might help sound stuttering but sound will also be more lagged.");
+#endif
 
+#ifdef __LIBRETRO__
+	Pint = secprop->Add_int("prebuffer", Property::Changeable::OnlyAtStart, 0);
+	Pint->SetMinMax(0,0);
+	Pint->Set_help("How many milliseconds of data to keep on top of the blocksize. In DOSBox-core, this is fixed to 0.");
+#else
 	Pint = secprop->Add_int("prebuffer",Property::Changeable::OnlyAtStart,25);
 	Pint->SetMinMax(0,100);
 	Pint->Set_help("How many milliseconds of data to keep on top of the blocksize.");
+#endif
 
 	secprop=control->AddSection_prop("midi",&MIDI_Init,true);//done
 	secprop->AddInitFunction(&MPU401_Init,true);//done

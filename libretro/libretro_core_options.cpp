@@ -1489,30 +1489,6 @@ CoreOptions core_options {
             },
             false
         },
-        CoreOptionDefinition {
-            CORE_OPT_BLOCKSIZE,
-            "DOSBox mixer block size (restart)",
-            "Larger blocks might help sound stuttering but sound will also be more lagged.",
-            {
-                256,
-                512,
-                1024,
-                2048,
-                4096,
-                8192,
-            },
-            1024
-        },
-        CoreOptionDefinition {
-            CORE_OPT_PREBUFFER,
-            "DOSBox mixer pre-buffer size (restart)",
-            "How many milliseconds of data to keep on top of the blocksize.",
-            {
-                0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 25, 26, 28,
-                30, 32, 36, 40, 44, 48, 56, 64, 72, 80, 88, 96, 100
-            },
-            25
-        },
     },
     CoreOptionCategory {
         CORE_OPTCAT_MIDI,

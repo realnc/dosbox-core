@@ -1269,7 +1269,7 @@ void retro_run()
     DOSBOX_UnlockSpeed(fast_forward);
 
     /* Dynamic resolution switching */
-    if (run_synced && fabs(currentFPS - render.src.fps) > 0.05f && render.src.fps != 0) {
+    if (run_synced && currentFPS != render.src.fps && render.src.fps != 0) {
         update_gfx_mode(true);
     } else if (
         dosbox_aspect_ratio != current_aspect_ratio || RDOSGFXwidth != currentWidth

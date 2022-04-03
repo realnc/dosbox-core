@@ -16,6 +16,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#ifdef __LIBRETRO__
+// Fix ODR violation (exposed when building with LTO.)
+#define STRING_OP STRING_OP_DYN_X86
+#endif
+
 enum STRING_OP {
 	STR_OUTSB=0,STR_OUTSW,STR_OUTSD,
 	STR_INSB=4,STR_INSW,STR_INSD,

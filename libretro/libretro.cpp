@@ -1231,8 +1231,12 @@ auto retro_load_game(const retro_game_info* const game) -> bool
             retro::logWarn("Failed to get absolute path of content directory: {}", e.what());
         }
     }
+
     emu_thread = std::thread(start_dosbox, load_path.u8string());
-    switchThread();
+    while (render.src.fps == 0) {
+        switchThread();
+    }
+    currentFPS = render.src.fps;
 
     if (!disk_load_image.empty()) {
         disk_control::mount(std::move(disk_load_image));

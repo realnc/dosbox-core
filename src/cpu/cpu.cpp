@@ -33,6 +33,8 @@
 
 #ifdef __LIBRETRO__
 #include "libretro_dosbox.h"
+#include "libretro_message.h"
+#include <fmt/format.h>
 #endif
 
 Bitu DEBUG_EnableDebugger(void);
@@ -2106,6 +2108,9 @@ void CPU_CycleIncrease(bool pressed) {
 		if (CPU_CyclePercUsed>105) CPU_CyclePercUsed=105;
 		LOG_MSG("CPU speed: max %d percent.",CPU_CyclePercUsed);
 		GFX_SetTitle(CPU_CyclePercUsed,-1,false);
+#ifdef __LIBRETRO__
+		retro::showOsdInfo(fmt::format("CPU speed: max {} percent.", CPU_CyclePercUsed));
+#endif
 	} else {
 		Bit32s old_cycles=CPU_CycleMax;
 		if (CPU_CycleUp < 100) {
@@ -2121,6 +2126,9 @@ void CPU_CycleIncrease(bool pressed) {
 		else
 			LOG_MSG("CPU speed: fixed %d cycles.",CPU_CycleMax);
 		GFX_SetTitle(CPU_CycleMax,-1,false);
+#ifdef __LIBRETRO__
+		retro::showOsdInfo(fmt::format("CPU speed: fixed {} cycles.", CPU_CycleMax));
+#endif
 	}
 }
 
@@ -2137,6 +2145,9 @@ void CPU_CycleDecrease(bool pressed) {
 		else
 			LOG_MSG("CPU speed: max %d percent.",CPU_CyclePercUsed);
 		GFX_SetTitle(CPU_CyclePercUsed,-1,false);
+#ifdef __LIBRETRO__
+		retro::showOsdInfo(fmt::format("CPU speed: max {} percent.", CPU_CyclePercUsed));
+#endif
 	} else {
 		if (CPU_CycleDown < 100) {
 			CPU_CycleMax = (Bit32s)(CPU_CycleMax / (1 + (float)CPU_CycleDown / 100.0));
@@ -2147,6 +2158,9 @@ void CPU_CycleDecrease(bool pressed) {
 		if (CPU_CycleMax <= 0) CPU_CycleMax=1;
 		LOG_MSG("CPU speed: fixed %d cycles.",CPU_CycleMax);
 		GFX_SetTitle(CPU_CycleMax,-1,false);
+#ifdef __LIBRETRO__
+		retro::showOsdInfo(fmt::format("CPU speed: fixed {} cycles.", CPU_CycleMax));
+#endif
 	}
 }
 

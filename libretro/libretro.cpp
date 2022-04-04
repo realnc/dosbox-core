@@ -13,6 +13,7 @@
 #include "libretro-vkbd.h"
 #include "libretro_core_options.h"
 #include "libretro_dosbox.h"
+#include "libretro_message.h"
 #include "log.h"
 #include "mapper.h"
 #include "midi_alsa.h"
@@ -1075,6 +1076,7 @@ void retro_get_system_av_info(retro_system_av_info* const info)
 void retro_init()
 {
     use_libretro_log_cb();
+    retro::setMessageEnvCb(environ_cb);
 
     retro_audio_buffer.reserve(8192);
 

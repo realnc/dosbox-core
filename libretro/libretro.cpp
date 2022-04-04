@@ -612,13 +612,9 @@ void core_autoexec()
     check_gus_variables(true);
 }
 
-static void check_cpu_cycle_variables()
+static auto make_cpu_cycles_string() -> std::string
 {
     using namespace retro;
-
-    if (disabled_dosbox_variables.count("cycles") != 0) {
-        return;
-    }
 
     const auto& mode = core_options[CORE_OPT_CPU_CYCLES_MODE].toString();
     const int realmode_cycles = core_options[CORE_OPT_CPU_CYCLES_REALMODE].toInt()
@@ -642,18 +638,38 @@ static void check_cpu_cycle_variables()
         return retval;
     }();
 
-    std::string output = mode;
+    std::string cycles_string = mode;
     if (mode == "fixed" && cycles > 0) {
-        output += ' ' + cycles_str;
+        cycles_string += ' ' + cycles_str;
     } else if (mode == "max") {
-        output += max_limits_str;
+        cycles_string += max_limits_str;
     } else {
         if (realmode_cycles > 0) {
-            output += ' ' + std::to_string(realmode_cycles);
+            cycles_string += ' ' + std::to_string(realmode_cycles);
         }
-        output += max_limits_str;
+        cycles_string += max_limits_str;
     }
-    update_dosbox_variable(false, "cpu", "cycles", output);
+    return cycles_string;
+}
+
+static void check_cpu_cycle_variables()
+{
+    update_dosbox_variable(
+        false, "cpu", "cycleup", retro::core_options[CORE_OPT_CPU_CYCLES_UP].toString());
+    update_dosbox_variable(
+        false, "cpu", "cycledown", retro::core_options[CORE_OPT_CPU_CYCLES_DOWN].toString());
+
+    if (disabled_dosbox_variables.count("cycles") != 0) {
+        return;
+    }
+
+    static std::string prev_cycles_string;
+    auto new_cycles_string = make_cpu_cycles_string();
+
+    if (prev_cycles_string != new_cycles_string) {
+        update_dosbox_variable(false, "cpu", "cycles", new_cycles_string);
+        prev_cycles_string = std::move(new_cycles_string);
+    }
 }
 
 static void update_bassmidi_variables()

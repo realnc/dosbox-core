@@ -53,6 +53,8 @@ inline constexpr const char* CORE_OPT_CPU_CYCLES_MULTIPLIER = "cpu_cycles_multip
 inline constexpr const char* CORE_OPT_CPU_CYCLES = "cpu_cycles";
 inline constexpr const char* CORE_OPT_CPU_CYCLES_MULTIPLIER_FINE = "cpu_cycles_multiplier_fine";
 inline constexpr const char* CORE_OPT_CPU_CYCLES_FINE = "cpu_cycles_fine";
+inline constexpr const char* CORE_OPT_CPU_CYCLES_UP = "cycleup";
+inline constexpr const char* CORE_OPT_CPU_CYCLES_DOWN = "cycledown";
 
 inline constexpr const char* CORE_OPTCAT_SCALING = "scaling";
 inline constexpr const char* CORE_OPT_ASPECT_CORRECTION = "aspect";

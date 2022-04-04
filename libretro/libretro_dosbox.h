@@ -164,3 +164,5 @@ long retro_ticks();
 void retro_key_up(int keycode);
 void retro_key_down(int keycode);
 void update_mouse_speed_fix();
+void CPU_CycleIncrease(bool pressed);
+void CPU_CycleDecrease(bool pressed);

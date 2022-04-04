@@ -31,6 +31,10 @@
 #include "lazyflags.h"
 #include "support.h"
 
+#ifdef __LIBRETRO__
+#include "libretro_dosbox.h"
+#endif
+
 Bitu DEBUG_EnableDebugger(void);
 extern void GFX_SetTitle(Bit32s cycles ,int frameskip,bool paused);
 
@@ -2092,7 +2096,10 @@ void CPU_ENTER(bool use32,Bitu bytes,Bitu level) {
 	reg_esp=(reg_esp&cpu.stack.notmask)|((sp_index)&cpu.stack.mask);
 }
 
-static void CPU_CycleIncrease(bool pressed) {
+#ifndef __LIBRETRO__
+static
+#endif
+void CPU_CycleIncrease(bool pressed) {
 	if (!pressed) return;
 	if (CPU_CycleAutoAdjust) {
 		CPU_CyclePercUsed+=5;
@@ -2117,7 +2124,10 @@ static void CPU_CycleIncrease(bool pressed) {
 	}
 }
 
-static void CPU_CycleDecrease(bool pressed) {
+#ifndef __LIBRETRO__
+static
+#endif
+void CPU_CycleDecrease(bool pressed) {
 	if (!pressed) return;
 	if (CPU_CycleAutoAdjust) {
 		CPU_CyclePercUsed-=5;

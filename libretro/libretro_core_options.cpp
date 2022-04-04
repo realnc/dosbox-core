@@ -66,9 +66,9 @@ void init_libretro_conf_properties()
 static bool sync_special_option(const std::string_view prop, const Value& new_val)
 {
     if (is_equal_to_one_of(
-            prop, "language", "captures", "frameskip", "cycleup", "cycledown", "nosound", "rate",
-            "oplrate", "ultradir", "pcrate", "tandyrate", "joysticktype", "autofire", "swap34",
-            "buttonwrap", "circularinput", "deadzone", "serial1", "serial2", "serial3", "serial4",
+            prop, "language", "captures", "frameskip", "nosound", "rate", "oplrate", "ultradir",
+            "pcrate", "tandyrate", "joysticktype", "autofire", "swap34", "buttonwrap",
+            "circularinput", "deadzone", "serial1", "serial2", "serial3", "serial4",
             "keyboardlayout", "mt32.romdir", "pinhackexpandwidth"))
     {
         // We simply ignore all of these. They have no effect on any of the core options.
@@ -261,6 +261,14 @@ void sync_core_opts_to_conf(const std::string& conf_prop, const Value& new_val)
     46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, \
     69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, \
     92, 93, 94, 95, 96, 97, 98, 99
+
+#define CYCLES_UP_DOWN_VALUES \
+    {  1,  "1%" }, {  2,  "2%" }, {  3,  "3%" }, {  4,  "4%" }, {  5,  "5%" }, {  6,  "6%" }, \
+    {  7,  "7%" }, {  8,  "8%" }, {  9,  "9%" }, { 10, "10%" }, { 15, "15%" }, { 20, "20%" }, \
+    { 25, "25%" }, { 30, "30%" }, { 35, "35%" }, { 40, "40%" }, { 45, "45%" }, { 50, "50%" }, \
+      100,   150,   200,   250,   300,   250,   400,   450,   500,   600,   700,   800,   900, \
+     1000,  1500,  2000,  2500,  3000,  3500,  4000,  4500,  5000,  6000,  7000,  8000,  9000, \
+    10000, 15000, 20000, 25000, 30000,
 
 // This isn't a macro because GCC on mingw x86 crashes when compiling it.
 static const std::initializer_list<retro::CoreOptionValue> retro_keyboard_ids {
@@ -808,6 +816,20 @@ CoreOptions core_options {
             "Value for fine CPU cycles tuning.",
             { CYCLES_VALUES },
             0
+        },
+        CoreOptionDefinition {
+            CORE_OPT_CPU_CYCLES_UP,
+            "Cycle increment for Ctrl-F12",
+            "Values from 100 and up are cycles. Values below 100 are percentages.",
+            { CYCLES_UP_DOWN_VALUES },
+            10,
+        },
+        CoreOptionDefinition {
+            CORE_OPT_CPU_CYCLES_DOWN,
+            "Cycle decrement for Ctrl-F11",
+            "Values from 100 and up are cycles. Values below 100 are percentages.",
+            { CYCLES_UP_DOWN_VALUES },
+            20,
         },
     },
     CoreOptionCategory {

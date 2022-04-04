@@ -452,7 +452,7 @@ void retro_key_up(const int keycode)
 
 static RETRO_CALLCONV void keyboardEventCb(
     const bool down, const unsigned keycode, const uint32_t /*character*/,
-    const uint16_t /*key_modifiers*/)
+    const uint16_t key_modifiers)
 {
     if (retro_vkbd) {
         if (keycode == RETROK_CAPSLOCK) {
@@ -475,6 +475,15 @@ static RETRO_CALLCONV void keyboardEventCb(
         request_VGA_SetupDrawing = true;
     }
 #endif
+
+    if (keycode == RETROK_F11 && key_modifiers & RETROKMOD_CTRL && down)
+    {
+        CPU_CycleDecrease(true);
+    } else if (
+        keycode == RETROK_F12 && key_modifiers & RETROKMOD_CTRL && down)
+    {
+        CPU_CycleIncrease(true);
+    }
 
     for (const auto& [retro_id, dosbox_id] : retro_dosbox_map) {
         if (retro_id == keycode) {

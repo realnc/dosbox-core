@@ -6,39 +6,40 @@ LIBRETRO_SDL_DIR := \
 
 ifeq ($(WITH_FAKE_SDL), 1)
 INCFLAGS += \
-	-I$(CORE_DIR)/libretro/fakesdl
+	-I$(CORE_DIR)/libretro/src/fakesdl
 SOURCES_CXX += \
-	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_endian.cpp \
-	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_thread.cpp \
-	$(CORE_DIR)/libretro/fakesdl/SDL/SDL_timer.cpp
+	$(CORE_DIR)/libretro/src/fakesdl/SDL/SDL_endian.cpp \
+	$(CORE_DIR)/libretro/src/fakesdl/SDL/SDL_thread.cpp \
+	$(CORE_DIR)/libretro/src/fakesdl/SDL/SDL_timer.cpp
 endif
 
 # include flags
 INCFLAGS += \
 	-I$(CORE_DIR)/src \
+	-I$(CORE_DIR)/libretro/src \
 	-I$(CORE_DIR)/libretro \
-	-I$(CORE_DIR)/libretro/virtual_keyboard \
+	-I$(CORE_DIR)/libretro/src/virtual_keyboard \
 	-I$(LIBRETRO_COMM_DIR)/include \
 	-I$(CORE_DIR)/include
 
 # common files
 SOURCES_CXX += \
-	$(CORE_DIR)/libretro/CoreOptionCategory.cpp \
-	$(CORE_DIR)/libretro/CoreOptionDefinition.cpp \
-	$(CORE_DIR)/libretro/CoreOptionValue.cpp \
-	$(CORE_DIR)/libretro/CoreOptions.cpp \
-	$(CORE_DIR)/libretro/disk_control.cpp \
-	$(CORE_DIR)/libretro/emu_thread.cpp \
-	$(CORE_DIR)/libretro/fake_timing.cpp \
-	$(CORE_DIR)/libretro/libretro_core_options.cpp \
-	$(CORE_DIR)/libretro/libretro_gfx.cpp \
-	$(CORE_DIR)/libretro/libretro_mapper.cpp \
-	$(CORE_DIR)/libretro/libretro_message.cpp \
-	$(CORE_DIR)/libretro/libretro.cpp \
-	$(CORE_DIR)/libretro/log.cpp \
-	$(CORE_DIR)/libretro/util.cpp \
-	$(CORE_DIR)/libretro/virtual_keyboard/libretro-graph.cpp \
-	$(CORE_DIR)/libretro/virtual_keyboard/libretro-vkbd.cpp \
+	$(CORE_DIR)/libretro/src/CoreOptionCategory.cpp \
+	$(CORE_DIR)/libretro/src/CoreOptionDefinition.cpp \
+	$(CORE_DIR)/libretro/src/CoreOptionValue.cpp \
+	$(CORE_DIR)/libretro/src/CoreOptions.cpp \
+	$(CORE_DIR)/libretro/src/disk_control.cpp \
+	$(CORE_DIR)/libretro/src/emu_thread.cpp \
+	$(CORE_DIR)/libretro/src/fake_timing.cpp \
+	$(CORE_DIR)/libretro/src/libretro_core_options.cpp \
+	$(CORE_DIR)/libretro/src/libretro_gfx.cpp \
+	$(CORE_DIR)/libretro/src/libretro_mapper.cpp \
+	$(CORE_DIR)/libretro/src/libretro_message.cpp \
+	$(CORE_DIR)/libretro/src/libretro.cpp \
+	$(CORE_DIR)/libretro/src/log.cpp \
+	$(CORE_DIR)/libretro/src/util.cpp \
+	$(CORE_DIR)/libretro/src/virtual_keyboard/libretro-graph.cpp \
+	$(CORE_DIR)/libretro/src/virtual_keyboard/libretro-vkbd.cpp \
 	$(CORE_DIR)/src/cpu/callback.cpp \
 	$(CORE_DIR)/src/cpu/core_dyn_x86.cpp \
 	$(CORE_DIR)/src/cpu/core_dynrec.cpp \
@@ -170,19 +171,19 @@ endif
 
 ifeq ($(WITH_ALSA_MIDI), 1)
 	SOURCES_CXX += \
-		$(CORE_DIR)/libretro/midi_alsa.cpp
+		$(CORE_DIR)/libretro/src/midi_alsa.cpp
 endif
 ifeq ($(platform), win)
 	SOURCES_CXX += \
-		$(CORE_DIR)/libretro/midi_win32.cpp
+		$(CORE_DIR)/libretro/src/midi_win32.cpp
 endif
 
 ifeq ($(WITH_BASSMIDI), 1)
-	SOURCES_CXX += $(CORE_DIR)/libretro/midi_bassmidi.cpp
+	SOURCES_CXX += $(CORE_DIR)/libretro/src/midi_bassmidi.cpp
 endif
 
 ifeq ($(WITH_FLUIDSYNTH), 1)
-	SOURCES_CXX += $(CORE_DIR)/libretro/midi_fluidsynth.cpp
+	SOURCES_CXX += $(CORE_DIR)/libretro/src/midi_fluidsynth.cpp
 endif
 
 ifeq ($(WITH_SDL_SOUND_WRAPPER), 1)
@@ -191,7 +192,7 @@ ifeq ($(WITH_SDL_SOUND_WRAPPER), 1)
 		-I$(CORE_DIR)/libretro/deps/SDL_audiolib/3rdparty/speex_resampler \
 		-I$(CORE_DIR)/libretro/deps/SDL_audiolib/include \
 		-I$(CORE_DIR)/libretro/deps/SDL_audiolib/src \
-		-I$(CORE_DIR)/libretro/sdl_sound_wrapper
+		-I$(CORE_DIR)/libretro/src/sdl_sound_wrapper
 
 	COMMONFLAGS += \
 		-DAULIB_STATIC_DEFINE \
@@ -219,7 +220,7 @@ ifeq ($(WITH_SDL_SOUND_WRAPPER), 1)
 		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/aulib.cpp \
 		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/sampleconv.cpp \
 		$(CORE_DIR)/libretro/deps/SDL_audiolib/src/stream_p.cpp \
-		$(CORE_DIR)/libretro/sdl_sound_wrapper/SDL_sound.cpp
+		$(CORE_DIR)/libretro/src/sdl_sound_wrapper/SDL_sound.cpp
 endif
 
 SOURCES_C += \

@@ -43,10 +43,6 @@
 #else
     #include <unistd.h>
 #endif
-#ifdef HAVE_LIBNX
-    #include <switch.h>
-extern "C" Jit dynarec_jit;
-#endif
 
 #define RETRO_DEVICE_JOYSTICK RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
 
@@ -1207,10 +1203,6 @@ void retro_deinit()
         emu_thread.join();
     }
 
-#ifdef HAVE_LIBNX
-    jitClose(&dynarec_jit);
-#endif
-
     libretro_graph_free();
 }
 
@@ -1225,11 +1217,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     }
 
     if (const auto extension = lower_case(load_path.extension().string()); extension == ".conf") {
-#ifndef HAVE_LIBNX
         config_path = std::filesystem::absolute(load_path);
-#else
-        config_path = load_path;
-#endif
         load_path.clear();
     } else {
         retro::logInfo("Loading default configuration: {}", config_path);

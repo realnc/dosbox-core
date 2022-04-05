@@ -67,12 +67,12 @@
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_UNISTD_H 1
 
-#if !defined(__WIN32__) && !defined(__POWERPC__) && !defined(VITA) && !defined(_3DS)
+#if !defined(__WIN32__) && !defined(__POWERPC__)
 # define HAVE_PWD_H 1
 #endif
 
 // ----- STANDARD LIBRARY FEATURES
-#if !defined (__QNX__) && !defined(VITA) && !defined(PSP)
+#if !defined (__QNX__)
 #define DIRENT_HAS_D_TYPE 1 /* struct dirent has d_type */
 #endif
 /* #undef DB_HAVE_NO_POWF */ /* libm doesn't include powf */

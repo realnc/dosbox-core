@@ -314,34 +314,4 @@ depsclean:
 .PHONY: clean
 clean: depsclean targetclean
 
-.PHONY: download_github_windows_x64
-download_github_windows_x64:
-	rm -f windows-x64.zip
-	wget 'https://github.com/realnc/dosbox-core/releases/download/latest_build/windows-x64.zip'
-	unzip windows-x64.zip
-
-.PHONY: download_github_windows_x86
-download_github_windows_x86:
-	rm -f windows-x86.zip
-	wget 'https://github.com/realnc/dosbox-core/releases/download/latest_build/windows-x86.zip'
-	unzip windows-x86.zip
-
-.PHONY: download_github_macos
-download_github_macos:
-	rm -f macOS-x64.zip
-	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/macOS-x64.zip'
-	unzip macOS-x64.zip
-
-.PHONY: download_github_armhf
-download_github_armhf:
-	rm -f linux-armhf.zip
-	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/linux-armhf.zip'
-	unzip linux-armhf.zip
-
-.PHONY: download_github_linux64
-download_github_linux64:
-	rm -f linux-x64.zip
-	curl -s -S -L -O 'https://github.com/realnc/dosbox-core/releases/download/latest_build/linux-x64.zip'
-	unzip linux-x64.zip
-
 .DEFAULT_GOAL := all

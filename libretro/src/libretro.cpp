@@ -109,7 +109,7 @@ static float currentFPS = default_fps;
 static float current_aspect_ratio = 0;
 
 /* audio variables */
-static std::vector<uint8_t> retro_audio_buffer;
+static std::vector<int16_t> retro_audio_buffer;
 static uint32_t retro_audio_buffer_frames = 0;
 struct retro_midi_interface retro_midi_interface;
 bool use_retro_midi = false;
@@ -304,13 +304,16 @@ auto update_dosbox_variable(
 static auto queue_audio() -> Bitu
 {
     const auto available_audio_frames = MIXER_RETRO_GetAvailableSamples();
+
     if (available_audio_frames > 0) {
-        const auto size_bytes = available_audio_frames * 4;
-        if (size_bytes > retro_audio_buffer.size()) {
-            retro_audio_buffer.reserve(size_bytes);
-            retro::logDebug("Output audio buffer resized to {} bytes.\n", size_bytes);
+        const auto samples = available_audio_frames * 2;
+        const auto bytes = available_audio_frames * 4;
+
+        if (samples > retro_audio_buffer.size()) {
+            retro_audio_buffer.reserve(samples);
+            retro::logDebug("Output audio buffer resized to {} samples.\n", samples);
         }
-        MIXER_CallBack(nullptr, retro_audio_buffer.data(), size_bytes);
+        MIXER_CallBack(nullptr, reinterpret_cast<Uint8*>(retro_audio_buffer.data()), bytes);
     }
     return available_audio_frames;
 }
@@ -1074,7 +1077,7 @@ void retro_init()
     use_libretro_log_cb();
     retro::setMessageEnvCb(environ_cb);
 
-    retro_audio_buffer.reserve(8192);
+    retro_audio_buffer.reserve(4096);
 
     RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_XRGB8888;
     retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
@@ -1259,6 +1262,18 @@ auto retro_load_game_special(
     return false;
 }
 
+static void upload_audio(const int frames) noexcept
+{
+    int remaining_frames = frames;
+    const auto* buf_pos = retro_audio_buffer.data();
+
+    while (remaining_frames > 0) {
+        const size_t uploaded_frames = audio_batch_cb(buf_pos, remaining_frames);
+        buf_pos += uploaded_frames * 2;
+        remaining_frames -= uploaded_frames;
+    }
+}
+
 void retro_run()
 {
     if (dosbox_exit) {
@@ -1322,7 +1337,8 @@ void retro_run()
     if (run_synced) {
         retro_audio_buffer_frames = queue_audio();
     }
-    audio_batch_cb((int16_t*)retro_audio_buffer.data(), retro_audio_buffer_frames);
+    upload_audio(retro_audio_buffer_frames);
+    retro_audio_buffer_frames = 0;
 
     if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
         retro_midi_interface.flush();

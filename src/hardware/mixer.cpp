@@ -830,7 +830,7 @@ Bit32u MIXER_RETRO_GetFrequency()
 	return mixer.freq;
 }
 
-auto MIXER_RETRO_GetAvailableSamples() noexcept -> Bitu
+auto MIXER_RETRO_GetAvailableFrames() noexcept -> Bitu
 {
 	return mixer.done;
 }

@@ -60,7 +60,7 @@ std::set<std::string> disabled_dosbox_variables;
 std::set<std::string> disabled_core_options;
 
 Bit32u MIXER_RETRO_GetFrequency();
-auto MIXER_RETRO_GetAvailableSamples() noexcept -> Bitu;
+auto MIXER_RETRO_GetAvailableFrames() noexcept -> Bitu;
 void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
 
 extern Bit8u herc_pal;
@@ -303,7 +303,7 @@ auto update_dosbox_variable(
 
 static auto queue_audio() -> Bitu
 {
-    const auto available_audio_frames = MIXER_RETRO_GetAvailableSamples();
+    const auto available_audio_frames = MIXER_RETRO_GetAvailableFrames();
 
     if (available_audio_frames > 0) {
         const auto samples = available_audio_frames * 2;

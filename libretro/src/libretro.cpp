@@ -354,11 +354,8 @@ static void update_gfx_mode(const bool change_fps)
     const float old_fps = currentFPS;
     retro_system_av_info new_av_info;
     bool cb_error = false;
-    retro_get_system_av_info(&new_av_info);
 
-    new_av_info.geometry.base_width = RDOSGFXwidth;
-    new_av_info.geometry.base_height = RDOSGFXheight;
-    new_av_info.geometry.aspect_ratio = dosbox_aspect_ratio;
+    retro_get_system_av_info(&new_av_info);
 
     if (change_fps) {
         const float new_fps = run_synced ? render.src.fps : default_fps;
@@ -1063,11 +1060,11 @@ void retro_get_system_info(retro_system_info* const info)
 
 void retro_get_system_av_info(retro_system_av_info* const info)
 {
-    info->geometry.base_width = 320;
-    info->geometry.base_height = 200;
+    info->geometry.base_width = RDOSGFXwidth;
+    info->geometry.base_height = RDOSGFXheight;
     info->geometry.max_width = GFX_MAX_WIDTH;
     info->geometry.max_height = GFX_MAX_HEIGHT;
-    info->geometry.aspect_ratio = 4.0 / 3;
+    info->geometry.aspect_ratio = dosbox_aspect_ratio;
     info->timing.fps = currentFPS;
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
 }
@@ -1242,7 +1239,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     }
 
     emu_thread = std::thread(start_dosbox, load_path.u8string());
-    while (render.src.fps == 0) {
+    while (render.src.fps == 0 || RDOSGFXwidth == 0 || RDOSGFXheight == 0) {
         switchThread();
     }
     if (run_synced) {

@@ -1245,7 +1245,9 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     while (render.src.fps == 0) {
         switchThread();
     }
-    currentFPS = render.src.fps;
+    if (run_synced) {
+        currentFPS = render.src.fps;
+    }
 
     if (!disk_load_image.empty()) {
         disk_control::mount(std::move(disk_load_image));

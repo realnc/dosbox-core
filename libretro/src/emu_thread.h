@@ -12,6 +12,7 @@ enum class ThreadSwitchReason
 {
     None,
     VideoModeChange,
+    PollInput,
 };
 
 /* Dosbox doesn't have a top-level main loop that we can use, so instead we run it in its own thread

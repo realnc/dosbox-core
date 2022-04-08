@@ -28,6 +28,10 @@ auto fakeGetTicks() noexcept -> std::uint32_t;
  */
 void fakeTimingReset() noexcept;
 
+/* Set timing mode.
+ */
+void enableFakeTiming(bool enable) noexcept;
+
 /*
 
 Copyright (C) 2019 Nikos Chantziaras.

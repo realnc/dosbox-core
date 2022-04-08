@@ -103,11 +103,27 @@ void GFX_EndUpdate(const Bit16u* const changedLines)
     }
 }
 
+#include "fake_timing.h"
+static int last_poll_cb_tick = 0;
+void GFX_Events()
+{
+    if (use_async_audio) {
+        constexpr int poll_interval_ms = 1;
+        const auto current_tick = fakeGetTicks();
+        // Don't poll too often as it has too much overhead.
+        if (current_tick - last_poll_cb_tick < poll_interval_ms) {
+            return;
+        }
+        last_poll_cb_tick = current_tick;
+        switchThread(ThreadSwitchReason::PollInput);
+    }
+}
+
 // Stubs
 void GFX_SetTitle(Bit32s /*cycles*/, int /*frameskip*/, bool /*paused*/)
 { }
 
-void GFX_Events()
+void GFX_ShowMsg(char const* /*format*/, ...)
 { }
 
 void GFX_SetPalette(Bitu /*start*/, Bitu /*count*/, GFX_PalEntry* /*entries*/)

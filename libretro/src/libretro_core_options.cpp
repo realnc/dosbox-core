@@ -459,6 +459,18 @@ CoreOptions core_options {
             true
         },
         CoreOptionDefinition {
+            CORE_OPT_ASYNC_AUDIO,
+            "Asynchronous audio",
+            "Reduces the chance of audio dropouts at the cost of a small increase in input lag. "
+            "Not all frontends support this option, or support might depend on frontend "
+            "configuration.",
+            {
+                true,
+                false,
+            },
+            false
+        },
+        CoreOptionDefinition {
             CORE_OPT_THREAD_SYNC,
             "Thread synchronization method",
             "\"Wait\" is the recommended method and should work well on most systems. If for some "

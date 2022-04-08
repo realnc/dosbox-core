@@ -38,6 +38,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/libretro/src/libretro_mapper.cpp \
 	$(CORE_DIR)/libretro/src/libretro_message.cpp \
 	$(CORE_DIR)/libretro/src/log.cpp \
+	$(CORE_DIR)/libretro/src/mixer_lock.cpp \
 	$(CORE_DIR)/libretro/src/util.cpp \
 	$(CORE_DIR)/libretro/src/virtual_keyboard/libretro-graph.cpp \
 	$(CORE_DIR)/libretro/src/virtual_keyboard/libretro-vkbd.cpp \

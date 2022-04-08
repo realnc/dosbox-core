@@ -3,6 +3,7 @@
 #include "keyboard.h"
 #include "libretro.h"
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <filesystem>
 #include <set>
@@ -14,11 +15,13 @@ extern retro_input_poll_t poll_cb;
 extern retro_input_state_t input_cb;
 extern retro_environment_t environ_cb;
 extern bool run_synced;
+extern std::atomic<retro_throttle_state> throttle_state;
 extern bool dosbox_exit;
 extern bool frontend_exit;
 extern retro_midi_interface retro_midi_interface;
 extern bool use_retro_midi;
 extern bool have_retro_midi;
+extern bool use_async_audio;
 extern bool disney_init;
 extern std::filesystem::path retro_save_directory;
 extern std::filesystem::path retro_system_directory;

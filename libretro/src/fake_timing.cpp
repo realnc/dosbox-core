@@ -1,27 +1,41 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "fake_timing.h"
-
 #include <chrono>
+#include <thread>
 
 static const auto zero_point = std::chrono::steady_clock::now();
 static std::chrono::milliseconds fake_delay_ticks{};
+static bool use_fake_timing = true;
 
 void fakeDelay(const std::uint32_t ms) noexcept
 {
-    fake_delay_ticks += std::chrono::milliseconds(ms);
+    if (use_fake_timing) {
+        fake_delay_ticks += std::chrono::milliseconds(ms);
+    } else {
+        std::this_thread::sleep_for(std::chrono::microseconds(ms));
+    }
 }
 
 auto fakeGetTicks() noexcept -> std::uint32_t
 {
     using namespace std::chrono;
 
-    const auto tick_now = steady_clock::now() - zero_point;
-    return duration_cast<milliseconds>(tick_now + fake_delay_ticks).count();
+    if (use_fake_timing) {
+        const auto tick_now = steady_clock::now() - zero_point;
+        return duration_cast<milliseconds>(tick_now + fake_delay_ticks).count();
+    }
+    return duration_cast<milliseconds>(steady_clock::now() - zero_point)
+        .count();
 }
 
 void fakeTimingReset() noexcept
 {
     fake_delay_ticks = {};
+}
+
+void enableFakeTiming(bool enable) noexcept
+{
+    use_fake_timing = enable;
 }
 
 /*

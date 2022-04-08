@@ -69,9 +69,16 @@
 #define TICK_MASK (TICK_NEXT -1)
 
 #ifdef __LIBRETRO__
-#define SDL_LockAudio()
-#define SDL_UnlockAudio()
-#define SDL_PauseAudio(a)
+#include "mixer_lock.h"
+#include <atomic>
+#include <fmt/format.h>
+static void pauseAudio(int pause)
+{
+	fmt::print("pause audio: {}\n", pause);
+}
+#define SDL_LockAudio lockMixer
+#define SDL_UnlockAudio unlockMixer
+#define SDL_PauseAudio pauseAudio
 #endif
 
 
@@ -86,7 +93,8 @@ static INLINE Bit16s MIXER_CLIP(Bits SAMP) {
 static struct {
 	Bit32s work[MIXER_BUFSIZE][2];
 	//Write/Read pointers for the buffer
-	Bitu pos,done;
+	Bitu pos;
+	std::atomic<Bitu> done;
 	Bitu needed, min_needed, max_needed;
 	//For every millisecond tick how many samples need to be generated
 	Bit32u tick_add;

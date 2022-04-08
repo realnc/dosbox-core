@@ -30,6 +30,7 @@
 #endif
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cmath>
 #include <cstdarg>
 #include <cstdlib>
@@ -102,6 +103,7 @@ static bool fast_forward_status = false;
 
 /* audio variables */
 struct retro_midi_interface retro_midi_interface;
+bool use_async_audio = false;
 bool use_retro_midi = false;
 bool have_retro_midi = false;
 #ifdef HAVE_ALSA
@@ -702,6 +704,9 @@ static void check_variables()
     }
 
     use_frame_duping = core_options[CORE_OPT_FRAME_DUPING].toBool();
+    if (core_options[CORE_OPT_ASYNC_AUDIO].toBool() != use_async_audio) {
+        // TODO: OSD restart message
+    }
     use_spinlock = core_options[CORE_OPT_THREAD_SYNC].toString() == "spin";
     useSpinlockThreadSync(use_spinlock);
 
@@ -1000,12 +1005,17 @@ void retro_get_system_av_info(retro_system_av_info* const info)
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
 }
 
+static std::atomic_int64_t target_frame_time = 0;
+static void RETRO_CALLCONV frameTimeCb(const retro_usec_t usec)
+{
+    target_frame_time = usec;
+    //fmt::print("{}\n", target_frame_time);
+}
+
 void retro_init()
 {
     use_libretro_log_cb();
     retro::setMessageEnvCb(environ_cb);
-
-    init_audio();
 
     gfx::pixel_format = RETRO_PIXEL_FORMAT_XRGB8888;
     retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
@@ -1122,6 +1132,11 @@ void retro_init()
 
     libretro_supports_bitmasks = environ_cb(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, nullptr);
     retro::logDebug("Frontend input bitmask support: {}", libretro_supports_bitmasks);
+
+    init_audio();
+
+    retro_frame_time_callback frame_time_cb_handle{frameTimeCb, 0};
+    environ_cb(RETRO_ENVIRONMENT_SET_FRAME_TIME_CALLBACK, &frame_time_cb_handle);
 }
 
 void retro_deinit()
@@ -1195,6 +1210,8 @@ auto retro_load_game_special(
     return false;
 }
 
+std::atomic<retro_throttle_state> throttle_state;
+
 void retro_run()
 {
     if (dosbox_exit) {
@@ -1219,6 +1236,10 @@ void retro_run()
         }
     }
 
+    retro_throttle_state new_throttle_state;
+    environ_cb(RETRO_ENVIRONMENT_GET_THROTTLE_STATE, &new_throttle_state);
+    throttle_state.store(new_throttle_state, std::memory_order_relaxed);
+
     if (retro::core_options.changed()) {
         const auto current_aspect_ratio = gfx::aspect_ratio;
         check_variables();
@@ -1240,12 +1261,36 @@ void retro_run()
     /* Read input */
     MAPPER_Run(false);
 
+    fakeTimingReset();
+    if (use_async_audio) {
+        if (target_frame_time == 0) {
+            enableFakeTiming(true);
+        } else {
+            switch (new_throttle_state.mode) {
+            case RETRO_THROTTLE_NONE:
+            case RETRO_THROTTLE_VSYNC:
+            case RETRO_THROTTLE_UNBLOCKED:
+                enableFakeTiming(false);
+                break;
+            default:
+                enableFakeTiming(true);
+            }
+        }
+    }
+
     /* Run emulator */
     auto current_gfx_fps = render.src.fps;
-    fakeTimingReset();
-    while (switchThread() == ThreadSwitchReason::VideoModeChange) {
-        update_gfx_mode(run_synced && render.src.fps != current_gfx_fps);
-        current_gfx_fps = render.src.fps;
+    for (;;)
+    {
+        const ThreadSwitchReason reason = switchThread();
+        if (reason == ThreadSwitchReason::PollInput) {
+            MAPPER_Run(false);
+        } else if (reason == ThreadSwitchReason::VideoModeChange) {
+            update_gfx_mode(run_synced && render.src.fps != current_gfx_fps);
+            current_gfx_fps = render.src.fps;
+        } else {
+            break;
+        }
     }
 
     /* Virtual keyboard */
@@ -1262,7 +1307,9 @@ void retro_run()
     }
     gfx::frontbuffer_uploaded = true;
 
-    upload_audio(queue_audio());
+    if (!use_async_audio) {
+        upload_audio(queue_audio());
+    }
 
     if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
         retro_midi_interface.flush();

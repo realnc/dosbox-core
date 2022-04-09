@@ -375,7 +375,7 @@ static void update_gfx_mode(const bool change_fps)
 
     if (!cb_error) {
         retro::logInfo(
-            "Resolution changed {}x{} @ {:.3}Hz AR: {:.5} => {}x{} @ {:.3}Hz AR: {:.5}.",
+            "Resolution changed {}x{} @ {:.9}Hz AR: {:.5} => {}x{} @ {:.9}Hz AR: {:.5}.",
             currentWidth, currentHeight, old_fps, current_aspect_ratio, RDOSGFXwidth, RDOSGFXheight,
             currentFPS, dosbox_aspect_ratio);
     }

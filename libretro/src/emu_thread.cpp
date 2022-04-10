@@ -113,13 +113,17 @@ static void switchToMainThread()
     }
 }
 
-void switchThread()
+auto switchThread(const ThreadSwitchReason reason) -> ThreadSwitchReason
 {
+    static ThreadSwitchReason switch_reason = ThreadSwitchReason::None;
+
+    switch_reason = reason;
     if (std::this_thread::get_id() == main_thread_id) {
         switchToEmuThread();
     } else {
         switchToMainThread();
     }
+    return switch_reason;
 }
 
 void useSpinlockThreadSync(const bool use_spinlock_)

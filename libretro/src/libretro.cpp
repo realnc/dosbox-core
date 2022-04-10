@@ -1261,15 +1261,12 @@ auto retro_load_game_special(
     return false;
 }
 
-static void upload_audio(const int frames) noexcept
+static void upload_audio(const int16_t* src, int len_frames) noexcept
 {
-    int remaining_frames = frames;
-    const auto* buf_pos = retro_audio_buffer.data();
-
-    while (remaining_frames > 0) {
-        const size_t uploaded_frames = audio_batch_cb(buf_pos, remaining_frames);
-        buf_pos += uploaded_frames * 2;
-        remaining_frames -= uploaded_frames;
+    while (len_frames > 0) {
+        const auto uploaded_frames = audio_batch_cb(src, len_frames);
+        src += uploaded_frames * 2;
+        len_frames -= uploaded_frames;
     }
 }
 
@@ -1336,7 +1333,7 @@ void retro_run()
     if (run_synced) {
         retro_audio_buffer_frames = queue_audio();
     }
-    upload_audio(retro_audio_buffer_frames);
+    upload_audio(retro_audio_buffer.data(), retro_audio_buffer_frames);
     retro_audio_buffer_frames = 0;
 
     if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {

@@ -43,7 +43,7 @@ SOURCES_C += \
     $(CORE_DIR)/libretro/deps/embedded_sdl/SDL_net/SDLnetselect.c
 
 SOURCES_CXX +=\
-	$(CORE_DIR)/libretro/nonlibc/snprintf.cpp
+    $(CORE_DIR)/libretro/src/nonlibc/snprintf.cpp
 
 COMMONFLAGS += -D__LIBRETRO__ -DFRONTEND_SUPPORTS_RGB565 $(INCFLAGS) -DC_HAVE_MPROTECT="1" -DC_IPX
 

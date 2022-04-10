@@ -56,6 +56,7 @@ auto GFX_SetSize(
             buf.resize(fb_size);
         }
     }
+    switchThread(ThreadSwitchReason::VideoModeChange);
     return GFX_GetBestMode(0);
 }
 

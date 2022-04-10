@@ -1239,12 +1239,16 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     }
 
     emu_thread = std::thread(start_dosbox, load_path.u8string());
-    while (render.src.fps == 0 || RDOSGFXwidth == 0 || RDOSGFXheight == 0) {
-        switchThread();
-    }
+    // Run dosbox until it sets its initial video mode.
+    while (switchThread() != ThreadSwitchReason::VideoModeChange)
+        ;
+    currentWidth = RDOSGFXwidth;
+    currentHeight = RDOSGFXheight;
+    current_aspect_ratio = dosbox_aspect_ratio;
     if (run_synced) {
         currentFPS = render.src.fps;
     }
+    update_mouse_speed_fix();
 
     if (!disk_load_image.empty()) {
         disk_control::mount(std::move(disk_load_image));
@@ -1270,6 +1274,18 @@ static void upload_audio(const int16_t* src, int len_frames) noexcept
     }
 }
 
+static void checkVideoModeChange() noexcept
+{
+    if (run_synced && currentFPS != render.src.fps && render.src.fps != 0) {
+        update_gfx_mode(true);
+    } else if (
+        dosbox_aspect_ratio != current_aspect_ratio || RDOSGFXwidth != currentWidth
+        || RDOSGFXheight != currentHeight)
+    {
+        update_gfx_mode(false);
+    }
+}
+
 void retro_run()
 {
     if (dosbox_exit) {
@@ -1284,16 +1300,6 @@ void retro_run()
     bool fast_forward = false;
     environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward);
     DOSBOX_UnlockSpeed(fast_forward);
-
-    /* Dynamic resolution switching */
-    if (run_synced && currentFPS != render.src.fps && render.src.fps != 0) {
-        update_gfx_mode(true);
-    } else if (
-        dosbox_aspect_ratio != current_aspect_ratio || RDOSGFXwidth != currentWidth
-        || RDOSGFXheight != currentHeight)
-    {
-        update_gfx_mode(false);
-    }
 
     if (retro::core_options.changed()) {
         check_variables();
@@ -1314,7 +1320,10 @@ void retro_run()
 
     /* Run emulator */
     fakeTimingReset();
-    switchThread();
+    while (switchThread() == ThreadSwitchReason::VideoModeChange) {
+        checkVideoModeChange();
+        switchThread();
+    }
 
     /* Virtual keyboard */
     if (retro_vkbd)

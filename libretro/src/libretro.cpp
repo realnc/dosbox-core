@@ -309,7 +309,7 @@ static auto queue_audio() -> Bitu
         const auto samples = available_audio_frames * 2;
         const auto bytes = available_audio_frames * 4;
 
-        if (samples > retro_audio_buffer.size()) {
+        if (samples > retro_audio_buffer.capacity()) {
             retro_audio_buffer.reserve(samples);
             retro::logDebug("Output audio buffer resized to {} samples.\n", samples);
         }

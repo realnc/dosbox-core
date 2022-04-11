@@ -235,7 +235,7 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
         } else if (o_error == 2) {
             retro::logError("Overlay can't be in the same underlying file system.");
         } else {
-            retro::logError("Aomething went wrong while mounting overlay. error code: {}", o_error);
+            retro::logError("Something went wrong while mounting overlay. Error code: {}", o_error);
         }
         return;
     }

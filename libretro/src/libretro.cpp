@@ -1322,7 +1322,6 @@ void retro_run()
     fakeTimingReset();
     while (switchThread() == ThreadSwitchReason::VideoModeChange) {
         checkVideoModeChange();
-        switchThread();
     }
 
     /* Virtual keyboard */

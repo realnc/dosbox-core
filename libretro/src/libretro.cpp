@@ -1186,7 +1186,11 @@ void retro_deinit()
         if (!dosbox_exit) {
             switchThread();
         }
-        emu_thread.join();
+        try {
+            emu_thread.join();
+        }
+        catch (...) {
+        }
     }
 
     libretro_graph_free();
@@ -1259,7 +1263,11 @@ void retro_run()
     if (dosbox_exit) {
         if (emu_thread.joinable()) {
             switchThread();
-            emu_thread.join();
+            try {
+                emu_thread.join();
+            }
+            catch (...) {
+            }
         }
         environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, nullptr);
         return;

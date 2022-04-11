@@ -163,6 +163,6 @@ auto update_dosbox_variable(
 long retro_ticks();
 void retro_key_up(int keycode);
 void retro_key_down(int keycode);
-void update_mouse_speed_fix();
+void update_mouse_speed_fix(int gfx_height);
 void CPU_CycleIncrease(bool pressed);
 void CPU_CycleDecrease(bool pressed);

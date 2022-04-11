@@ -53,6 +53,8 @@ bool startup_state_capslock;
 bool startup_state_numlock;
 #endif
 
+static constexpr float internal_sync_fps = 60.0f;
+
 bool autofire;
 static bool dosbox_initialiazed = false;
 
@@ -101,12 +103,6 @@ static std::filesystem::path game_path;
 static std::filesystem::path config_path;
 bool dosbox_exit;
 bool frontend_exit;
-
-/* video variables */
-static unsigned currentWidth, currentHeight;
-static constexpr float default_fps = 60.0f;
-static float currentFPS = default_fps;
-static float current_aspect_ratio = 0;
 
 /* audio variables */
 static std::vector<int16_t> retro_audio_buffer;
@@ -325,18 +321,18 @@ static void leave_thread(const Bitu /*val*/)
 
     if (!run_synced) {
         /* Schedule the next frontend interrupt */
-        PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+        PIC_AddEvent(leave_thread, 1000.0f / internal_sync_fps);
     }
 }
 
-void update_mouse_speed_fix()
+void update_mouse_speed_fix(const int gfx_height)
 {
     if (!retro::core_options[CORE_OPT_MOUSE_SPEED_HACK].toBool()) {
         mouse_speed_hack_factor = 1.0f;
         return;
     }
 
-    switch (currentHeight) {
+    switch (gfx_height) {
     case 240:
     case 480:
     case 720:
@@ -351,21 +347,16 @@ void update_mouse_speed_fix()
 
 static void update_gfx_mode(const bool change_fps)
 {
-    const float old_fps = currentFPS;
     retro_system_av_info new_av_info;
     bool cb_error = false;
 
     retro_get_system_av_info(&new_av_info);
 
     if (change_fps) {
-        const float new_fps = run_synced ? render.src.fps : default_fps;
-        new_av_info.timing.fps = new_fps;
-        new_av_info.timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
         cb_error = !environ_cb(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &new_av_info);
         if (cb_error) {
             retro::logError("SET_SYSTEM_AV_INFO failed.");
         }
-        currentFPS = new_fps;
     } else {
         cb_error = !environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &new_av_info);
         if (cb_error) {
@@ -375,16 +366,11 @@ static void update_gfx_mode(const bool change_fps)
 
     if (!cb_error) {
         retro::logInfo(
-            "Resolution changed {}x{} @ {:.9}Hz AR: {:.5} => {}x{} @ {:.9}Hz AR: {:.5}.",
-            currentWidth, currentHeight, old_fps, current_aspect_ratio, RDOSGFXwidth, RDOSGFXheight,
-            currentFPS, dosbox_aspect_ratio);
+            "Resolution changed to {}x{} @ {:.9}Hz AR: {:.5}.", RDOSGFXwidth, RDOSGFXheight,
+            run_synced ? render.src.fps : internal_sync_fps, dosbox_aspect_ratio);
     }
 
-    currentWidth = RDOSGFXwidth;
-    currentHeight = RDOSGFXheight;
-    current_aspect_ratio = dosbox_aspect_ratio;
-
-    update_mouse_speed_fix();
+    update_mouse_speed_fix(new_av_info.geometry.base_height);
 }
 
 static RETRO_CALLCONV auto update_core_option_visibility() -> bool
@@ -764,7 +750,7 @@ static void check_variables()
 
         if (dosbox_initialiazed && run_synced != old_timing) {
             if (!run_synced) {
-                PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+                PIC_AddEvent(leave_thread, 1000.0f / internal_sync_fps);
             }
             update_gfx_mode(true);
         }
@@ -968,7 +954,7 @@ static void start_dosbox(const std::string cmd_line)
 
     if (!run_synced) {
         /* When not synced, schedule the first frontend interrupt */
-        PIC_AddEvent(leave_thread, 1000.0f / currentFPS);
+        PIC_AddEvent(leave_thread, 1000.0f / internal_sync_fps);
     }
 
     try {
@@ -1065,7 +1051,7 @@ void retro_get_system_av_info(retro_system_av_info* const info)
     info->geometry.max_width = GFX_MAX_WIDTH;
     info->geometry.max_height = GFX_MAX_HEIGHT;
     info->geometry.aspect_ratio = dosbox_aspect_ratio;
-    info->timing.fps = currentFPS;
+    info->timing.fps = run_synced ? render.src.fps : internal_sync_fps;
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
 }
 
@@ -1242,13 +1228,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     // Run dosbox until it sets its initial video mode.
     while (switchThread() != ThreadSwitchReason::VideoModeChange)
         ;
-    currentWidth = RDOSGFXwidth;
-    currentHeight = RDOSGFXheight;
-    current_aspect_ratio = dosbox_aspect_ratio;
-    if (run_synced) {
-        currentFPS = render.src.fps;
-    }
-    update_mouse_speed_fix();
+    update_mouse_speed_fix(RDOSGFXheight);
 
     if (!disk_load_image.empty()) {
         disk_control::mount(std::move(disk_load_image));
@@ -1274,18 +1254,6 @@ static void upload_audio(const int16_t* src, int len_frames) noexcept
     }
 }
 
-static void checkVideoModeChange() noexcept
-{
-    if (run_synced && currentFPS != render.src.fps && render.src.fps != 0) {
-        update_gfx_mode(true);
-    } else if (
-        dosbox_aspect_ratio != current_aspect_ratio || RDOSGFXwidth != currentWidth
-        || RDOSGFXheight != currentHeight)
-    {
-        update_gfx_mode(false);
-    }
-}
-
 void retro_run()
 {
     if (dosbox_exit) {
@@ -1302,7 +1270,11 @@ void retro_run()
     DOSBOX_UnlockSpeed(fast_forward);
 
     if (retro::core_options.changed()) {
+        const auto current_aspect_ratio = dosbox_aspect_ratio;
         check_variables();
+        if (current_aspect_ratio != dosbox_aspect_ratio) {
+            update_gfx_mode(false);
+        }
         update_core_option_visibility();
         MAPPER_Init();
     }
@@ -1319,9 +1291,11 @@ void retro_run()
     MAPPER_Run(false);
 
     /* Run emulator */
+    auto current_gfx_fps = render.src.fps;
     fakeTimingReset();
     while (switchThread() == ThreadSwitchReason::VideoModeChange) {
-        checkVideoModeChange();
+        update_gfx_mode(run_synced && render.src.fps != current_gfx_fps);
+        current_gfx_fps = render.src.fps;
     }
 
     /* Virtual keyboard */

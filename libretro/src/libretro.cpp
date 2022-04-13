@@ -106,7 +106,6 @@ bool frontend_exit;
 
 /* audio variables */
 static std::vector<int16_t> retro_audio_buffer;
-static uint32_t retro_audio_buffer_frames = 0;
 struct retro_midi_interface retro_midi_interface;
 bool use_retro_midi = false;
 bool have_retro_midi = false;
@@ -316,7 +315,6 @@ static auto queue_audio() -> Bitu
 
 static void leave_thread(const Bitu /*val*/)
 {
-    retro_audio_buffer_frames = queue_audio();
     switchThread();
 
     if (!run_synced) {
@@ -1320,11 +1318,7 @@ void retro_run()
     }
     dosbox_frontbuffer_uploaded = true;
 
-    if (run_synced) {
-        retro_audio_buffer_frames = queue_audio();
-    }
-    upload_audio(retro_audio_buffer.data(), retro_audio_buffer_frames);
-    retro_audio_buffer_frames = 0;
+    upload_audio(retro_audio_buffer.data(), queue_audio());
 
     if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
         retro_midi_interface.flush();

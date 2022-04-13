@@ -1228,7 +1228,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
 
     emu_thread = std::thread(start_dosbox, load_path.u8string());
     // Run dosbox until it sets its initial video mode.
-    while (switchThread() != ThreadSwitchReason::VideoModeChange)
+    while (switchThread() != ThreadSwitchReason::VideoModeChange && !dosbox_exit)
         ;
     update_mouse_speed_fix(RDOSGFXheight);
 

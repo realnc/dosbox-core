@@ -98,7 +98,6 @@ SOURCES_CXX += \
 	$(CORE_DIR)/src/hardware/memory.cpp \
 	$(CORE_DIR)/src/hardware/mixer.cpp \
 	$(CORE_DIR)/src/hardware/mpu401.cpp \
-	$(CORE_DIR)/src/hardware/nukedopl.cpp \
 	$(CORE_DIR)/src/hardware/pci_bus.cpp \
 	$(CORE_DIR)/src/hardware/pcspeaker.cpp \
 	$(CORE_DIR)/src/hardware/pic.cpp \
@@ -151,6 +150,9 @@ SOURCES_CXX += \
 	$(CORE_DIR)/src/shell/shell_batch.cpp \
 	$(CORE_DIR)/src/shell/shell_cmds.cpp \
 	$(CORE_DIR)/src/shell/shell_misc.cpp
+
+SOURCES_C += \
+	$(CORE_DIR)/src/hardware/nukedopl.c
 
 ifeq ($(WITH_VOODOO), 1)
 	SOURCES_CXX += \

@@ -5,6 +5,7 @@
 #include "libretro-graph.h"
 #include "libretro-vkbd.h"
 #include "libretro_dosbox.h"
+#include "libretro_gfx.h"
 #include "video.h"
 
 unsigned int opt_vkbd_theme;
@@ -278,9 +279,9 @@ void print_vkbd(void)
    libretro_graph_alpha_t ALPHA      = opt_vkbd_alpha;
    libretro_graph_alpha_t BKG_ALPHA  = ALPHA;
    
-   unsigned retrow                   = RDOSGFXwidth;
-   unsigned retroh                   = RDOSGFXheight;
-   unsigned pix_bytes                = RDOSGFXpitch/RDOSGFXwidth;
+   unsigned retrow                   = gfx::width;
+   unsigned retroh                   = gfx::height;
+   unsigned pix_bytes                = gfx::pitch/gfx::width;
    
    bool shifted                      = false;
    bool text_outline                 = false;
@@ -585,8 +586,8 @@ void input_vkbd(void)
 {
    long now = 0;
    unsigned i = 0;
-   unsigned retrow = RDOSGFXwidth;
-   unsigned retroh = RDOSGFXheight;
+   unsigned retrow = gfx::width;
+   unsigned retroh = gfx::height;
 
    input_vkbd_sticky();
 

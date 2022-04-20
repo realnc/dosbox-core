@@ -7,27 +7,13 @@
 #include <filesystem>
 #include <set>
 #include <string>
-#include <vector>
 
 constexpr int RETRO_INPUT_PORTS_MAX = 16;
-constexpr int GFX_MAX_WIDTH = 1280;
-constexpr int GFX_MAX_HEIGHT = 1024;
 
 extern retro_input_poll_t poll_cb;
 extern retro_input_state_t input_cb;
 extern retro_environment_t environ_cb;
 extern bool run_synced;
-extern float dosbox_aspect_ratio;
-extern std::array<std::vector<Bit8u>, 2> dosbox_framebuffers;
-extern std::vector<Bit8u>* dosbox_frontbuffer;
-extern bool dosbox_frontbuffer_uploaded;
-extern Bitu RDOSGFXwidth;
-extern Bitu RDOSGFXheight;
-extern Bitu RDOSGFXpitch;
-extern unsigned RDOSGFXcolorMode;
-#ifdef WITH_PINHACK
-extern bool request_VGA_SetupDrawing;
-#endif
 extern bool dosbox_exit;
 extern bool frontend_exit;
 extern retro_midi_interface retro_midi_interface;

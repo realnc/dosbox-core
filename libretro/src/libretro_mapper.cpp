@@ -7,6 +7,7 @@
 #include "libretro-vkbd.h"
 #include "libretro_core_options.h"
 #include "libretro_dosbox.h"
+#include "libretro_gfx.h"
 #include "log.h"
 #include "mapper.h"
 #include "mouse.h"
@@ -472,7 +473,7 @@ static RETRO_CALLCONV void keyboardEventCb(
 #ifdef WITH_PINHACK
     if (keycode == RETROK_INSERT && down && !keyboard_state[KBD_insert]) {
         pinhack.active = !pinhack.active;
-        request_VGA_SetupDrawing = true;
+        gfx::request_VGA_SetupDrawing = true;
     }
 #endif
 

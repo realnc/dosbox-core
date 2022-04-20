@@ -13,6 +13,7 @@
 #include "libretro-vkbd.h"
 #include "libretro_core_options.h"
 #include "libretro_dosbox.h"
+#include "libretro_gfx.h"
 #include "libretro_message.h"
 #include "log.h"
 #include "mapper.h"
@@ -364,8 +365,8 @@ static void update_gfx_mode(const bool change_fps)
 
     if (!cb_error) {
         retro::logInfo(
-            "Resolution changed to {}x{} @ {:.9}Hz AR: {:.5}.", RDOSGFXwidth, RDOSGFXheight,
-            run_synced ? render.src.fps : internal_sync_fps, dosbox_aspect_ratio);
+            "Resolution changed to {}x{} @ {:.9}Hz AR: {:.5}.", gfx::width, gfx::height,
+            run_synced ? render.src.fps : internal_sync_fps, gfx::aspect_ratio);
     }
 
     update_mouse_speed_fix(new_av_info.geometry.base_height);
@@ -582,7 +583,7 @@ static void check_pinhack_variables()
     }
 
     if (updated) {
-        request_VGA_SetupDrawing = true;
+        gfx::request_VGA_SetupDrawing = true;
     }
 #endif
 }
@@ -1044,11 +1045,11 @@ void retro_get_system_info(retro_system_info* const info)
 
 void retro_get_system_av_info(retro_system_av_info* const info)
 {
-    info->geometry.base_width = RDOSGFXwidth;
-    info->geometry.base_height = RDOSGFXheight;
-    info->geometry.max_width = GFX_MAX_WIDTH;
-    info->geometry.max_height = GFX_MAX_HEIGHT;
-    info->geometry.aspect_ratio = dosbox_aspect_ratio;
+    info->geometry.base_width = gfx::width;
+    info->geometry.base_height = gfx::height;
+    info->geometry.max_width = gfx::max_width;
+    info->geometry.max_height = gfx::max_height;
+    info->geometry.aspect_ratio = gfx::aspect_ratio;
     info->timing.fps = run_synced ? render.src.fps : internal_sync_fps;
     info->timing.sample_rate = (double)MIXER_RETRO_GetFrequency();
 }
@@ -1060,9 +1061,9 @@ void retro_init()
 
     retro_audio_buffer.reserve(4096);
 
-    RDOSGFXcolorMode = RETRO_PIXEL_FORMAT_XRGB8888;
+    gfx::pixel_format = RETRO_PIXEL_FORMAT_XRGB8888;
     retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
-    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &RDOSGFXcolorMode)) {
+    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &gfx::pixel_format)) {
         retro::logError("RETRO_ENVIRONMENT_SET_PIXEL_FORMAT failed.");
     }
 
@@ -1230,7 +1231,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     // Run dosbox until it sets its initial video mode.
     while (switchThread() != ThreadSwitchReason::VideoModeChange && !dosbox_exit)
         ;
-    update_mouse_speed_fix(RDOSGFXheight);
+    update_mouse_speed_fix(gfx::height);
 
     if (!disk_load_image.empty()) {
         disk_control::mount(std::move(disk_load_image));
@@ -1276,9 +1277,9 @@ void retro_run()
     DOSBOX_UnlockSpeed(fast_forward);
 
     if (retro::core_options.changed()) {
-        const auto current_aspect_ratio = dosbox_aspect_ratio;
+        const auto current_aspect_ratio = gfx::aspect_ratio;
         check_variables();
-        if (current_aspect_ratio != dosbox_aspect_ratio) {
+        if (current_aspect_ratio != gfx::aspect_ratio) {
             update_gfx_mode(false);
         }
         update_core_option_visibility();
@@ -1309,14 +1310,14 @@ void retro_run()
         print_vkbd();
 
     // If we have a new frame, submit it.
-    if (dosbox_frontbuffer_uploaded && use_frame_duping) {
-        video_cb(nullptr, RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+    if (gfx::frontbuffer_uploaded && use_frame_duping) {
+        video_cb(nullptr, gfx::width, gfx::height, gfx::pitch);
     } else if (run_synced) {
-        video_cb(dosbox_framebuffers[0].data(), RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+        video_cb(gfx::framebuffers[0].data(), gfx::width, gfx::height, gfx::pitch);
     } else {
-        video_cb(dosbox_frontbuffer->data(), RDOSGFXwidth, RDOSGFXheight, RDOSGFXpitch);
+        video_cb(gfx::frontbuffer->data(), gfx::width, gfx::height, gfx::pitch);
     }
-    dosbox_frontbuffer_uploaded = true;
+    gfx::frontbuffer_uploaded = true;
 
     upload_audio(retro_audio_buffer.data(), queue_audio());
 

@@ -4,6 +4,7 @@
 #include "control.h"
 #include "deps/textflowcpp/TextFlow.hpp"
 #include "libretro_dosbox.h"
+#include "libretro_gfx.h"
 #include "log.h"
 #include "setup.h"
 #include "util.h"
@@ -25,7 +26,7 @@ void init_libretro_conf_properties()
             const auto mult = section->Get_int(CORE_OPT_MOUSE_SPEED_MULT);
             mouse_speed_factor_x = section->Get_int(CORE_OPT_MOUSE_SPEED_X) * mult / 100.0f;
             mouse_speed_factor_y = section->Get_int(CORE_OPT_MOUSE_SPEED_Y) * mult / 100.0f;
-            update_mouse_speed_fix(RDOSGFXheight);
+            update_mouse_speed_fix(gfx::height);
         },
         true);
     auto* int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_X, Property::Changeable::Always, 100);

@@ -6,6 +6,7 @@
 #include <math.h>
 
 #include "libretro_dosbox.h"
+#include "libretro_gfx.h"
 #include "libretro-graph.h"
 #include "libretro-font.i"
 
@@ -55,10 +56,10 @@ static int linesurf32_h     = 0;
 
 void draw_fbox(int x, int y, int dx, int dy, uint32_t color, libretro_graph_alpha_t alpha)
 {
-   if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_fbox_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color, alpha);
+   if (gfx::pitch/gfx::width == 4)
+      draw_fbox_bmp32((uint32_t *)gfx::frontbuffer->data(), x, y, dx, dy, color, alpha);
    else
-      draw_fbox_bmp16((uint16_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color, alpha);
+      draw_fbox_bmp16((uint16_t *)gfx::frontbuffer->data(), x, y, dx, dy, color, alpha);
 }
 
 void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint16_t color, libretro_graph_alpha_t alpha)
@@ -74,7 +75,7 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
       case GRAPH_ALPHA_25:
          for (j=y; j<y+dy; j++)
          {
-            uint16_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint16_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                BLEND_ALPHA25(color, *buf_ptr, buf_ptr);
@@ -85,7 +86,7 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
       case GRAPH_ALPHA_50:
          for (j=y; j<y+dy; j++)
          {
-            uint16_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint16_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                BLEND_ALPHA50(color, *buf_ptr, buf_ptr);
@@ -96,7 +97,7 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
       case GRAPH_ALPHA_75:
          for (j=y; j<y+dy; j++)
          {
-            uint16_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint16_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                BLEND_ALPHA75(color, *buf_ptr, buf_ptr);
@@ -108,7 +109,7 @@ void draw_fbox_bmp16(unsigned short *buffer, int x, int y, int dx, int dy, uint1
       default:
          for (j=y; j<y+dy; j++)
          {
-            uint16_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint16_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                *buf_ptr = color;
@@ -134,7 +135,7 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
       case GRAPH_ALPHA_25:
          for (j=y; j<y+dy; j++)
          {
-            uint32_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint32_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                BLEND32_ALPHA25(color, *buf_ptr, buf_ptr);
@@ -145,7 +146,7 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
       case GRAPH_ALPHA_50:
          for (j=y; j<y+dy; j++)
          {
-            uint32_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint32_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                BLEND32_ALPHA50(color, *buf_ptr, buf_ptr);
@@ -156,7 +157,7 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
       case GRAPH_ALPHA_75:
          for (j=y; j<y+dy; j++)
          {
-            uint32_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint32_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                BLEND32_ALPHA75(color, *buf_ptr, buf_ptr);
@@ -168,7 +169,7 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
       default:
          for (j=y; j<y+dy; j++)
          {
-            uint32_t *buf_ptr = buffer + (j * RDOSGFXwidth) + x;
+            uint32_t *buf_ptr = buffer + (j * gfx::width) + x;
             for (i=x; i<x+dx; i++)
             {
                *buf_ptr = color;
@@ -182,10 +183,10 @@ void draw_fbox_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t co
 
 void draw_box(int x, int y, int dx, int dy, uint32_t color)
 {
-   if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_box_bmp32((uint32_t *)dosbox_frontbuffer, x, y, dx, dy, color);
+   if (gfx::pitch/gfx::width == 4)
+      draw_box_bmp32((uint32_t *)gfx::frontbuffer, x, y, dx, dy, color);
    else
-      draw_box_bmp16((uint16_t *)dosbox_frontbuffer, x, y, dx, dy, color);
+      draw_box_bmp16((uint16_t *)gfx::frontbuffer, x, y, dx, dy, color);
 }
 
 void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color)
@@ -194,17 +195,17 @@ void draw_box_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t col
 
    for (i=x; i<x+dx; i++)
    {
-      idx = i+y*RDOSGFXwidth;
+      idx = i+y*gfx::width;
       buffer[idx] = color;
-      idx = i+(y+dy)*RDOSGFXwidth;
+      idx = i+(y+dy)*gfx::width;
       buffer[idx] = color;
    }
 
    for (j=y; j<y+dy; j++)
    {
-      idx = x+j*RDOSGFXwidth;
+      idx = x+j*gfx::width;
       buffer[idx] = color;
-      idx = (x+dx)+j*RDOSGFXwidth;
+      idx = (x+dx)+j*gfx::width;
       buffer[idx] = color;
    }
 }
@@ -215,17 +216,17 @@ void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t col
 
    for (i=x; i<x+dx; i++)
    {
-      idx = i+y*RDOSGFXwidth;
+      idx = i+y*gfx::width;
       buffer[idx] = color;
-      idx = i+(y+dy)*RDOSGFXwidth;
+      idx = i+(y+dy)*gfx::width;
       buffer[idx] = color;
    }
 
    for (j=y; j<y+dy; j++)
    {
-      idx = x+j*RDOSGFXwidth;
+      idx = x+j*gfx::width;
       buffer[idx] = color;
-      idx = (x+dx)+j*RDOSGFXwidth;
+      idx = (x+dx)+j*gfx::width;
       buffer[idx] = color;
    }
 }
@@ -234,10 +235,10 @@ void draw_box_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t col
 
 void draw_hline(int x, int y, int dx, int dy, uint32_t color)
 {
-   if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_hline_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
+   if (gfx::pitch/gfx::width == 4)
+      draw_hline_bmp32((uint32_t *)gfx::frontbuffer->data(), x, y, dx, dy, color);
    else
-      draw_hline_bmp16((uint16_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
+      draw_hline_bmp16((uint16_t *)gfx::frontbuffer->data(), x, y, dx, dy, color);
 }
 
 void draw_hline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color)
@@ -248,7 +249,7 @@ void draw_hline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t c
 
    for (i=x; i<x+dx; i++)
    {
-      idx = i+y*RDOSGFXwidth;
+      idx = i+y*gfx::width;
       buffer[idx] = color;
    }
 }
@@ -261,17 +262,17 @@ void draw_hline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t c
 
    for (i=x; i<x+dx; i++)
    {
-      idx = i+y*RDOSGFXwidth;
+      idx = i+y*gfx::width;
       buffer[idx] = color;
    }
 }
 
 void draw_vline(int x, int y, int dx, int dy, uint32_t color)
 {
-   if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_vline_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
+   if (gfx::pitch/gfx::width == 4)
+      draw_vline_bmp32((uint32_t *)gfx::frontbuffer->data(), x, y, dx, dy, color);
    else
-      draw_vline_bmp16((uint16_t *)dosbox_frontbuffer->data(), x, y, dx, dy, color);
+      draw_vline_bmp16((uint16_t *)gfx::frontbuffer->data(), x, y, dx, dy, color);
 }
 
 void draw_vline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t color)
@@ -282,7 +283,7 @@ void draw_vline_bmp16(uint16_t *buffer, int x, int y, int dx, int dy, uint16_t c
 
    for (j=y; j<y+dy; j++)
    {
-      idx = x+j*RDOSGFXwidth;
+      idx = x+j*gfx::width;
       buffer[idx] = color;
    }
 }
@@ -295,7 +296,7 @@ void draw_vline_bmp32(uint32_t *buffer, int x, int y, int dx, int dy, uint32_t c
 
    for (j=y; j<y+dy; j++)
    {
-      idx = x+j*RDOSGFXwidth;
+      idx = x+j*gfx::width;
       buffer[idx] = color;
    }
 }
@@ -415,7 +416,7 @@ static void draw_char_2pass16(uint16_t *surf,
       case GRAPH_BG_ALL:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
                if (*yptr == bg)
@@ -437,7 +438,7 @@ static void draw_char_2pass16(uint16_t *surf,
       case GRAPH_BG_SHADOW:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
                if (*yptr == bg)
@@ -460,7 +461,7 @@ static void draw_char_2pass16(uint16_t *surf,
       case GRAPH_BG_OUTLINE:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
                if (*yptr == bg)
@@ -494,7 +495,7 @@ static void draw_char_2pass16(uint16_t *surf,
       default:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
                if (*yptr != 0)
@@ -535,7 +536,7 @@ static void draw_char_2pass32(uint32_t *surf,
       case GRAPH_BG_ALL:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
                if (*yptr == bg)
@@ -557,7 +558,7 @@ static void draw_char_2pass32(uint32_t *surf,
       case GRAPH_BG_SHADOW:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
                if (*yptr == bg)
@@ -580,7 +581,7 @@ static void draw_char_2pass32(uint32_t *surf,
       case GRAPH_BG_OUTLINE:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++, pcount++)
             {
                if (*yptr == bg)
@@ -614,7 +615,7 @@ static void draw_char_2pass32(uint32_t *surf,
       default:
          for (yrepeat = y - yscale; yrepeat < surfh + y - yscale; yrepeat++)
          {
-            surf_ptr = surf + (yrepeat * RDOSGFXwidth) + x - xscale;
+            surf_ptr = surf + (yrepeat * gfx::width) + x - xscale;
             for (xrepeat = x; xrepeat < surfw + x; xrepeat++, yptr++)
             {
                if (*yptr != 0)
@@ -651,7 +652,7 @@ void draw_string_bmp16(uint16_t *surf, uint16_t x, uint16_t y,
    surfh += yscale;
 
    /* No horizontal wrap */
-   if ((surfw + x - xscale) > RDOSGFXwidth)
+   if ((surfw + x - xscale) > gfx::width)
       return;
 
    /* Background transparency */
@@ -715,7 +716,7 @@ void draw_string_bmp32(uint32_t *surf, uint16_t x, uint16_t y,
    surfh += yscale;
 
    /* No horizontal wrap */
-   if ((surfw + x - xscale) > RDOSGFXwidth)
+   if ((surfw + x - xscale) > gfx::width)
       return;
 
    /* Background transparency */
@@ -762,10 +763,10 @@ void draw_text(uint16_t x, uint16_t y,
       uint32_t fgcol, uint32_t bgcol, libretro_graph_alpha_t alpha, libretro_graph_bg_t draw_bg,
       uint8_t scalex, uint8_t scaley, uint16_t max, const char *string)
 {
-   if (RDOSGFXpitch/RDOSGFXwidth == 4)
-      draw_text_bmp32((uint32_t *)dosbox_frontbuffer->data(), x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
+   if (gfx::pitch/gfx::width == 4)
+      draw_text_bmp32((uint32_t *)gfx::frontbuffer->data(), x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
    else
-      draw_text_bmp16((uint16_t *)dosbox_frontbuffer->data(), x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
+      draw_text_bmp16((uint16_t *)gfx::frontbuffer->data(), x, y, fgcol, bgcol, alpha, draw_bg, scalex, scaley, max, string);
 }
 
 void draw_text_bmp16(uint16_t *buffer, uint16_t x, uint16_t y,

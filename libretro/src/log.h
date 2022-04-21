@@ -3,14 +3,20 @@
 #include "libretro.h"
 #include <filesystem>
 #include <fmt/format.h>
+#include <string_view>
 #include <utility>
 
-namespace retro {
+namespace retro::internal {
 
-namespace internal {
-    extern retro_log_printf_t log_cb;
-    extern retro_log_level log_level;
-} // namespace internal
+extern retro_log_printf_t log_cb;
+extern retro_log_level log_level;
+
+template <typename... Args>
+void logImpl(retro_log_level msg_level, fmt::format_string<Args...>&& fmt_str, Args&&... args);
+
+} // namespace retro::internal
+
+namespace retro {
 
 /* Set the libretro log callback to use. If this is never called, or called with a null argument,
  * stdout/stderr will be used for output.
@@ -20,56 +26,82 @@ void setRetroLogCb(retro_log_printf_t cb);
 void setLoggingLevel(const retro_log_level log_level);
 
 template <typename... Args>
-constexpr void logDebug(Args&&... args)
+void logDebug(fmt::format_string<Args...>&& fmt_str, Args&&... args)
 {
-    if (internal::log_level > RETRO_LOG_DEBUG) {
-        return;
-    }
-    internal::log_cb(
-        RETRO_LOG_DEBUG, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
+    internal::logImpl(
+        RETRO_LOG_DEBUG, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr void logInfo(Args&&... args)
+void logInfo(fmt::format_string<Args...>&& fmt_str, Args&&... args)
 {
-    if (internal::log_level > RETRO_LOG_INFO) {
-        return;
-    }
-    internal::log_cb(
-        RETRO_LOG_INFO, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
+    internal::logImpl(
+        RETRO_LOG_INFO, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr void logWarn(Args&&... args)
+void logWarn(fmt::format_string<Args...>&& fmt_str, Args&&... args)
 {
-    if (internal::log_level > RETRO_LOG_WARN) {
-        return;
-    }
-    internal::log_cb(
-        RETRO_LOG_WARN, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
+    internal::logImpl(
+        RETRO_LOG_WARN, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-constexpr void logError(Args&&... args)
+void logError(fmt::format_string<Args...>&& fmt_str, Args&&... args)
 {
-    if (internal::log_level > RETRO_LOG_ERROR) {
-        return;
-    }
-    internal::log_cb(
-        RETRO_LOG_ERROR, "[DOSBox] %s\n", fmt::format(std::forward<Args>(args)...).c_str());
+    internal::logImpl(
+        RETRO_LOG_ERROR, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
 }
 
 } // namespace retro
 
+template <typename... Args>
+void retro::internal::logImpl(
+    const retro_log_level msg_level, fmt::format_string<Args...>&& fmt_str, Args&&... args)
+{
+    if (log_cb) {
+        log_cb(
+            msg_level, "%s\n",
+            fmt::format(
+                std::forward<fmt::format_string<Args...>>(fmt_str), std::forward<Args>(args)...)
+                .c_str());
+    } else if (internal::log_level <= msg_level) {
+        const auto level_str = [msg_level]() -> std::string_view {
+            switch (msg_level) {
+            case RETRO_LOG_DEBUG:
+                return "DEBUG";
+            case RETRO_LOG_INFO:
+                return "INFO";
+            case RETRO_LOG_WARN:
+                return "WARN";
+            case RETRO_LOG_ERROR:
+                return "ERROR";
+            case RETRO_LOG_DUMMY:
+                break;
+            }
+            return {};
+        }();
+
+        fmt::print(
+            msg_level >= RETRO_LOG_WARN ? stderr : stdout, "[libretro {}] {}\n", level_str,
+            fmt::format(
+                std::forward<fmt::format_string<Args...>>(fmt_str), std::forward<Args>(args)...));
+    }
+}
+
 /* Make std::filesystem::path formattable.
  */
 template <>
-struct fmt::formatter<std::filesystem::path>: formatter<std::string>
+struct fmt::formatter<std::filesystem::path>: formatter<std::string_view>
 {
     template <typename FormatContext>
     auto format(const std::filesystem::path& path, FormatContext& ctx)
     {
-        return formatter<std::string>::format(path.string(), ctx);
+        return formatter<std::string_view>::format(path.string(), ctx);
     }
 };
 

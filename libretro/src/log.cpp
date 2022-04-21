@@ -1,32 +1,23 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "log.h"
 
-#include <cstdarg>
-#include <cstdio>
-
-static RETRO_CALLCONV void logFallbackCb(const retro_log_level level, const char* const fmt, ...)
-{
-    std::va_list va;
-
-    va_start(va, fmt);
-    vfprintf(level >= RETRO_LOG_WARN ? stderr : stdout, fmt, va);
-    va_end(va);
-}
-
 namespace retro::internal {
-retro_log_printf_t log_cb = logFallbackCb;
+
+retro_log_printf_t log_cb = nullptr;
 retro_log_level log_level = RETRO_LOG_DEBUG;
-}; // namespace retro::internal
+
+} // namespace retro::internal
 
 namespace retro {
 
 void setRetroLogCb(const retro_log_printf_t cb)
 {
-    if (cb == internal::log_cb || (cb == nullptr && internal::log_cb == logFallbackCb)) {
+    if (cb == internal::log_cb) {
         return;
     }
+
     retro::logDebug("Switching log output to {}.", cb ? "frontend" : "stdout/stderr");
-    internal::log_cb = cb ? cb : logFallbackCb;
+    internal::log_cb = cb;
 }
 
 void setLoggingLevel(const retro_log_level log_level)

@@ -706,19 +706,17 @@ static void use_libretro_log_cb()
     retro_log_callback log_cb{nullptr};
     if (!environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log_cb)) {
         retro::logError("RETRO_ENVIRONMENT_GET_LOG_INTERFACE failed.");
-        log_cb.log = nullptr; // paranoia
-    } else if (log_cb.log) {
-        retro::setRetroLogCb(log_cb.log);
+        return;
     }
+    retro::setRetroLogCb(log_cb.log);
 }
 
 static void update_libretro_log_interface()
 {
-    retro_log_callback log_cb{nullptr};
     if (retro::core_options[CORE_OPT_LOG_METHOD].toString() == "frontend") {
         use_libretro_log_cb();
     } else {
-        retro::setRetroLogCb(log_cb.log);
+        retro::setRetroLogCb(nullptr);
     }
 }
 

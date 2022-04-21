@@ -109,7 +109,7 @@ auto MidiHandlerBassmidi::Open(const char* const /*conf*/) -> bool
             return std::stod(section->Get_string(propname));
         }
         catch (const std::exception& e) {
-            retro::logError("Error reading floating point '{}' conf setting: {}.", e.what());
+            retro::logError("Error reading floating point '{}' conf setting: {}.", propname, e.what());
             return 0.0;
         }
     };

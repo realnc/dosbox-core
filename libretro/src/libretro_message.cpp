@@ -16,8 +16,8 @@ static unsigned int msg_api_version = 0;
 namespace retro::internal {
 
 void showOsdImpl(
-    const retro_log_level log_level, const char* const msg,
-    const std::chrono::milliseconds duration, const int priority) noexcept
+    const char* const msg, const std::chrono::milliseconds duration, const int priority,
+    const retro_log_level log_level, const retro_message_type msg_type) noexcept
 {
     using namespace std::chrono;
 
@@ -35,7 +35,7 @@ void showOsdImpl(
         static_cast<unsigned int>(priority),
         log_level,
         RETRO_MESSAGE_TARGET_OSD,
-        RETRO_MESSAGE_TYPE_STATUS,
+        msg_type,
         -1,
     };
     msg_env_cb(RETRO_ENVIRONMENT_SET_MESSAGE_EXT, &msg_ext);

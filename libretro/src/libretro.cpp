@@ -98,6 +98,7 @@ static std::filesystem::path game_path;
 static std::filesystem::path config_path;
 bool dosbox_exit;
 bool frontend_exit;
+static bool fast_forward_status = false;
 
 /* audio variables */
 struct retro_midi_interface retro_midi_interface;
@@ -1231,9 +1232,14 @@ void retro_run()
         return;
     }
 
-    bool fast_forward = false;
-    environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &fast_forward);
-    DOSBOX_UnlockSpeed(fast_forward);
+    {
+        bool new_fast_forward_status = false;
+        environ_cb(RETRO_ENVIRONMENT_GET_FASTFORWARDING, &new_fast_forward_status);
+        if (new_fast_forward_status != fast_forward_status) {
+            DOSBOX_UnlockSpeed(new_fast_forward_status);
+            fast_forward_status = new_fast_forward_status;
+        }
+    }
 
     if (retro::core_options.changed()) {
         const auto current_aspect_ratio = gfx::aspect_ratio;

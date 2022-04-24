@@ -9,7 +9,6 @@
 #include "emu_thread.h"
 #include "fake_timing.h"
 #include "ints/int10.h"
-#include "joystick.h"
 #include "libretro-vkbd.h"
 #include "libretro_audio.h"
 #include "libretro_core_options.h"

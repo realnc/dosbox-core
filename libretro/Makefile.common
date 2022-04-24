@@ -32,6 +32,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/libretro/src/emu_thread.cpp \
 	$(CORE_DIR)/libretro/src/fake_timing.cpp \
 	$(CORE_DIR)/libretro/src/libretro.cpp \
+	$(CORE_DIR)/libretro/src/libretro_audio.cpp \
 	$(CORE_DIR)/libretro/src/libretro_core_options.cpp \
 	$(CORE_DIR)/libretro/src/libretro_gfx.cpp \
 	$(CORE_DIR)/libretro/src/libretro_mapper.cpp \

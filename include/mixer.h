@@ -125,4 +125,10 @@ public:
 void PCSPEAKER_SetCounter(Bitu cntr,Bitu mode);
 void PCSPEAKER_SetType(Bitu mode);
 
+#ifdef __LIBRETRO__
+auto MIXER_RETRO_GetAvailableFrames() noexcept -> Bitu;
+auto MIXER_RETRO_GetFrequency() -> Bit32u;
+void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
+#endif
+
 #endif

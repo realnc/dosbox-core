@@ -11,6 +11,7 @@
 #include "ints/int10.h"
 #include "joystick.h"
 #include "libretro-vkbd.h"
+#include "libretro_audio.h"
 #include "libretro_core_options.h"
 #include "libretro_dosbox.h"
 #include "libretro_gfx.h"
@@ -19,7 +20,6 @@
 #include "mapper.h"
 #include "midi_alsa.h"
 #include "midi_win32.h"
-#include "mixer.h"
 #include "pic.h"
 #include "pinhack.h"
 #include "programs.h"
@@ -62,10 +62,6 @@ static bool dosbox_initialiazed = false;
 std::set<std::string> disabled_dosbox_variables;
 std::set<std::string> disabled_core_options;
 
-Bit32u MIXER_RETRO_GetFrequency();
-auto MIXER_RETRO_GetAvailableFrames() noexcept -> Bitu;
-void MIXER_CallBack(void* userdata, uint8_t* stream, int len);
-
 extern Bit8u herc_pal;
 MachineType machine = MCH_VGA;
 SVGACards svgaCard = SVGA_None;
@@ -93,7 +89,6 @@ static const std::string retro_library_name = "DOSBox-core";
 
 /* libretro variables */
 static retro_video_refresh_t video_cb;
-static retro_audio_sample_batch_t audio_batch_cb;
 retro_input_poll_t poll_cb;
 retro_input_state_t input_cb;
 retro_environment_t environ_cb;
@@ -106,7 +101,6 @@ bool dosbox_exit;
 bool frontend_exit;
 
 /* audio variables */
-static std::vector<int16_t> retro_audio_buffer;
 struct retro_midi_interface retro_midi_interface;
 bool use_retro_midi = false;
 bool have_retro_midi = false;
@@ -119,12 +113,6 @@ bool disney_init;
 void retro_set_video_refresh(retro_video_refresh_t cb)
 {
     video_cb = cb;
-}
-void retro_set_audio_sample(retro_audio_sample_t)
-{ }
-void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
-{
-    audio_batch_cb = cb;
 }
 void retro_set_input_poll(retro_input_poll_t cb)
 {
@@ -295,23 +283,6 @@ auto update_dosbox_variable(
     disable_core_opt_sync = false;
     retro::logDebug("Variable {}::{} updated to {}.", section_string, var_string, val_string);
     return ret;
-}
-
-static auto queue_audio() -> Bitu
-{
-    const auto available_audio_frames = MIXER_RETRO_GetAvailableFrames();
-
-    if (available_audio_frames > 0) {
-        const auto samples = available_audio_frames * 2;
-        const auto bytes = available_audio_frames * 4;
-
-        if (samples > retro_audio_buffer.capacity()) {
-            retro_audio_buffer.reserve(samples);
-            retro::logDebug("Output audio buffer resized to {} samples.\n", samples);
-        }
-        MIXER_CallBack(nullptr, reinterpret_cast<Uint8*>(retro_audio_buffer.data()), bytes);
-    }
-    return available_audio_frames;
 }
 
 static void leave_thread(const Bitu /*val*/)
@@ -1057,7 +1028,7 @@ void retro_init()
     use_libretro_log_cb();
     retro::setMessageEnvCb(environ_cb);
 
-    retro_audio_buffer.reserve(4096);
+    init_audio();
 
     gfx::pixel_format = RETRO_PIXEL_FORMAT_XRGB8888;
     retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
@@ -1246,15 +1217,6 @@ auto retro_load_game_special(
     return false;
 }
 
-static void upload_audio(const int16_t* src, int len_frames) noexcept
-{
-    while (len_frames > 0) {
-        const auto uploaded_frames = audio_batch_cb(src, len_frames);
-        src += uploaded_frames * 2;
-        len_frames -= uploaded_frames;
-    }
-}
-
 void retro_run()
 {
     if (dosbox_exit) {
@@ -1317,7 +1279,7 @@ void retro_run()
     }
     gfx::frontbuffer_uploaded = true;
 
-    upload_audio(retro_audio_buffer.data(), queue_audio());
+    upload_audio(queue_audio());
 
     if (use_retro_midi && have_retro_midi && retro_midi_interface.output_enabled()) {
         retro_midi_interface.flush();

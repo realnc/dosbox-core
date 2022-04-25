@@ -41,28 +41,28 @@ inline void showOsdInfo(
 
 inline void showOsdWarn(
     const std::string& msg, const retro_message_type msg_type,
-    const std::chrono::milliseconds duration = 2s, const int priority = 50) noexcept
+    const std::chrono::milliseconds duration = 4s, const int priority = 50) noexcept
 {
     internal::showOsdImpl(msg, duration, priority, RETRO_LOG_WARN, msg_type);
 }
 
 inline void showOsdWarn(
     const char* const msg, const retro_message_type msg_type,
-    const std::chrono::milliseconds duration = 2s, const int priority = 50) noexcept
+    const std::chrono::milliseconds duration = 4s, const int priority = 50) noexcept
 {
     internal::showOsdImpl(msg, duration, priority, RETRO_LOG_WARN, msg_type);
 }
 
 inline void showOsdError(
     const std::string& msg, const retro_message_type msg_type,
-    const std::chrono::milliseconds duration = 2s, const int priority = 50) noexcept
+    const std::chrono::milliseconds duration = 6s, const int priority = 50) noexcept
 {
     internal::showOsdImpl(msg, duration, priority, RETRO_LOG_ERROR, msg_type);
 }
 
 inline void showOsdError(
     const char* const msg, const retro_message_type msg_type,
-    const std::chrono::milliseconds duration = 2s, const int priority = 50) noexcept
+    const std::chrono::milliseconds duration = 6s, const int priority = 50) noexcept
 {
     internal::showOsdImpl(msg, duration, priority, RETRO_LOG_ERROR, msg_type);
 }

@@ -12,67 +12,15 @@ namespace retro::internal {
 extern retro_log_printf_t log_cb;
 extern retro_log_level log_level;
 
-template <typename... Args>
-void logImpl(retro_log_level msg_level, fmt::format_string<Args...>&& fmt_str, Args&&... args);
-
 } // namespace retro::internal
 
 namespace retro {
 
-/* Set the libretro log callback to use. If this is never called, or called with a null argument,
- * stdout/stderr will be used for output.
- */
-void setRetroLogCb(retro_log_printf_t cb);
-
-void setLoggingLevel(const retro_log_level log_level);
-
 template <typename... Args>
-void logDebug(fmt::format_string<Args...>&& fmt_str, Args&&... args)
+void log(const retro_log_level msg_level, fmt::format_string<Args...>&& fmt_str, Args&&... args)
 {
-    internal::logImpl(
-        RETRO_LOG_DEBUG, std::forward<fmt::format_string<Args...>>(fmt_str),
-        std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logInfo(fmt::format_string<Args...>&& fmt_str, Args&&... args)
-{
-    internal::logImpl(
-        RETRO_LOG_INFO, std::forward<fmt::format_string<Args...>>(fmt_str),
-        std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logWarn(fmt::format_string<Args...>&& fmt_str, Args&&... args)
-{
-    internal::logImpl(
-        RETRO_LOG_WARN, std::forward<fmt::format_string<Args...>>(fmt_str),
-        std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void logError(fmt::format_string<Args...>&& fmt_str, Args&&... args)
-{
-    internal::logImpl(
-        RETRO_LOG_ERROR, std::forward<fmt::format_string<Args...>>(fmt_str),
-        std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-void dosboxLogMsgHandler(const std::string_view format, Args&&... args)
-{
-    internal::logImpl(
-        RETRO_LOG_INFO, "dosbox: {}", fmt::sprintf(format, std::forward<Args>(args)...));
-}
-
-} // namespace retro
-
-template <typename... Args>
-void retro::internal::logImpl(
-    const retro_log_level msg_level, fmt::format_string<Args...>&& fmt_str, Args&&... args)
-{
-    if (log_cb) {
-        log_cb(
+    if (internal::log_cb) {
+        internal::log_cb(
             msg_level, "%s\n",
             fmt::format(
                 std::forward<fmt::format_string<Args...>>(fmt_str), std::forward<Args>(args)...)
@@ -100,6 +48,49 @@ void retro::internal::logImpl(
                 std::forward<fmt::format_string<Args...>>(fmt_str), std::forward<Args>(args)...));
     }
 }
+
+/* Set the libretro log callback to use. If this is never called, or called with a null argument,
+ * stdout/stderr will be used for output.
+ */
+void setRetroLogCb(retro_log_printf_t cb);
+
+void setLoggingLevel(const retro_log_level log_level);
+
+template <typename... Args>
+void logDebug(fmt::format_string<Args...>&& fmt_str, Args&&... args)
+{
+    log(RETRO_LOG_DEBUG, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void logInfo(fmt::format_string<Args...>&& fmt_str, Args&&... args)
+{
+    log(RETRO_LOG_INFO, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void logWarn(fmt::format_string<Args...>&& fmt_str, Args&&... args)
+{
+    log(RETRO_LOG_WARN, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void logError(fmt::format_string<Args...>&& fmt_str, Args&&... args)
+{
+    log(RETRO_LOG_ERROR, std::forward<fmt::format_string<Args...>>(fmt_str),
+        std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void dosboxLogMsgHandler(const std::string_view format, Args&&... args)
+{
+    log(RETRO_LOG_INFO, "dosbox: {}", fmt::sprintf(format, std::forward<Args>(args)...));
+}
+
+} // namespace retro
 
 /* Make std::filesystem::path formattable.
  */

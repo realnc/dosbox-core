@@ -26,6 +26,7 @@ void showOsdImpl(
         const unsigned int duration_frames = fps * duration.count() / 1000.0f;
         retro_message handle{msg, duration_frames};
         msg_env_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &handle);
+        retro::log(log_level, fmt::format("{}", msg));
         return;
     }
 
@@ -39,6 +40,7 @@ void showOsdImpl(
         -1,
     };
     msg_env_cb(RETRO_ENVIRONMENT_SET_MESSAGE_EXT, &msg_ext);
+    retro::log(log_level, fmt::format("{}", msg));
 }
 
 } // namespace retro::internal

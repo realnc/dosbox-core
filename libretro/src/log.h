@@ -3,6 +3,7 @@
 #include "libretro.h"
 #include <filesystem>
 #include <fmt/format.h>
+#include <fmt/printf.h>
 #include <string_view>
 #include <utility>
 
@@ -55,6 +56,13 @@ void logError(fmt::format_string<Args...>&& fmt_str, Args&&... args)
     internal::logImpl(
         RETRO_LOG_ERROR, std::forward<fmt::format_string<Args...>>(fmt_str),
         std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void dosboxLogMsgHandler(const std::string_view format, Args&&... args)
+{
+    internal::logImpl(
+        RETRO_LOG_INFO, "dosbox: {}", fmt::sprintf(format, std::forward<Args>(args)...));
 }
 
 } // namespace retro

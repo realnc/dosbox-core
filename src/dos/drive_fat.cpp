@@ -725,7 +725,11 @@ fatDrive::fatDrive(const char *sysFilename, Bit32u bytesector, Bit32u cylsector,
 			if(mbrData.pentry[m].partSize != 0x00) {
 				mbrData.pentry[m].absSectStart = var_read(&mbrData.pentry[m].absSectStart);
 				mbrData.pentry[m].partSize = var_read(&mbrData.pentry[m].partSize);
+#ifdef __LIBRETRO__
+				LOG_MSG("Using partition %d on drive; skipping %d sectors", m, +mbrData.pentry[m].absSectStart);
+#else
 				LOG_MSG("Using partition %d on drive; skipping %d sectors", m, mbrData.pentry[m].absSectStart);
+#endif
 				startSector = mbrData.pentry[m].absSectStart;
 				break;
 			}

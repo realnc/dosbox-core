@@ -83,8 +83,13 @@ struct LOG
 	void operator()(char const* , double, char const*, double, double )				{}
 }; //add missing operators to here
 	//try to avoid anything smaller than bit32...
+#ifdef __LIBRETRO__
+#include "log.h"
+#define LOG_MSG retro::dosboxLogMsgHandler
+#else
 void GFX_ShowMsg(char const* format,...) GCC_ATTRIBUTE(__format__(__printf__, 1, 2));
 #define LOG_MSG GFX_ShowMsg
+#endif
 
 #endif //C_DEBUG
 

@@ -107,9 +107,6 @@ void GFX_EndUpdate(const Bit16u* const changedLines)
 void GFX_SetTitle(Bit32s /*cycles*/, int /*frameskip*/, bool /*paused*/)
 { }
 
-void GFX_ShowMsg(char const* /*format*/, ...)
-{ }
-
 void GFX_Events()
 { }
 

@@ -1005,8 +1005,7 @@ static void runMouseEmulation(const unsigned int port)
     const float magnitude =
         sqrtf((emulated_mouse_x * emulated_mouse_x) + (emulated_mouse_y * emulated_mouse_y));
     if (magnitude <= deadzone) {
-        emulated_mouse_x = 0;
-        emulated_mouse_y = 0;
+        return;
     }
 
     float slowdown = 32768.0;

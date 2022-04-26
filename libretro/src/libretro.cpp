@@ -130,45 +130,10 @@ static bool mount_overlay = true;
 static std::thread emu_thread;
 
 /* helper functions */
-static char last_written_character = 0;
 
 auto retro_ticks() -> long
 {
     return perf_cb.get_time_usec ? perf_cb.get_time_usec() : 0;
-}
-
-static void write_out_buffer(const char* const format, ...)
-{
-    char buf[2048];
-    va_list msg;
-
-    va_start(msg, format);
-#ifdef ANDROID
-    portable_vsnprintf(buf, 2047, format, msg);
-#else
-    vsnprintf(buf, 2047, format, msg);
-#endif
-    va_end(msg);
-
-    Bit16u size = (Bit16u)strlen(buf);
-    dos.internal_output = true;
-    for (Bit16u i = 0; i < size; i++) {
-        Bit8u out;
-        Bit16u s = 1;
-        if (buf[i] == 0xA && last_written_character != 0xD) {
-            out = 0xD;
-            DOS_WriteFile(STDOUT, &out, &s);
-        }
-        last_written_character = out = buf[i];
-        DOS_WriteFile(STDOUT, &out, &s);
-    }
-    dos.internal_output = false;
-}
-
-static void write_out(const char* const format, ...)
-{
-    write_out_buffer("\n");
-    write_out_buffer(format);
 }
 
 static void mount_overlay_filesystem(const char drive, std::filesystem::path path)
@@ -184,8 +149,9 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
     retro::logDebug("Mounting {} in {} as overlay.", path_str, drive);
 
     if (!Drives[drive - 'A']) {
-        retro::logError("Base drive {} is not mounted.", drive);
-        write_out("No basedrive mounted yet!");
+        retro::showOsdError(
+            fmt::format("Failed to mount overlay because drive {} is not mounted.", drive),
+            RETRO_MESSAGE_TYPE_NOTIFICATION);
         return;
     }
 
@@ -193,7 +159,9 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
     if (!base_drive || dynamic_cast<cdromDrive*>(base_drive)
         || dynamic_cast<Overlay_Drive*>(base_drive))
     {
-        retro::logError("Base drive {} is not compatible.", drive);
+        retro::showOsdError(
+            fmt::format("Failed to mount overlay because base drive {} is not compatible.", drive),
+            RETRO_MESSAGE_TYPE_NOTIFICATION);
         return;
     }
 
@@ -202,7 +170,9 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
         std::filesystem::create_directories(path);
     }
     catch (const std::exception& e) {
-        retro::logError("Error creating overlay directory {}: {}.", path_str, e.what());
+        retro::showOsdError(
+            fmt::format("Error creating overlay directory {}: {}.", path_str, e.what()),
+            RETRO_MESSAGE_TYPE_NOTIFICATION);
         return;
     }
 
@@ -219,11 +189,18 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
         total_clusters, free_clusters, 0xF8, o_error);
     if (o_error != 0) {
         if (o_error == 1) {
-            retro::logError("Can't mix absolute and relative paths.");
+            retro::showOsdError(
+                "Failed to mount overlay: can't mix absolute and relative paths.",
+                RETRO_MESSAGE_TYPE_NOTIFICATION);
+
         } else if (o_error == 2) {
-            retro::logError("Overlay can't be in the same underlying file system.");
+            retro::showOsdError(
+                "Failed to mount overlay: overlay can't be in the same underlying file system.",
+                RETRO_MESSAGE_TYPE_NOTIFICATION);
         } else {
-            retro::logError("Something went wrong while mounting overlay. Error code: {}", o_error);
+            retro::showOsdError(
+                fmt::format("Something went wrong while mounting overlay. Error code: {}", o_error),
+                RETRO_MESSAGE_TYPE_NOTIFICATION);
         }
         return;
     }

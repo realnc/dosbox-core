@@ -1147,12 +1147,19 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     std::filesystem::path disk_load_image;
 
     if (game && game->path) {
-        load_path = std::filesystem::path(game->path).make_preferred();
-        game_path = load_path;
+        try {
+            load_path =
+                std::filesystem::canonical(std::filesystem::path(game->path)).make_preferred();
+            game_path = load_path;
+        }
+        catch (const std::filesystem::filesystem_error& e) {
+            retro::logError("Failed to load \"{}\": {}", game->path, e.what());
+            return false;
+        }
     }
 
     if (const auto extension = lower_case(load_path.extension().string()); extension == ".conf") {
-        config_path = std::filesystem::absolute(load_path);
+        config_path = load_path;
         load_path.clear();
     } else {
         retro::logInfo("Loading default configuration: {}", config_path);
@@ -1164,13 +1171,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
     }
 
     if (game_path.has_parent_path()) {
-        try {
-            load_game_directory = std::filesystem::absolute(game_path.parent_path());
-        }
-        catch (const std::filesystem::filesystem_error& e)
-        {
-            retro::logWarn("Failed to get absolute path of content directory: {}", e.what());
-        }
+        load_game_directory = game_path.parent_path();
     }
 
     emu_thread = std::thread(start_dosbox, load_path.u8string());

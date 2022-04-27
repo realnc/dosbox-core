@@ -103,6 +103,7 @@ jobs:
                 automake \
                 autotools-dev \
                 build-essential \
+                cmake \
                 g++-9 \
                 gcc-9 \
                 gettext \
@@ -113,10 +114,7 @@ jobs:
                 libtool-bin \
                 mesa-common-dev \
                 pkg-config \
-                python3-pip \
                 wget
-            python3 -m pip install --upgrade --no-cache-dir "pip<20"
-            python3 -m pip install --no-cache-dir "cmake<3.22"
             git clone 'https://github.com/ninja-build/ninja.git'
             cd ninja
             git checkout tags/v1.10.1
@@ -190,6 +188,7 @@ jobs:
                 automake \
                 autotools-dev \
                 build-essential \
+                cmake \
                 g++-9 \
                 gcc-9 \
                 gettext \
@@ -200,10 +199,7 @@ jobs:
                 libtool-bin \
                 mesa-common-dev \
                 pkg-config \
-                python3-pip \
                 wget
-            python3 -m pip install --upgrade --no-cache-dir "pip<20"
-            python3 -m pip install --no-cache-dir "cmake<3.22"
             git clone 'https://github.com/ninja-build/ninja.git'
             cd ninja
             git checkout tags/v1.10.1

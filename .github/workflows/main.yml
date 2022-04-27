@@ -103,7 +103,6 @@ jobs:
                 automake \
                 autotools-dev \
                 build-essential \
-                cmake \
                 g++-9 \
                 gcc-9 \
                 gettext \
@@ -114,10 +113,10 @@ jobs:
                 libtool-bin \
                 mesa-common-dev \
                 pkg-config \
+                python3-pip \
                 wget
-            wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
-                | tar xz -C /opt
-            mv /opt/meson-* /opt/meson
+            python3 -m pip install --upgrade --no-cache-dir "pip<20"
+            python3 -m pip install --no-cache-dir "cmake<3.22"
             git clone 'https://github.com/ninja-build/ninja.git'
             cd ninja
             git checkout tags/v1.10.1
@@ -128,11 +127,9 @@ jobs:
             export CC=gcc-9
             export CXX=g++-9
             export BUNDLED_AUDIO_CODECS=1
-            export BUNDLED_GLIB=1
             export BUNDLED_LIBSNDFILE=1
             export BUNDLED_SDL=1
             export CMAKE_GENERATOR=Ninja
-            export MESON=/opt/meson/meson.py
             export NINJA=/usr/local/bin/ninja
             export STATIC_LIBCXX=1
             export WITH_BASSMIDI=1
@@ -193,7 +190,6 @@ jobs:
                 automake \
                 autotools-dev \
                 build-essential \
-                cmake \
                 g++-9 \
                 gcc-9 \
                 gettext \
@@ -204,10 +200,10 @@ jobs:
                 libtool-bin \
                 mesa-common-dev \
                 pkg-config \
+                python3-pip \
                 wget
-            wget -q 'https://github.com/mesonbuild/meson/releases/download/0.55.3/meson-0.55.3.tar.gz' -O- \
-                | tar xz -C /opt
-            mv /opt/meson-* /opt/meson
+            python3 -m pip install --upgrade --no-cache-dir "pip<20"
+            python3 -m pip install --no-cache-dir "cmake<3.22"
             git clone 'https://github.com/ninja-build/ninja.git'
             cd ninja
             git checkout tags/v1.10.1
@@ -218,11 +214,9 @@ jobs:
             export CC=gcc-9
             export CXX=g++-9
             export BUNDLED_AUDIO_CODECS=1
-            export BUNDLED_GLIB=1
             export BUNDLED_LIBSNDFILE=1
             export BUNDLED_SDL=1
             export CMAKE_GENERATOR=Ninja
-            export MESON=/opt/meson/meson.py
             export NINJA=/usr/local/bin/ninja
             export STATIC_LIBCXX=1
             export WITH_BASSMIDI=1
@@ -261,7 +255,6 @@ jobs:
       BUNDLED_AUDIO_CODECS: 1
       BUNDLED_LIBSNDFILE: 1
       BUNDLED_SDL: 1
-      BUNDLED_GLIB: 0
       PKG_CONFIG_FLAGS: --static
       MACOSX_DEPLOYMENT_TARGET: '10.9'
       HOMEBREW_PREFIX: /Users/Shared/homebrew-dosbox-core
@@ -284,7 +277,7 @@ jobs:
       run: |
         cd "${HOMEBREW_PREFIX}"
         mkdir static_libs
-        ln -s "${HOMEBREW_PREFIX}"/{lib,opt/libffi/lib}/*.a static_libs/
+        ln -s "${HOMEBREW_PREFIX}"/lib/*.a static_libs/
 
     - uses: actions/checkout@v2
       with:

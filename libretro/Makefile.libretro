@@ -9,14 +9,10 @@ BUNDLED_AUDIO_CODECS ?= 1
 BUNDLED_LIBSNDFILE ?= 1
 # Build and link our own sdl and sdl_net statically.
 BUNDLED_SDL ?= 0
-# Use bundled glib library.
-#BUNDLED_GLIB ?= 0
 # Build with BASSMIDI support
 WITH_BASSMIDI ?= 1
 # Build with fluidsynth support
 WITH_FLUIDSYNTH ?= 1
-# Build fluidsynth with libinstpatch support.
-WITH_LIBINSTPATCH ?= 1
 # Build with pinhack patch
 WITH_PINHACK ?= 1
 # Extra command-line flags to pass to pkg-config.
@@ -156,7 +152,6 @@ else
 		COMMONFLAGS += -DHAVE_ALSA
 		LDFLAGS += `$(PKGCONFIG) --libs alsa`
 	endif
-	BUNDLED_GLIB ?= 1
 	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
 	TARGET := $(TARGET_NAME)_libretro.so
 	LDFLAGS += -shared -Wl,--version-script=link.T
@@ -204,10 +199,6 @@ ifeq ($(BUNDLED_SDL), 1)
 	include deps/sdl.makefile
 	include deps/sdl_net.makefile
 endif
-ifeq ($(BUNDLED_GLIB), 1)
-	include deps/libffi.makefile
-	include deps/glib.makefile
-endif
 ifeq ($(WITH_FLUIDSYNTH), 1)
 	ifeq ($(BUNDLED_AUDIO_CODECS), 1)
 		include deps/ogg.makefile
@@ -218,7 +209,6 @@ ifeq ($(WITH_FLUIDSYNTH), 1)
 	ifeq ($(BUNDLED_LIBSNDFILE), 1)
 		include deps/libsndfile.makefile
 	endif
-	include deps/libinstpatch.makefile
 	include deps/fluidsynth.makefile
 endif
 include deps/munt.makefile
@@ -272,6 +262,10 @@ ifeq ($(BUNDLED_AUDIO_CODECS), 1)
 		$(DEPS_BIN_DIR)/lib/libopusfile.a \
 		$(DEPS_BIN_DIR)/lib/libvorbis.a \
 		$(DEPS_BIN_DIR)/lib/libvorbisfile.a
+
+		ifeq ($(platform), win)
+			LDFLAGS += -lshlwapi
+		endif
 endif
 
 ifdef EXTRA_PACKAGES

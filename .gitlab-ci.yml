@@ -74,7 +74,6 @@ libretro-build-windows-x64:
     platform: win
     TARGET_TRIPLET: x86_64-w64-mingw32.static
     BUNDLED_AUDIO_CODECS: 1
-    BUNDLED_GLIB: 0
     BUNDLED_LIBSNDFILE: 1
     BUNDLED_SDL: 0
     STATIC_LIBCXX: 0
@@ -108,7 +107,6 @@ libretro-build-windows-i686:
     platform: win
     TARGET_TRIPLET: i686-w64-mingw32.static
     BUNDLED_AUDIO_CODECS: 1
-    BUNDLED_GLIB: 0
     BUNDLED_LIBSNDFILE: 1
     BUNDLED_SDL: 0
     STATIC_LIBCXX: 0
@@ -137,7 +135,6 @@ libretro-build-linux-x64:
     CXX: g++-9
     platform: unix
     BUNDLED_AUDIO_CODECS: 1
-    BUNDLED_GLIB: 1
     BUNDLED_LIBSNDFILE: 1
     BUNDLED_SDL: 1
     CMAKE_GENERATOR: Ninja
@@ -169,7 +166,6 @@ libretro-build-linux-i686:
     CXX: g++-9
     platform: unix
     BUNDLED_AUDIO_CODECS: 1
-    BUNDLED_GLIB: 1
     BUNDLED_LIBSNDFILE: 1
     BUNDLED_SDL: 1
     CMAKE_GENERATOR: Ninja
@@ -205,7 +201,6 @@ libretro-build-osx-x64:
     BUNDLED_AUDIO_CODECS: 1
     BUNDLED_LIBSNDFILE: 1
     BUNDLED_SDL: 1
-    BUNDLED_GLIB: 0
     PKG_CONFIG_FLAGS: --static
     MACOSX_DEPLOYMENT_TARGET: '10.9'
     HOMEBREW_PREFIX: /Users/Shared/homebrew-dosbox-core
@@ -221,7 +216,7 @@ libretro-build-osx-x64:
     - curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-dosbox-core.tar.zst' | ./zstd -d | tar x
     - cd "${HOMEBREW_PREFIX}"
     - mkdir static_libs
-    - ln -s "${HOMEBREW_PREFIX}"/{lib,opt/libffi/lib}/*.a static_libs/
+    - ln -s "${HOMEBREW_PREFIX}"/lib/*.a static_libs/
     - popd
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps

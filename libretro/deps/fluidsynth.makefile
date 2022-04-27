@@ -7,7 +7,7 @@ EXTRA_PACKAGES := fluidsynth $(EXTRA_PACKAGES)
 COMMONFLAGS += -DWITH_FLUIDSYNTH
 
 # Always a release build because debug build creates broken .pc file with mingw.
-$(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATCH)) $(GLIB)
+$(FLUIDSYNTH): $(LIBSNDFILE)
 	mkdir -p "$(FLUIDSYNTH_BUILD_DIR)"
 	cd "$(FLUIDSYNTH_BUILD_DIR)" \
 	&& unset CFLAGS \
@@ -19,6 +19,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATC
 	    -DBUILD_SHARED_LIBS=OFF \
 	    -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	    -DCMAKE_INSTALL_PREFIX="$(DEPS_BIN_DIR)" \
+	    -DCMAKE_INSTALL_LIBDIR=lib \
 	    -DLIB_INSTALL_DIR=lib \
 	    -DDEFAULT_SOUNDFONT= \
 	    -Denable-alsa=OFF \
@@ -30,7 +31,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATC
 	    -Denable-jack=OFF \
 	    -Denable-ladspa=OFF \
 	    -Denable-lash=OFF \
-	    -Denable-libinstpatch=$(if $(filter $(WITH_LIBINSTPATCH),1),ON,OFF) \
+	    -Denable-libinstpatch=OFF \
 	    -Denable-libsndfile=ON \
 	    -Denable-midishare=OFF \
 	    -Denable-network=OFF \
@@ -51,7 +52,7 @@ $(FLUIDSYNTH): $(LIBSNDFILE) $(if $(filter $(WITH_LIBINSTPATCH),1),$(LIBINSTPATC
 	    -Denable-coremidi=OFF \
 	    -Denable-framework=OFF \
 	    $(EXTRA_CMAKE_FLAGS) \
-	    "$(CURDIR)/deps/fluidsynth" \
+	    "$(CURDIR)/deps/fluidsynth-sans-glib" \
 	&& VERBOSE=1 $(CMAKE) --build . --config Release --target install -j $(NUMPROC)
 	touch "$@"
 
@@ -62,4 +63,3 @@ fluidsynth: $(FLUIDSYNTH)
 deps: fluidsynth
 
 endif
-

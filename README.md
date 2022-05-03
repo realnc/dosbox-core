@@ -12,15 +12,23 @@ The core provides some improvements over the DOSBox-SVN core:
   to select the correct MIDI device even if the MIDI port changes in the
   future, as it remembers the MIDI port by name, not by number.
 
-* Cycle-accurate OPL3 (YMF262) emulation.  
+  Native MIDI support allows you to use any stand-alone MIDI synth, like the
+  Munt MT-32 emulator or Roland's Sound Canvas emulator VSTi plugin "Sound
+  Canvas VA," which you can run using a VSTi host like
+  [Falcosoft Midi Player](https://www.vogons.org/viewtopic.php?f=5&t=48207),
+  which is shown running on Linux through Wine in this screenshot:
+
+  <img src="/docs/images/screenshot_ultima8_scva.jpg" alt="screenshot" style="width: 40%;"/>
+
+* Cycle-accurate OPL3 (YMF262) emulation option.  
   Using [Nuked OPL3](https://nukeykt.retrohost.net).
 
-* MT-32, CM32-L and LAPC-I emulation.  
+* Built-in MT-32, CM32-L and LAPC-I emulation.  
   Using [Munt](https://github.com/munt/munt).
 
-* Soundfont-based MIDI synthesizer.  
+* Built-in soundfont-based MIDI synthesizer.  
   - Using [FluidSynth](http://www.fluidsynth.org), a MIDI software synthesizer
-    that supports SF2/SF3/DLS/GIG soundfonts.
+    that supports SF2/SF3 soundfonts.
   - Using [BASSMIDI](https://www.un4seen.com), a MIDI software synthesizer that
     supports SF2/SFZ soundfonts.
 
@@ -45,6 +53,11 @@ The core provides some improvements over the DOSBox-SVN core:
   [discussion thread over at Vogons](https://www.vogons.org/viewtopic.php?f=41&t=12424)
   about this patch.
 
+* Better support for .conf files.  
+  When a .conf file is loaded as content, the dosbox settings specified in the
+  .conf file will not conflict with core options. The core options will be
+  synced with the .conf file settings and marked as locked.
+
 * Other general, under-the-hood improvements and bugfixes.
 
 DOSBox-core was originally based on the https://github.com/libretro/dosbox-svn
@@ -53,7 +66,7 @@ as other contributors (the full commit history has been preserved.)
 
 ## Supported Platforms
 
-* Linux (x86-64, ARMv7 (armhf))
+* Linux (x86, x86-64, ARMv7 (armhf))
 * Windows 7 or later
 * macOS 10.9 (Mavericks) or later
 * Android
@@ -62,10 +75,47 @@ It may work on other platforms as well if you build from source.
 
 ## Usage
 
-You can load `.exe`, `.bat`, `.iso`, `.cue`, and `.conf` files directly. Note
-that when loading content, the current directory is set to the content's
-directory. This means it is possible to use relative paths in your `mount` and
-`imgmount` commands.
+You can load .exe, .bat, .iso, .cue, and .conf files directly. Note that when
+loading content, the current directory is set to the content's directory. This
+means it is possible to use relative paths in your `mount` and `imgmount`
+commands.
+
+The recommended way to run DOS games is to have a .conf file for each game and
+then use the manual scanner in RetroArch to scan for `conf` files. For example,
+here is:
+
+```text
+Ultima VII - The Black Gate.conf
+```
+
+for running Ultima 7 when the game's DOS installation is inside the
+`drive_c/ultima71` folder and the game expects to be available in `C:\ultima71`
+inside DOS:
+
+```ini
+[dos]
+xms = true
+ems = false
+umb = false
+
+[autoexec]
+@echo off
+mixer sb 50:50 /noshow
+mount c drive_c
+c:
+cd ultima71
+ultima7.com
+exit
+```
+
+This game is known to not run correctly with EMS and UMB, and runs best with
+XMS, so you can set those dosbox settings as shown above. The respective core
+options for XMS, EMS and UMB will be locked.
+
+Specifying dosbox settings in the .conf file is optional. In this example, you
+could just as well configure XMS, EMS and UMB using the core options instead.
+But if you prefer to configure settings in .conf files, you can do it without
+worrying that those settings might conflict with core options.
 
 ### MT-32
 
@@ -101,11 +151,6 @@ bundled libraries.
 The only dependencies that are not bundled are alsa-lib, which is only needed
 on Linux, and dlfnc which is needed on Windows. dlfcn is available as a package
 in both MXE as well as MSYS2.
-
-Note that the bundled dependencies are provided in the form of git submodules,
-so prior to building the core, you should first perform a:
-
-    git submodule update --init
 
 To build on Linux x86-64 with the bundled audio, libsndfile, SDL and SDL_net
 libraries, you would do:

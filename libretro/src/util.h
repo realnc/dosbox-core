@@ -2,6 +2,7 @@
 #pragma once
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <string>
 
 [[nodiscard]]
@@ -26,6 +27,26 @@ template <typename First, typename... T>
 auto is_equal_to_one_of(const First& first, const T&... t) -> bool
 {
     return ((first == t) || ...);
+}
+
+template <typename Function>
+auto execution_time(const Function& func) noexcept
+{
+    const auto start_time = std::chrono::steady_clock::now();
+    func();
+    return std::chrono::steady_clock::now() - start_time;
+}
+
+template <typename Function>
+auto execution_time_us(const Function& func) noexcept -> std::chrono::microseconds
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(execution_time(func));
+}
+
+template <typename Function>
+auto execution_time_ms(const Function& func) noexcept -> std::chrono::milliseconds
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(execution_time(func));
 }
 
 /*

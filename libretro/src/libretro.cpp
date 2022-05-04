@@ -441,6 +441,9 @@ static RETRO_CALLCONV auto update_core_option_visibility() -> bool
     updated |=
         core_options.setVisible(pad_map_regex, core_options[CORE_OPT_SHOW_KB_MAP_OPTIONS].toBool());
 
+    updated |= core_options.setVisible(
+        CORE_OPT_LOG_LEVEL, core_options[CORE_OPT_LOG_METHOD].toString() == "stdout/stderr");
+
     for (const auto& option_name : disabled_core_options) {
         if (core_options.option(option_name)) {
             updated |= core_options.setVisible(option_name, false);

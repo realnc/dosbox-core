@@ -28,6 +28,7 @@
 #include "support.h"
 #ifdef __LIBRETRO__
 	#include "CoreOptions.h"
+	#include "deps/char8_t-remediation/char8_t-remediation.h"
 	#include "libretro_core_options.h"
 	#include "libretro_dosbox.h"
 	#include <filesystem>
@@ -474,10 +475,10 @@ public:
 				if (retro::core_options[CORE_OPT_MOUNT_C_AS].toString() == "parent") {
 					std::filesystem::path fs_dir = buffer;
 					autoexec[12].Install(
-					    std::string("MOUNT C \"") + fs_dir.parent_path().u8string()
+					    std::string("MOUNT C \"") + from_u8string(fs_dir.parent_path().u8string())
 					    + "\" -freesize "
 					    + retro::core_options[CORE_OPT_DEFAULT_MOUNT_FREESIZE].toString());
-					autoexec[13].Install("C:\nCD " + fs_dir.filename().u8string());
+					autoexec[13].Install("C:\nCD " + from_u8string(fs_dir.filename().u8string()));
 				} else {
 					autoexec[12].Install(
 					    std::string("MOUNT C \"") + buffer + "\" -freesize "

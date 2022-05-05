@@ -37,6 +37,7 @@
 #endif
 
 #ifdef __LIBRETRO__
+#include "deps/char8_t-remediation/char8_t-remediation.h"
 #include "libretro_dosbox.h"
 #endif
 
@@ -61,7 +62,7 @@ static void W32_ConfDir(std::string& in,bool create) {
 
 void Cross::GetPlatformConfigDir(std::string& in) {
 #ifdef __LIBRETRO__
-	in = retro_save_directory.u8string();
+	in = from_u8string(retro_save_directory.u8string());
 #elif WIN32
 	W32_ConfDir(in,false);
 	in += "\\DOSBox";

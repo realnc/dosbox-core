@@ -1,5 +1,6 @@
 #pragma once
 #include "config.h"
+#include "deps/char8_t-remediation/char8_t-remediation.h"
 #include "keyboard.h"
 #include "libretro.h"
 #include <array>
@@ -146,6 +147,14 @@ void core_autoexec();
 auto update_dosbox_variable(
     bool autoexec, const std::string& section_string, const std::string& var_string,
     const std::string& val_string) -> bool;
+#if __cpp_lib_char8_t
+inline auto update_dosbox_variable(
+    const bool autoexec, const std::string& section_string, const std::string& var_string,
+    const std::u8string& val_string) -> bool
+{
+    return update_dosbox_variable(autoexec, section_string, var_string, from_u8string(val_string));
+}
+#endif
 long retro_ticks();
 void retro_key_up(int keycode);
 void retro_key_down(int keycode);

@@ -2,6 +2,7 @@
 #include "libretro.h"
 #include "CoreOptions.h"
 #include "control.h"
+#include "deps/char8_t-remediation/char8_t-remediation.h"
 #include "disk_control.h"
 #include "dos/cdrom.h"
 #include "dos/drives.h"
@@ -141,7 +142,7 @@ static void mount_overlay_filesystem(const char drive, std::filesystem::path pat
     // Make sure the path ends with a dir separator, otherwise dosbox will glitch out when writing
     // to the overlay.
     path.make_preferred();
-    auto path_str = path.u8string();
+    auto path_str = from_u8string(path.u8string());
     if (path_str.back() != std::filesystem::path::preferred_separator) {
         path_str += std::filesystem::path::preferred_separator;
     }
@@ -888,7 +889,7 @@ static void start_dosbox(const std::string cmd_line)
 
     /* Load config */
     if (!config_path.empty()) {
-        control->ParseConfigFile(config_path.u8string().c_str());
+        control->ParseConfigFile(from_u8string(config_path.u8string()).c_str());
     }
 
     check_variables();
@@ -1075,17 +1076,18 @@ void retro_init()
             for (const auto& file : fs::directory_iterator(retro_system_directory / "soundfonts")) {
                 const auto extension = lower_case(file.path().extension().string());
                 if (extension == ".sfz") {
-                    bass_values.emplace_back(file.path().filename().u8string());
+                    bass_values.emplace_back(from_u8string(file.path().filename().u8string()));
                     continue;
                 }
                 if (extension == ".sf2") {
-                    bass_values.emplace_back(file.path().filename().u8string());
-                    fsynth_values.emplace_back(file.path().filename().u8string());
+                    bass_values.emplace_back(from_u8string(file.path().filename().u8string()));
+                    fsynth_values.emplace_back(from_u8string(file.path().filename().u8string()));
                     continue;
                 }
                 for (const char* ext : {".sf3", ".dls", ".gig"}) {
                     if (extension == ext) {
-                        fsynth_values.emplace_back(file.path().filename().u8string());
+                        fsynth_values.emplace_back(
+                            from_u8string(file.path().filename().u8string()));
                     }
                 }
             }
@@ -1177,7 +1179,7 @@ auto retro_load_game(const retro_game_info* const game) -> bool
         load_game_directory = game_path.parent_path();
     }
 
-    emu_thread = std::thread(start_dosbox, load_path.u8string());
+    emu_thread = std::thread(start_dosbox, from_u8string(load_path.u8string()));
     // Run dosbox until it sets its initial video mode.
     while (switchThread() != ThreadSwitchReason::VideoModeChange && !dosbox_exit)
         ;

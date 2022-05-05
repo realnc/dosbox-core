@@ -1,6 +1,6 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "midi_bassmidi.h"
-
+#include "deps/char8_t-remediation/char8_t-remediation.h"
 #include "control.h"
 #include "libretro_dosbox.h"
 #include "log.h"
@@ -242,13 +242,17 @@ auto MidiHandlerBassmidi::loadLibs() -> std::tuple<bool, std::string>
     dlerror();
 
     Dlhandle_t basslib(
-        dlopen((retro_system_directory / bass_name).u8string().c_str(), RTLD_NOW | RTLD_GLOBAL),
+        dlopen(
+            from_u8string((retro_system_directory / bass_name).u8string()).c_str(),
+            RTLD_NOW | RTLD_GLOBAL),
         dlcloseWrapper);
     if (!basslib) {
         return {false, dlerror()};
     }
     Dlhandle_t midilib(
-        dlopen((retro_system_directory / bassmidi_name).u8string().c_str(), RTLD_NOW | RTLD_GLOBAL),
+        dlopen(
+            from_u8string((retro_system_directory / bassmidi_name).u8string()).c_str(),
+            RTLD_NOW | RTLD_GLOBAL),
         dlcloseWrapper);
     if (!midilib) {
         return {false, dlerror()};

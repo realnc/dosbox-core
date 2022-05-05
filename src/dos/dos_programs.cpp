@@ -40,6 +40,7 @@
 #include "dma.h"
 
 #ifdef __LIBRETRO__
+#include "deps/char8_t-remediation/char8_t-remediation.h"
 #include "libretro_dosbox.h"
 #include <algorithm>
 #endif
@@ -312,7 +313,7 @@ public:
 			bool failed = false;
 #ifdef __LIBRETRO__
 			// See if it exists in the content's directory first.
-			if (auto relative_to_game = (load_game_directory / temp_line).make_preferred().u8string();
+			if (auto relative_to_game = from_u8string((load_game_directory / temp_line).make_preferred().u8string());
 				std::filesystem::path(temp_line).is_relative() && !stat(relative_to_game.c_str(), &test))
 			{
 				temp_line = std::move(relative_to_game);
@@ -1347,7 +1348,7 @@ public:
 			std::replace(temp_line.begin(), temp_line.end(), '\\', '/');
 #endif
 			// See if it exists in the content's directory first.
-			if (auto relative_to_game = (load_game_directory / temp_line).make_preferred().u8string();
+			if (auto relative_to_game = from_u8string((load_game_directory / temp_line).make_preferred().u8string());
 				std::filesystem::path(temp_line).is_relative() && !stat(relative_to_game.c_str(), &test))
 			{
 				temp_line = std::move(relative_to_game);

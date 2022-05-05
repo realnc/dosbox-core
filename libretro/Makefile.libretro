@@ -1,4 +1,7 @@
 DEBUG := 0
+# Use C++20 for building. This is useful during development. For example it allows for compile-time
+# checks of fmtlib format arguments.
+WITH_CPP20 ?= 0
 # Build with 3dfx Voodoo emulation support
 WITH_VOODOO ?= 1
 # Link statically against libgcc_s and libstdc++.
@@ -36,9 +39,15 @@ ifeq ($(NUMPROC),)
 	NUMPROC=2
 endif
 
-CXXFLAGS += -std=gnu++17 -Wno-register -DFMT_HEADER_ONLY
+ifeq ($(WITH_CPP20), 1)
+	CXXFLAGS += -std=gnu++20
+	EXTRA_CMAKE_FLAGS := -DCMAKE_CXX_STANDARD=20
+else
+	CXXFLAGS += -std=gnu++17
+	EXTRA_CMAKE_FLAGS := -DCMAKE_CXX_STANDARD=17
+endif
+CXXFLAGS += -Wno-register -DFMT_HEADER_ONLY
 COMMONFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\" -DSVN_VERSION=\"$(SVN_VERSION)\"
-EXTRA_CMAKE_FLAGS := -DCMAKE_CXX_STANDARD=17
 
 # Target triplet for cross compilation. When cross compiling from Linux to
 # Windows 32-bit using MXE for example, you'd set this to something like:

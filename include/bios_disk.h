@@ -85,7 +85,7 @@ extern RealPt imgDTAPtr; /* Real memory location of temporary DTA pointer for fa
 extern DOS_DTA *imgDTA;
 
 void swapInDisks(void);
-void swapInNextDisk(void);
+void swapInNextDisk(bool pressed); // libretro fix
 bool getSwapRequest(void);
 
 #endif

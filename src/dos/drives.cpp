@@ -23,6 +23,10 @@
 #include "mapper.h"
 #include "support.h"
 
+#ifdef __LIBRETRO__
+#include "libretro_message.h"
+#endif
+
 bool WildFileCmp(const char * file, const char * wild) 
 {
 	char file_name[9];
@@ -183,7 +187,16 @@ void DriveManager::CycleDisks(int drive, bool notify) {
 		strcpy(newDisk->curdir, oldDisk->curdir);
 		newDisk->Activate();
 		Drives[drive] = newDisk;
+#ifdef __LIBRETRO__
+		if (notify)
+			retro::showOsdInfo(
+				fmt::format(
+					"Drive {}: disk {} of {} now active", static_cast<char>('A' + drive),
+					currentDisk + 1, numDisks),
+				RETRO_MESSAGE_TYPE_STATUS);
+#else
 		if (notify) LOG_MSG("Drive %c: disk %d of %d now active", 'A'+drive, currentDisk+1, numDisks);
+#endif
 	}
 }
 

@@ -1,5 +1,6 @@
 // This is copyrighted software. More information is at the end of this file.
 #include "CoreOptions.h"
+#include "bios_disk.h"
 #include "dosbox.h"
 #include "joystick.h"
 #include "keyboard.h"
@@ -484,6 +485,10 @@ static RETRO_CALLCONV void keyboardEventCb(
         keycode == RETROK_F12 && key_modifiers & RETROKMOD_CTRL && down)
     {
         CPU_CycleIncrease(true);
+    } else if (keycode == RETROK_F4 && (key_modifiers & RETROKMOD_CTRL) && !down) {
+        // Only activate on key up. For some reason, we're not being called on key down. Retroarch
+        // bug?
+        swapInNextDisk(true);
     }
 
     for (const auto& [retro_id, dosbox_id] : retro_dosbox_map) {

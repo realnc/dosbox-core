@@ -117,6 +117,22 @@ could just as well configure XMS, EMS and UMB using the core options instead.
 But if you prefer to configure settings in .conf files, you can do it without
 worrying that those settings might conflict with core options.
 
+### Cycling between mounted CD images
+
+If you mount multiple CD images to the same CD-ROM drive:
+
+```text
+imgmount d cd1.cue cd2.cue cd3.cue -t cdrom
+```
+
+You can cycle between them with CTRL+F4.
+
+### Temporary adjustment of CPU cycles
+
+You can decrease/increase current CPU cycles using CTRL+F11 and CTRL+F12. The
+cycle decrement/increment amount can be configured in the core options. The
+change in cycles is only temporary and will not be saved permanently.
+
 ### MT-32
 
 For MT-32 emulation, make sure you have the correct MT-32 ROMs in your

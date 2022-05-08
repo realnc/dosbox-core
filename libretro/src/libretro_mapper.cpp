@@ -29,15 +29,6 @@ static bool use_dpad_mouse_emulation = false;
 bool libretro_supports_bitmasks = false;
 std::array<int16_t, RETRO_INPUT_PORTS_MAX> joypad_bits{};
 
-static constexpr KBD_KEYS event_key_map[]{
-    KBD_f1,    KBD_f2,      KBD_f3,         KBD_f4,          KBD_f5,    KBD_f6,
-    KBD_f7,    KBD_f8,      KBD_f9,         KBD_f10,         KBD_f11,   KBD_f12,
-    KBD_enter, KBD_kpminus, KBD_scrolllock, KBD_printscreen, KBD_pause, KBD_home,
-};
-
-static constexpr unsigned eventMOD1 = 55;
-static constexpr unsigned eventMOD2 = 53;
-
 template <class T>
 class InputItem final
 {
@@ -61,42 +52,6 @@ class Processable
 public:
     virtual void process() = 0;
     virtual ~Processable() = default;
-};
-
-class EventHandler final: public Processable
-{
-public:
-    EventHandler(MAPPER_Handler* const handler, const MapKeys key, const unsigned mods)
-        : handler_(handler)
-        , key_(event_key_map[key])
-        , mods_(mods)
-    { }
-
-    void process() override
-    {
-        const uint32_t modsList =
-            keyboard_state[eventMOD1] ? 1 : 0 | keyboard_state[eventMOD2] ? 1 : 0;
-        item.process(*this, (mods_ == modsList) && keyboard_state[key_]);
-    }
-
-    void press() const
-    {
-        if (retro_vkbd) {
-            return;
-        }
-        handler_(true);
-    }
-
-    void release() const
-    {
-        handler_(false);
-    }
-
-private:
-    MAPPER_Handler* handler_;
-    unsigned key_;
-    unsigned mods_;
-    InputItem<EventHandler> item;
 };
 
 class VKBDToggle final: public Processable
@@ -976,13 +931,6 @@ void MAPPER_Init()
     environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, retro_desc.data());
 }
 
-void MAPPER_AddHandler(
-    MAPPER_Handler* const handler, const MapKeys key, const Bitu mods,
-    const char* const /*eventname*/, const char* const /*buttonname*/)
-{
-    input_list.push_back(std::make_unique<EventHandler>(handler, key, mods));
-}
-
 static void runMouseEmulation(const unsigned int port)
 {
     int16_t emulated_mouse_x = 0;
@@ -1076,6 +1024,9 @@ void MAPPER_Run(const bool /*pressed*/)
 }
 
 void Mouse_AutoLock(const bool /*enable*/)
+{ }
+
+void MAPPER_AddHandler(MAPPER_Handler*, MapKeys, Bitu, const char*, const char*)
 { }
 
 /*

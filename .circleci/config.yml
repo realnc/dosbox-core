@@ -113,6 +113,7 @@ jobs:
                 -r ${CIRCLE_PROJECT_REPONAME} \
                 -c ${CIRCLE_SHA1} \
                 -n "Latest Build (Linux ARM)" \
+                -b "Linux ARM builds of current libretro branch." \
                 -delete \
                 -prerelease \
                 latest_build_linux_arm \

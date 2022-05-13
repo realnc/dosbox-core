@@ -221,13 +221,14 @@ jobs:
         path: build_artifacts
 
     - name: Upload release binaries
-      uses: softprops/action-gh-release@v1
+      uses: ncipollo/release-action@v1
       with:
-        body: "Builds of current libretro branch."
+        allowUpdates: true
+        artifactErrorsFailBuild: true
+        body: 'Builds of current libretro branch.'
+        generateReleaseNotes: false
+        name: 'Latest Build'
         prerelease: true
-        name: "Latest Build"
-        tag_name: latest_build
-        fail_on_unmatched_files: true
-        generate_release_notes: false
-        append_body: false
-        files: 'build_artifacts/*/*'
+        replacesArtifacts: true
+        tag: latest_build
+        artifacts: 'build_artifacts/*/*'

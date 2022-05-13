@@ -87,10 +87,10 @@ jobs:
         name: ${{ matrix.config.zip_name }}
         path: libretro/${{ matrix.config.zip_name }}
 
-  build_linux_arm:
+  trigger_circleci_arm:
     runs-on: ubuntu-latest
     steps:
-    - name: Trigger CircleCI
+    - name: Trigger CircleCI ARM builds
       id: 'build_linux_arm'
       uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.4
       env:
@@ -218,17 +218,25 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        path: build_artifacts
+        path: /tmp/build_artifacts
+
+    - uses: actions/setup-go@v3
 
     - name: Upload release binaries
-      uses: ncipollo/release-action@v1
-      with:
-        allowUpdates: true
-        artifactErrorsFailBuild: true
-        body: 'Builds of current libretro branch.'
-        generateReleaseNotes: false
-        name: 'Latest Build'
-        prerelease: true
-        replacesArtifacts: true
-        tag: latest_build
-        artifacts: 'build_artifacts/*/*'
+      run: |
+        mkdir /tmp/build_artifacts/upload
+        mv /tmp/build_artifacts/*/* /tmp/build_artifacts/upload/
+        export PATH="$PATH:$(go env GOPATH)/bin"
+        go install github.com/tcnksm/ghr@latest
+        ghr \
+            -t "${{ secrets.GITHUB_TOKEN }}" \
+            -u "${GITHUB_ACTOR}" \
+            -r "${GITHUB_REPOSITORY#*/}" \
+            -c "${GITHUB_SHA}" \
+            -n "Latest Build" \
+            -b "Builds of current libretro branch." \
+            -delete \
+            -prerelease \
+            latest_build \
+            /tmp/build_artifacts/upload \
+        ;

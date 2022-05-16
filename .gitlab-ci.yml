@@ -89,7 +89,7 @@ libretro-build-windows-x64:
     - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - LDFLAGS="-Wl,--no-undefined" make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
 # Windows 32-bit
@@ -122,7 +122,7 @@ libretro-build-windows-i686:
     - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - LDFLAGS="-Wl,--no-undefined" make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - i686-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
 # Linux 64-bit
@@ -153,7 +153,7 @@ libretro-build-linux-x64:
     - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - LDFLAGS="-Wl,--no-undefined" make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
 
 # Linux 32-bit
@@ -184,7 +184,7 @@ libretro-build-linux-i686:
     - touch libretro/deps/mpg123/configure
     - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - LDFLAGS="-Wl,--no-undefined" linux32 make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip ${MAKEFILE_PATH}/${CORENAME}_libretro.so
 
 # MacOS 64-bit
@@ -220,7 +220,7 @@ libretro-build-osx-x64:
     - popd
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - export LDFLAGS="-L \"$PWD/libretro/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs"
+    - export LDFLAGS="-L \"$PWD/libretro/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs -undefined error"
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - strip -u -r -S ${MAKEFILE_PATH}/${CORENAME}_libretro.dylib
     - rm -rf "${HOMEBREW_PREFIX}"

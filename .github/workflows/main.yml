@@ -73,6 +73,7 @@ jobs:
                 touch libretro/deps/mpg123/configure
                 make -C libretro -f Makefile.libretro clean
                 make -C libretro -f Makefile.libretro deps
+                export LDFLAGS="-Wl,--no-undefined"
                 make -C libretro -f Makefile.libretro -j`nproc`
                 strip libretro/dosbox_core_libretro.so
                 chmod -x libretro/dosbox_core_libretro.so
@@ -149,7 +150,7 @@ jobs:
         autoreconf -iv
         cd ../../
         make deps
-        export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs"
+        export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs -undefined error"
         make -j`sysctl -n hw.ncpu`
         strip -u -r -S dosbox_core_libretro.dylib
         zip -9 macOS-x64.zip dosbox_core_libretro.dylib
@@ -195,6 +196,7 @@ jobs:
       working-directory: ./libretro
       run: |
         make deps
+        export LDFLAGS="-Wl,--no-undefined"
         make -j`nproc`
         ${{ matrix.config.triplet }}-strip dosbox_core_libretro.dll
         zip -9 ${{ matrix.config.zip_name }} dosbox_core_libretro.dll

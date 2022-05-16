@@ -185,7 +185,7 @@ else
 endif
 
 ifeq ($(WITH_FAKE_SDL), 1)
-	COMMONFLAGS += -DWITH_FAKE_SDL -Ifakesdl/SDL
+	COMMONFLAGS += -DWITH_FAKE_SDL -Isrc/fakesdl/SDL
 else
 	WITH_SDL_SOUND_WRAPPER ?= 1
 	COMMONFLAGS += `$(PKGCONFIG) --cflags sdl`

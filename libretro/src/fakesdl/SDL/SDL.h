@@ -1,12 +1,9 @@
 #pragma once
 #include "SDL_endian.h"
+#include "SDL_stdinc.h"
 #include "SDL_thread.h"
 #include "SDL_timer.h"
 #include <cstdint>
-
-using Uint8 = std::uint8_t;
-using Uint16 = std::uint16_t;
-using Uint32 = std::uint32_t;
 
 // This is used in src/ints/bios_keyboard.cpp as a workaround for caps/num lock on old SDL versions.
 #define SDL_VERSION_ATLEAST(...) 0

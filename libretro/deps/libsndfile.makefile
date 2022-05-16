@@ -3,6 +3,7 @@ MAKEFILE_LIBSNDFILE = 1
 
 LIBSNDFILE_BUILD_DIR = $(DEPS_BIN_DIR)/libsndfile_build
 LIBSNDFILE = $(DEPS_BIN_DIR)/lib/pkgconfig/sndfile.pc
+EXTRA_PACKAGES := sndfile $(EXTRA_PACKAGES)
 
 $(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	mkdir -p "$(LIBSNDFILE_BUILD_DIR)"

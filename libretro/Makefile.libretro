@@ -266,11 +266,11 @@ ifeq ($(BUNDLED_AUDIO_CODECS), 1)
 	LDFLAGS += \
 		$(DEPS_BIN_DIR)/lib/libFLAC.a \
 		$(DEPS_BIN_DIR)/lib/libmpg123.a \
-		$(DEPS_BIN_DIR)/lib/libogg.a \
-		$(DEPS_BIN_DIR)/lib/libopus.a \
 		$(DEPS_BIN_DIR)/lib/libopusfile.a \
+		$(DEPS_BIN_DIR)/lib/libopus.a \
+		$(DEPS_BIN_DIR)/lib/libvorbisfile.a \
 		$(DEPS_BIN_DIR)/lib/libvorbis.a \
-		$(DEPS_BIN_DIR)/lib/libvorbisfile.a
+		$(DEPS_BIN_DIR)/lib/libogg.a
 
 		ifeq ($(platform), win)
 			LDFLAGS += -lshlwapi

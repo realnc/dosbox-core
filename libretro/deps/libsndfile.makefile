@@ -11,7 +11,7 @@ $(LIBSNDFILE): $(OGG) $(VORBIS) $(OPUS) $(FLAC)
 	&& unset CFLAGS \
 	&& unset CXXFLAGS \
 	&& unset LDFLAGS \
-	&& $(CMAKE) \
+	&& CFLAGS="-DFLAC__NO_DLL" $(CMAKE) \
 	    -DCMAKE_FIND_ROOT_PATH="$(DEPS_BIN_DIR)" \
 	    -DCMAKE_BUILD_TYPE=$(CMAKE_BUILD_TYPE) \
 	    -DBUILD_SHARED_LIBS=OFF \

@@ -66,6 +66,7 @@ jobs:
             realnc/dosbox-core-build:${{ matrix.config.image_tag }} \
             bash -c '(
                 set -ex
+                git config --global --add safe.directory '*' || true
                 touch libretro/deps/mpg123/aclocal.m4
                 sleep 1
                 find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
@@ -120,6 +121,7 @@ jobs:
 
     - name: Install custom homebrew
       run: |
+        git config --global --add safe.directory '*' || true
         rm -rf "${HOMEBREW_PREFIX}"
         mkdir "${HOMEBREW_PREFIX}"
         cd "${HOMEBREW_PREFIX}"/..
@@ -195,6 +197,7 @@ jobs:
     - name: Build
       working-directory: ./libretro
       run: |
+        git config --global --add safe.directory '*' || true
         touch deps/sdl_net/aclocal.m4
         touch deps/mpg123/aclocal.m4
         sleep 1

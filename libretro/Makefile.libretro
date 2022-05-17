@@ -151,7 +151,7 @@ else ifeq ($(platform), win)
 	ifeq ($(WITH_FAKE_SDL), 1)
 		LDFLAGS += -Wl,-Bstatic
 	else
-		LDFLAGS += -Wl,-Bstatic `$(cross_prefix)sdl-config --static-libs` -lSDL_net
+		LDFLAGS += -Wl,-Bstatic `$(PKGCONFIG) --libs sdl` -lSDL_net
 		LDFLAGS += -Wl,-Bdynamic -liphlpapi -lws2_32 -lopengl32
 	endif
 	COMMONFLAGS += -DWIN32=1 -D__USE_W32_SOCKETS -Werror=return-type

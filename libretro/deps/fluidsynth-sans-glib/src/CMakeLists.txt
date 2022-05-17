@@ -385,32 +385,32 @@ if ( WASAPI_SUPPORT )
   set ( fluidsynth_SOURCES ${fluidsynth_SOURCES} fluid_wasapi_device_enumerate.c )
 endif ( WASAPI_SUPPORT )
 
-add_executable ( fluidsynth
-    ${fluidsynth_SOURCES}
-)
-
-set_target_properties ( fluidsynth
-    PROPERTIES IMPORT_PREFIX "" )
-
-if ( FLUID_CPPFLAGS )
-  set_target_properties ( fluidsynth
-    PROPERTIES COMPILE_FLAGS ${FLUID_CPPFLAGS} )
-endif ( FLUID_CPPFLAGS )
-
-target_link_libraries ( fluidsynth
-    libfluidsynth
-    ${SYSTEMD_LIBRARIES}
-    ${FLUID_LIBS}
-)
+#add_executable ( fluidsynth
+#    ${fluidsynth_SOURCES}
+#)
+#
+#set_target_properties ( fluidsynth
+#    PROPERTIES IMPORT_PREFIX "" )
+#
+#if ( FLUID_CPPFLAGS )
+#  set_target_properties ( fluidsynth
+#    PROPERTIES COMPILE_FLAGS ${FLUID_CPPFLAGS} )
+#endif ( FLUID_CPPFLAGS )
+#
+#target_link_libraries ( fluidsynth
+#    libfluidsynth
+#    ${SYSTEMD_LIBRARIES}
+#    ${FLUID_LIBS}
+#)
 
 if ( MACOSX_FRAMEWORK )
-  install ( TARGETS fluidsynth libfluidsynth
+  install ( TARGETS libfluidsynth
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
     FRAMEWORK DESTINATION "${FRAMEWORK_INSTALL_PREFIX}/${FRAMEWORK_INSTALL_DIR}"
     ARCHIVE DESTINATION "${FRAMEWORK_INSTALL_PREFIX}/${FRAMEWORK_INSTALL_DIR}"
 )
 else ( MACOSX_FRAMEWORK )
-  install ( TARGETS fluidsynth libfluidsynth
+  install ( TARGETS libfluidsynth
     RUNTIME DESTINATION ${BIN_INSTALL_DIR}
     LIBRARY DESTINATION ${LIB_INSTALL_DIR}
     ARCHIVE DESTINATION ${LIB_INSTALL_DIR}

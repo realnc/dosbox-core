@@ -82,10 +82,13 @@ libretro-build-windows-x64:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   script:
+    - touch libretro/deps/sdl_net/aclocal.m4
     - touch libretro/deps/mpg123/aclocal.m4
     - sleep 1
+    - find libretro/deps/sdl_net/ -name "*.in" -exec touch '{}' \;
     - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
     - sleep 1
+    - touch libretro/deps/sdl_net/configure
     - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
@@ -115,10 +118,13 @@ libretro-build-windows-i686:
     WITH_FLUIDSYNTH: 1
     WITH_VOODOO: 1
   script:
+    - touch libretro/deps/sdl_net/aclocal.m4
     - touch libretro/deps/mpg123/aclocal.m4
     - sleep 1
+    - find libretro/deps/sdl_net/ -name "*.in" -exec touch '{}' \;
     - find libretro/deps/mpg123/ -name "*.in" -exec touch '{}' \;
     - sleep 1
+    - touch libretro/deps/sdl_net/configure
     - touch libretro/deps/mpg123/configure
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
     - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps

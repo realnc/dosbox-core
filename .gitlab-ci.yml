@@ -75,7 +75,7 @@ libretro-build-windows-x64:
     TARGET_TRIPLET: x86_64-w64-mingw32.static
     BUNDLED_AUDIO_CODECS: 1
     BUNDLED_LIBSNDFILE: 1
-    BUNDLED_SDL: 0
+    BUNDLED_SDL: 1
     STATIC_LIBCXX: 0
     WITH_BASSMIDI: 1
     WITH_DYNAREC: x86_64
@@ -108,7 +108,7 @@ libretro-build-windows-i686:
     TARGET_TRIPLET: i686-w64-mingw32.static
     BUNDLED_AUDIO_CODECS: 1
     BUNDLED_LIBSNDFILE: 1
-    BUNDLED_SDL: 0
+    BUNDLED_SDL: 1
     STATIC_LIBCXX: 0
     WITH_BASSMIDI: 1
     WITH_DYNAREC: x86

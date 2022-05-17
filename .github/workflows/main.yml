@@ -184,7 +184,7 @@ jobs:
       STATIC_LIBCXX: 0
       BUNDLED_AUDIO_CODECS: 1
       BUNDLED_LIBSNDFILE: 1
-      BUNDLED_SDL: 0
+      BUNDLED_SDL: 1
       WITH_DYNAREC: ${{ matrix.config.dynarec }}
 
     steps:

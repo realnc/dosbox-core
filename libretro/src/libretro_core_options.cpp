@@ -456,7 +456,7 @@ CoreOptions core_options {
                 true,
                 false,
             },
-            true
+            false
         },
         CoreOptionDefinition {
             CORE_OPT_THREAD_SYNC,

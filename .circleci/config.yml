@@ -23,12 +23,12 @@ workflows:
           name: build-linux-arm64v8
           image_tag: 'linux-arm64v8'
           dynarec: 'arm64'
-          zip_arch: 'arm64'
+          file_arch: 'arm64'
       - build-linux:
           name: build-linux-arm32v7
           image_tag: 'linux-arm32v7'
           dynarec: 'arm'
-          zip_arch: 'armhf'
+          file_arch: 'armhf'
       - upload-linux:
           filters:
             branches:
@@ -45,7 +45,7 @@ jobs:
         type: string
       dynarec:
         type: string
-      zip_arch:
+      file_arch:
         type: string
 
     resource_class: arm.medium
@@ -87,14 +87,19 @@ jobs:
                     chmod -x libretro/dosbox_core_libretro.so
                 )'
             mkdir -p /tmp/workspace
-            cd libretro
-            zip -9 linux-<< parameters.zip_arch >>.zip dosbox_core_libretro.so
-            mv linux-<< parameters.zip_arch >>.zip /tmp/workspace/
+            cp libretro/dosbox_core_libretro.so /tmp/workspace/
+            cd /tmp/workspace
+            xz -9 -T0 dosbox_core_libretro.so
+            mv dosbox_core_libretro.so.xz linux-<< parameters.file_arch >>.xz
 
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - linux-<< parameters.zip_arch >>.zip
+      - when:
+          condition:
+            equal: [ 'libretro', << pipeline.git.branch >> ]
+          steps:
+            - persist_to_workspace:
+                root: /tmp/workspace
+                paths:
+                  - linux-<< parameters.file_arch >>.xz
 
   upload-linux:
     resource_class: small
@@ -107,6 +112,25 @@ jobs:
       - run:
           name: "Upload release"
           command: |
+            mkdir zip_release
+            mkdir /tmp/upload
+            cd zip_release
+            cp /tmp/workspace/*.xz .
+
+            bash -c '(
+                set -ex
+                for f in *.xz
+                do
+                    BASENAME=$(basename "$f" .xz)
+                    mkdir -p "${BASENAME}"
+                    cd "${BASENAME}"
+                    mv "../${BASENAME}.xz" dosbox_core_libretro.so.xz
+                    unxz dosbox_core_libretro.so.xz
+                    zip -9 "/tmp/upload/${BASENAME}.zip" dosbox_core_libretro.so
+                    cd ..
+                done
+            )'
+
             go install github.com/tcnksm/ghr@latest
             ghr \
                 -t "${GITHUB_TOKEN}" \
@@ -118,5 +142,5 @@ jobs:
                 -delete \
                 -prerelease \
                 latest_build_linux_arm \
-                /tmp/workspace \
+                /tmp/upload \
             ;

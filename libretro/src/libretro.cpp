@@ -1011,12 +1011,6 @@ void retro_init()
 
     init_audio();
 
-    gfx::pixel_format = RETRO_PIXEL_FORMAT_XRGB8888;
-    retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
-    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &gfx::pixel_format)) {
-        retro::logError("RETRO_ENVIRONMENT_SET_PIXEL_FORMAT failed.");
-    }
-
     if (const char* system_dir = nullptr;
         !environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir))
     {
@@ -1148,6 +1142,12 @@ void retro_deinit()
 
 auto retro_load_game(const retro_game_info* const game) -> bool
 {
+    gfx::pixel_format = RETRO_PIXEL_FORMAT_XRGB8888;
+    retro::logDebug("Setting pixel format to RETRO_PIXEL_FORMAT_XRGB8888.");
+    if (!environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &gfx::pixel_format)) {
+        retro::logError("RETRO_ENVIRONMENT_SET_PIXEL_FORMAT failed.");
+    }
+
     std::filesystem::path load_path;
     std::filesystem::path disk_load_image;
 

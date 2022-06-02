@@ -62,6 +62,15 @@ void init_libretro_conf_properties()
         TextFlow::Column(retro::core_options.option(CORE_OPT_MOUSE_SPEED_HACK)->descAndInfo())
             .width(70)
             .toString());
+    int_prop = secprop->Add_int(CORE_OPT_CORE_VGA_REFRESH, Property::Changeable::Always, 0);
+    int_prop->SetMinMax(50, 70);
+    int_prop->Set_help(
+        TextFlow::Column(fmt::format(
+                             "{} (min {}, max {})",
+                             retro::core_options.option(CORE_OPT_CORE_VGA_REFRESH)->descAndInfo(),
+                             int_prop->getMin(), int_prop->getMax()))
+            .width(70)
+            .toString());
 }
 
 static bool sync_special_option(const std::string_view prop, const Value& new_val)
@@ -443,6 +452,44 @@ CoreOptions core_options {
                 { "internal", "internal (fixed 60FPS)" },
             },
             "external"
+        },
+        CoreOptionDefinition {
+            CORE_OPT_CORE_VGA_REFRESH,
+            "Override emulated video refresh rate",
+            "Forces the emulated refresh rate to a specific value. This can be useful as a method "
+                "of slowing down game speed without affecting audio speed. Only works in games that "
+                "use vsync to limit their speed. Keep in mind that this is a hack and might break "
+                "some games. Using external timing mode is recommended when enabling this."
+                "\n\n"
+                "Example use cases for this option are forcing Turrican 2 to run at 50Hz in order "
+                "to match the speed of the original Amiga version, or forcing a 70Hz game to run at "
+                "a slower 60Hz if you don't have a high refresh rate display and you don't mind the "
+                "slower game speed.",
+            {
+                { 0, "OFF" },
+                { 50, "50Hz" },
+                { 51, "51Hz" },
+                { 52, "52Hz" },
+                { 53, "53Hz" },
+                { 54, "54Hz" },
+                { 55, "55Hz" },
+                { 56, "56Hz" },
+                { 57, "57Hz" },
+                { 58, "58Hz" },
+                { 59, "59Hz" },
+                { 60, "60Hz" },
+                { 61, "61Hz" },
+                { 62, "62Hz" },
+                { 63, "63Hz" },
+                { 64, "64Hz" },
+                { 65, "65Hz" },
+                { 66, "66Hz" },
+                { 67, "67Hz" },
+                { 68, "68Hz" },
+                { 69, "69Hz" },
+                { 70, "70Hz" },
+            },
+            0
         },
         CoreOptionDefinition {
             CORE_OPT_FRAME_DUPING,

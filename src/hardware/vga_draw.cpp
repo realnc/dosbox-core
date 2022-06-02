@@ -27,6 +27,8 @@
 #include "pic.h"
 
 #ifdef __LIBRETRO__
+#include "CoreOptions.h"
+#include "libretro_core_options.h"
 #include "pinhack.h"
 #endif
 
@@ -1212,7 +1214,17 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 	if (!vtotal) return;
 	
 	// The screen refresh frequency
+#ifdef __LIBRETRO__
+	if (const auto hz_override = retro::core_options[CORE_OPT_CORE_VGA_REFRESH].toInt();
+		hz_override == 0)
+	{
+		fps=(double)clock/(vtotal*htotal);
+	} else {
+		fps=hz_override;
+	}
+#else
 	fps=(double)clock/(vtotal*htotal);
+#endif
 	// Horizontal total (that's how long a line takes with whistles and bells)
 	vga.draw.delay.htotal = htotal*1000.0/clock; //in milliseconds
 	// Start and End of horizontal blanking

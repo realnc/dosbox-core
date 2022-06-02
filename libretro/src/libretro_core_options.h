@@ -18,6 +18,7 @@ inline constexpr const char* CORE_OPT_SHOW_KB_MAP_OPTIONS = "show_kb_map_options
 
 inline constexpr const char* CORE_OPTCAT_TIMING = "timing";
 inline constexpr const char* CORE_OPT_CORE_TIMING = "core_timing";
+inline constexpr const char* CORE_OPT_CORE_VGA_REFRESH = "vga_hz";
 inline constexpr const char* CORE_OPT_FRAME_DUPING = "frame_duping";
 inline constexpr const char* CORE_OPT_THREAD_SYNC = "thread_sync";
 

@@ -18,7 +18,7 @@ The core provides some improvements over the DOSBox-SVN core:
   [Falcosoft Midi Player](https://www.vogons.org/viewtopic.php?f=5&t=48207),
   which is shown running on Linux through Wine in this screenshot:
 
-  <img src="/docs/images/screenshot_ultima8_scva.jpg" alt="screenshot" style="width: 40%;"/>
+  <img src="/docs/images/screenshot_ultima8_scva.jpg?raw=true" alt="screenshot" style="width: 40%;"/>
 
 * Cycle-accurate OPL3 (YMF262) emulation option.  
   Using [Nuked OPL3](https://nukeykt.retrohost.net).

@@ -48,7 +48,7 @@
 
 // ----- DOSBOX CORE FEATURES: Many of these probably won't work even if you enable them
 #define C_FPU 1 /* Define to 1 to enable floating point emulation */
-/* #undef C_CORE_INLINE */ /* Define to 1 to use inlined memory functions in cpu core */
+#define C_CORE_INLINE 1 /* Define to 1 to use inlined memory functions in cpu core */
 /* #undef C_DIRECTSERIAL */ /* Define to 1 if you want serial passthrough support (Win32, Posix and OS/2). */
 /* #undef C_IPX */ /* Define to 1 to enable IPX over Internet networking, requires SDL_net */
 /* #undef C_MODEM */ /* Define to 1 to enable internal modem support, requires SDL_net */

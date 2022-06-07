@@ -43,7 +43,10 @@ public:
 	};
 	void Close(void) {
 		if (!isOpen) return;
-		if (device>0) close(device);
+		if (device>0) {
+			HaltSequence();
+			close(device);
+		}
 	};
 	void PlayMsg(Bit8u * msg) {
 		Bit8u buf[128];Bitu pos=0;

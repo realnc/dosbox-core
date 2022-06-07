@@ -71,6 +71,23 @@ MidiHandler::MidiHandler(){
 	handler_list = this;
 };
 
+void MidiHandler::HaltSequence(){
+	Bit8u message[3] = {}; // see MIDI_evt_len for length lookup-table
+	constexpr Bit8u all_notes_off = 0x7b;
+	constexpr Bit8u all_controllers_off = 0x79;
+
+	// from the first to last channel
+	for (Bit8u channel = 0xb0; channel <= 0xbf; ++channel) {
+		message[0] = channel;
+
+		message[1] = all_notes_off;
+		PlayMsg(message);
+
+		message[1] = all_controllers_off;
+		PlayMsg(message);
+	}
+}
+
 MidiHandler Midi_none;
 
 /* Include different midi drivers, lowest ones get checked first for default.

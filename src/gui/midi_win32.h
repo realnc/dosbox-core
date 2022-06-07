@@ -74,9 +74,10 @@ public:
 
 	void Close(void) {
 		if (!isOpen) return;
-		isOpen=false;
+		HaltSequence();
 		midiOutClose(m_out);
 		CloseHandle (m_event);
+		isOpen=false;
 	};
 	void PlayMsg(Bit8u * msg) {
 		midiOutShortMsg(m_out, *(Bit32u*)msg);

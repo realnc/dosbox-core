@@ -42,17 +42,10 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/android-jni.yml'
 
-  ################################## CONSOLES ################################
-  # Nintendo Switch
-# Disable for now, upstream broke dynarec build.
-#  - project: 'libretro-infrastructure/ci-templates'
-#    file: '/libnx-static.yml'
-
 # Stages for building
 stages:
   - build-prepare
   - build-shared
-  - build-static
 
 ##############################################################################
 #################################### STAGES ##################################
@@ -295,12 +288,3 @@ android-x86_64:
 #    - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
 #    - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
 #    - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
-
-################################### CONSOLES #################################
-# Nintendo Switch
-#libretro-build-libnx-aarch64:
-#  extends:
-#    - .libretro-libnx-static-retroarch-master
-#    - .core-defs
-#  variables:
-#    CMAKE_GENERATOR: 'Unix Makefiles'

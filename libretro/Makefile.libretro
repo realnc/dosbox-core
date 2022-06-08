@@ -131,7 +131,7 @@ endif
 
 # flags
 ifeq ($(platform), osx)
-	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
+	COMMONFLAGS += -DC_HAVE_MPROTECT
 	TARGET := $(TARGET_NAME)_libretro.dylib
 	LDFLAGS += -dynamiclib `$(PKGCONFIG) $(PKG_CONFIG_FLAGS) --libs SDL_net`
 	fpic = -fPIC
@@ -154,14 +154,14 @@ else ifeq ($(platform), win)
 		LDFLAGS += -Wl,-Bstatic `$(PKGCONFIG) --libs sdl` -lSDL_net
 		LDFLAGS += -Wl,-Bdynamic -liphlpapi -lws2_32 -lopengl32
 	endif
-	COMMONFLAGS += -DWIN32=1 -D__USE_W32_SOCKETS -Werror=return-type
+	COMMONFLAGS += -DWIN32 -D__USE_W32_SOCKETS -Werror=return-type
 else
 	ifeq ($(UNAME),Linux)
 		WITH_ALSA_MIDI := 1
 		COMMONFLAGS += -DHAVE_ALSA
 		LDFLAGS += `$(PKGCONFIG) --libs alsa`
 	endif
-	COMMONFLAGS += -DC_HAVE_MPROTECT="1"
+	COMMONFLAGS += -DC_HAVE_MPROTECT
 	TARGET := $(TARGET_NAME)_libretro.so
 	LDFLAGS += -shared -Wl,--version-script=link.T
 	ifeq ($(WITH_FAKE_SDL), 1)
@@ -195,7 +195,7 @@ else
 endif
 
 ifeq ($(WITH_VOODOO), 1)
-	COMMONFLAGS += -DWITH_VOODOO=1
+	COMMONFLAGS += -DWITH_VOODOO
 endif
 
 CORE_DIR := ..
@@ -249,11 +249,11 @@ OBJECTS = $(SOURCES_CXX:.cpp=.o) $(SOURCES_C:.c=.o)
 OBJECT_DEPS = $(OBJECTS:.o=.d)
 INCFLAGS += -Ideps/fmt/include
 ifeq ($(WITH_BASSMIDI), 1)
-	COMMONFLAGS += -DWITH_BASSMIDI=1
+	COMMONFLAGS += -DWITH_BASSMIDI
 	LDFLAGS += -ldl
 endif
 ifeq ($(WITH_PINHACK), 1)
-	COMMONFLAGS += -DWITH_PINHACK=1
+	COMMONFLAGS += -DWITH_PINHACK
 endif
 CXXFLAGS += -D__LIBRETRO__ -MMD $(fpic) $(INCFLAGS) $(COMMONFLAGS)
 CFLAGS += -D__LIBRETRO__ -MMD $(fpic) $(INCFLAGS) $(COMMONFLAGS)

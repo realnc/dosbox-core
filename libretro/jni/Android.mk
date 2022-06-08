@@ -45,7 +45,7 @@ SOURCES_C += \
 SOURCES_CXX +=\
     $(CORE_DIR)/libretro/src/nonlibc/snprintf.cpp
 
-COMMONFLAGS += -D__LIBRETRO__ -DFRONTEND_SUPPORTS_RGB565 $(INCFLAGS) -DC_HAVE_MPROTECT="1" -DC_IPX
+COMMONFLAGS += -D__LIBRETRO__ -DFRONTEND_SUPPORTS_RGB565 $(INCFLAGS) -DC_HAVE_MPROTECT -DC_IPX
 
 GIT_VERSION := " $(shell git rev-parse --short HEAD || echo unknown)"
 SVN_VERSION := " $(shell cat ../svn)"

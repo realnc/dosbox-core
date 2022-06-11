@@ -274,17 +274,17 @@ android-x86_64:
     - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
 
 # Android 32-bit x86
-#android-x86:
-#  extends:
-#    - .libretro-android-jni-x86
-#    - .core-defs
-#  variables:
-#    CMAKE: cmake
-#    CMAKE_BUILD_TYPE: Release
-#  script:
-#    - DEPS_BIN_DIR="$PWD/$MAKEFILE_PATH/deps_bin/$ANDROID_ABI"
-#      EXTRA_CMAKE_FLAGS="-DANDROID_PLATFORM=android-16 -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=${ANDROID_ABI}"
-#      make -C ${MAKEFILE_PATH} -f deps/munt.makefile
-#    - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
-#    - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
-#    - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
+android-x86:
+  extends:
+    - .libretro-android-jni-x86
+    - .core-defs
+  variables:
+    CMAKE: cmake
+    CMAKE_BUILD_TYPE: Release
+  script:
+    - DEPS_BIN_DIR="$PWD/$MAKEFILE_PATH/deps_bin/$ANDROID_ABI"
+      EXTRA_CMAKE_FLAGS="-DANDROID_PLATFORM=android-16 -DCMAKE_TOOLCHAIN_FILE=${NDK_ROOT}/build/cmake/android.toolchain.cmake -DANDROID_STL=c++_static -DANDROID_ABI=${ANDROID_ABI}"
+      make -C ${MAKEFILE_PATH} -f deps/munt.makefile
+    - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
+    - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
+    - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi

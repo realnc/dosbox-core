@@ -733,11 +733,19 @@ CoreOptions core_options {
                 "mode games. The \"simple\" interpreter core is optimized for old real mode games.",
             {
                 "auto",
-            #if defined(C_DYNREC)
-                { "dynamic", "dynamic (generic recompiler)" },
-            #else
-                { "dynamic", "dynamic (x86 recompiler)" },
-            #endif
+                {
+                    "dynamic",
+                    "dynamic recompiler"
+                #if defined(C_DYNAMIC_X86)
+                    #if C_TARGETCPU == X86_64
+                        " (x86-64 optimized)"
+                    #elif C_TARGETCPU == X86
+                        " (x86 optimized)"
+                    #endif
+                #elif C_TARGETCPU == X86_64 || C_TARGETCPU == X86
+                    " (generic)"
+                #endif
+                },
                 "normal",
                 "simple",
             },

@@ -976,7 +976,7 @@ static void runMouseEmulation(const unsigned int port)
     Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);
 }
 
-void handle_libretro_input()
+void handle_libretro_input(const bool clamp_mouse)
 {
     poll_cb();
 
@@ -1015,6 +1015,18 @@ void handle_libretro_input()
         float adjusted_y = mouse_y * mouse_speed_factor_y * mouse_speed_hack_factor / slowdown;
 
         if (!retro_vkbd) {
+            if (clamp_mouse) {
+                if (adjusted_x > 0.0f && adjusted_x < 1.0f) {
+                    adjusted_x = 1.0f;
+                } else if (adjusted_x < 0.0f && adjusted_x > -1.0f) {
+                    adjusted_x = -1.0f;
+                }
+                if (adjusted_y > 0.0f && adjusted_y < 1.0f) {
+                    adjusted_y = 1.0f;
+                } else if (adjusted_y < 0.0f && adjusted_y > -1.0f) {
+                    adjusted_y = -1.0f;
+                }
+            }
             Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);
         }
     }

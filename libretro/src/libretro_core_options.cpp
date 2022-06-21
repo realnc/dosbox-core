@@ -27,6 +27,7 @@ void init_libretro_conf_properties()
             mouse_speed_factor_x = section->Get_int(CORE_OPT_MOUSE_SPEED_X) * mult / 100.0f;
             mouse_speed_factor_y = section->Get_int(CORE_OPT_MOUSE_SPEED_Y) * mult / 100.0f;
             update_mouse_speed_fix(gfx::height);
+            set_mouse_speed_clamp(section->Get_bool(CORE_OPT_MOUSE_SPEED_CLAMP));
         },
         true);
 
@@ -64,6 +65,12 @@ void init_libretro_conf_properties()
         secprop->Add_bool(CORE_OPT_MOUSE_SPEED_HACK, Property::Changeable::Always, false);
     bool_prop->Set_help(
         TextFlow::Column(retro::core_options.option(CORE_OPT_MOUSE_SPEED_HACK)->descAndInfo())
+            .width(70)
+            .toString());
+
+    bool_prop = secprop->Add_bool(CORE_OPT_MOUSE_SPEED_CLAMP, Property::Changeable::Always, false);
+    bool_prop->Set_help(
+        TextFlow::Column(retro::core_options.option(CORE_OPT_MOUSE_SPEED_CLAMP)->descAndInfo())
             .width(70)
             .toString());
 
@@ -1019,6 +1026,20 @@ CoreOptions core_options {
             "A hack that modifies vertical sensitivity depending on the current video mode. Try "
                 "enabling this for games that switch between different video modes and result in "
                 "inconsistent vertical mouse speed.",
+            {
+                true,
+                false,
+            },
+            false
+        },
+        CoreOptionDefinition {
+            CORE_OPT_MOUSE_SPEED_CLAMP,
+            "Clamp minimum mouse speed",
+            "Forces very slow mouse movements to be registered as slightly faster. This can be "
+                "useful in games that don't register mouse movements that are slower than a "
+                "certain threshold. Flight of the Amazon Queen is an example of such a game. Do "
+                "not enable this option in games that don't have this problem. It makes mouse "
+                "movement worse.",
             {
                 true,
                 false,

@@ -2,7 +2,7 @@
 #pragma once
 
 void libretro_input_init();
-void handle_libretro_input();
+void handle_libretro_input(bool clamp_mouse);
 
 /*
 

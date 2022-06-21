@@ -75,6 +75,7 @@ int mouse_emu_deadzone = 0;
 float mouse_speed_factor_x = 1.0;
 float mouse_speed_factor_y = 1.0;
 float mouse_speed_hack_factor = 1.0;
+static bool enable_mouse_speed_clamp = false;
 
 /* core option variables */
 bool run_synced = true;
@@ -292,6 +293,11 @@ void update_mouse_speed_fix(const int gfx_height)
     default:
         mouse_speed_hack_factor = 0.85f;
     }
+}
+
+void set_mouse_speed_clamp(const bool enable)
+{
+    enable_mouse_speed_clamp = enable;
 }
 
 static void update_gfx_mode(const bool change_fps)
@@ -794,7 +800,7 @@ static void check_variables()
 
         for (const auto& option :
              {CORE_OPT_MOUSE_SPEED_X, CORE_OPT_MOUSE_SPEED_Y, CORE_OPT_MOUSE_SPEED_MULT,
-              CORE_OPT_MOUSE_SPEED_HACK})
+              CORE_OPT_MOUSE_SPEED_HACK, CORE_OPT_MOUSE_SPEED_CLAMP})
         {
             update_dosbox_variable(false, "dosbox-core", option, core_options[option].toString());
         }
@@ -1243,7 +1249,7 @@ void retro_run()
         mount_overlay = false;
     }
 
-    handle_libretro_input();
+    handle_libretro_input(enable_mouse_speed_clamp);
 
     /* Run emulator */
     auto current_gfx_fps = render.src.fps;

@@ -780,7 +780,7 @@ static auto get_active_ports() noexcept -> std::tuple<int, int, int>
     return {active_port_count, first_retro_port, second_retro_port};
 }
 
-void MAPPER_Init()
+void libretro_input_init()
 {
     retro_keyboard_callback callback{keyboardEventCb};
     environ_cb(RETRO_ENVIRONMENT_SET_KEYBOARD_CALLBACK, &callback);
@@ -976,7 +976,7 @@ static void runMouseEmulation(const unsigned int port)
     Mouse_CursorMoved(adjusted_x, adjusted_y, 0, 0, true);
 }
 
-void MAPPER_Run(const bool /*pressed*/)
+void handle_libretro_input()
 {
     poll_cb();
 
@@ -1028,6 +1028,12 @@ void Mouse_AutoLock(const bool /*enable*/)
 { }
 
 void MAPPER_AddHandler(MAPPER_Handler*, MapKeys, Bitu, const char*, const char*)
+{ }
+
+void MAPPER_Init()
+{ }
+
+void MAPPER_Run(bool)
 { }
 
 /*

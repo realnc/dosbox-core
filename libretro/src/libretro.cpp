@@ -15,6 +15,7 @@
 #include "libretro_core_options.h"
 #include "libretro_dosbox.h"
 #include "libretro_gfx.h"
+#include "libretro_input.h"
 #include "libretro_message.h"
 #include "log.h"
 #include "mapper.h"
@@ -787,7 +788,7 @@ static void check_variables()
             if (prev_force_2axis_joystick != force_2axis_joystick
                 || prev_mouse_emu_deadzone != mouse_emu_deadzone)
             {
-                MAPPER_Init();
+                libretro_input_init();
             }
         }
 
@@ -981,7 +982,7 @@ void retro_set_controller_port_device(const unsigned port, const unsigned device
         gamepad[port] = false;
         break;
     }
-    MAPPER_Init();
+    libretro_input_init();
 }
 
 void retro_get_system_info(retro_system_info* const info)
@@ -1231,7 +1232,7 @@ void retro_run()
             update_gfx_mode(false);
         }
         update_core_option_visibility();
-        MAPPER_Init();
+        libretro_input_init();
     }
 
     /* Once C is mounted, mount the overlay */
@@ -1242,8 +1243,7 @@ void retro_run()
         mount_overlay = false;
     }
 
-    /* Read input */
-    MAPPER_Run(false);
+    handle_libretro_input();
 
     /* Run emulator */
     auto current_gfx_fps = render.src.fps;

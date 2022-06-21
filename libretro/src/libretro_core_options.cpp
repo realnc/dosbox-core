@@ -29,6 +29,7 @@ void init_libretro_conf_properties()
             update_mouse_speed_fix(gfx::height);
         },
         true);
+
     auto* int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_X, Property::Changeable::Always, 100);
     int_prop->SetMinMax(1, 127);
     int_prop->Set_help(
@@ -38,6 +39,7 @@ void init_libretro_conf_properties()
                              int_prop->getMin(), int_prop->getMax()))
             .width(70)
             .toString());
+
     int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_Y, Property::Changeable::Always, 100);
     int_prop->SetMinMax(1, 127);
     int_prop->Set_help(
@@ -47,6 +49,7 @@ void init_libretro_conf_properties()
                              int_prop->getMin(), int_prop->getMax()))
             .width(70)
             .toString());
+
     int_prop = secprop->Add_int(CORE_OPT_MOUSE_SPEED_MULT, Property::Changeable::Always, 1);
     int_prop->SetMinMax(1, 5);
     int_prop->Set_help(
@@ -56,12 +59,14 @@ void init_libretro_conf_properties()
                              int_prop->getMin(), int_prop->getMax()))
             .width(70)
             .toString());
+
     auto* bool_prop =
         secprop->Add_bool(CORE_OPT_MOUSE_SPEED_HACK, Property::Changeable::Always, false);
     bool_prop->Set_help(
         TextFlow::Column(retro::core_options.option(CORE_OPT_MOUSE_SPEED_HACK)->descAndInfo())
             .width(70)
             .toString());
+
     int_prop = secprop->Add_int(CORE_OPT_CORE_VGA_REFRESH, Property::Changeable::Always, 0);
     int_prop->SetMinMax(50, 70);
     int_prop->Set_help(

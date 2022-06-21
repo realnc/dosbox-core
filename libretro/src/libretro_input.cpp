@@ -1,4 +1,5 @@
 // This is copyrighted software. More information is at the end of this file.
+#include "libretro_input.h"
 #include "CoreOptions.h"
 #include "bios_disk.h"
 #include "dosbox.h"

@@ -35,7 +35,7 @@ SOURCES_CXX += \
 	$(CORE_DIR)/libretro/src/libretro_audio.cpp \
 	$(CORE_DIR)/libretro/src/libretro_core_options.cpp \
 	$(CORE_DIR)/libretro/src/libretro_gfx.cpp \
-	$(CORE_DIR)/libretro/src/libretro_mapper.cpp \
+	$(CORE_DIR)/libretro/src/libretro_input.cpp \
 	$(CORE_DIR)/libretro/src/libretro_message.cpp \
 	$(CORE_DIR)/libretro/src/log.cpp \
 	$(CORE_DIR)/libretro/src/util.cpp \

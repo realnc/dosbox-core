@@ -1,11 +1,10 @@
 #include "libretro_gfx.h"
 #include "dosbox.h"
 #include "emu_thread.h"
+#include "libretro-vkbd.h"
 #include "libretro.h"
 #include "libretro_dosbox.h"
-#include "libretro-vkbd.h"
 #include "log.h"
-#include "render.h"
 #include "vga.h"
 #include "video.h"
 #include <algorithm>

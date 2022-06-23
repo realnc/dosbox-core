@@ -4,7 +4,6 @@
 #include "control.h"
 #include "deps/char8_t-remediation/char8_t-remediation.h"
 #include "disk_control.h"
-#include "dos/cdrom.h"
 #include "dos/drives.h"
 #include "dosbox.h"
 #include "emu_thread.h"
@@ -18,17 +17,20 @@
 #include "libretro_input.h"
 #include "libretro_message.h"
 #include "log.h"
-#include "mapper.h"
-#include "midi_alsa.h"
-#include "midi_win32.h"
+#include "mixer.h"
 #include "pic.h"
-#include "pinhack.h"
 #include "programs.h"
 #include "render.h"
 #include "setup.h"
 #include "util.h"
 #ifdef ANDROID
     #include "nonlibc.h"
+#endif
+#if HAVE_ALSA
+    #include "midi_alsa.h"
+#endif
+#ifdef _WIN32
+    #include "midi_win32.h"
 #endif
 #include <algorithm>
 #include <array>

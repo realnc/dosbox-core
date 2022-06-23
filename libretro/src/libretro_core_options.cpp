@@ -75,12 +75,11 @@ void init_libretro_conf_properties()
             .toString());
 
     int_prop = secprop->Add_int(CORE_OPT_CORE_VGA_REFRESH, Property::Changeable::Always, 0);
-    int_prop->SetMinMax(50, 70);
+    int_prop->SetMinMax(0, 70);
     int_prop->Set_help(
         TextFlow::Column(fmt::format(
-                             "{} (min {}, max {})",
-                             retro::core_options.option(CORE_OPT_CORE_VGA_REFRESH)->descAndInfo(),
-                             int_prop->getMin(), int_prop->getMax()))
+                             "{} (min 50, max 70, 0 to disable)",
+                             retro::core_options.option(CORE_OPT_CORE_VGA_REFRESH)->descAndInfo()))
             .width(70)
             .toString());
 }

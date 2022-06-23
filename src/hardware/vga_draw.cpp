@@ -1220,7 +1220,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 	{
 		fps=(double)clock/(vtotal*htotal);
 	} else {
-		fps=hz_override;
+		fps = std::max(50, hz_override);
 	}
 #else
 	fps=(double)clock/(vtotal*htotal);

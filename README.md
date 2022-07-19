@@ -66,7 +66,7 @@ as other contributors (the full commit history has been preserved.)
 
 ## Supported Platforms
 
-* Linux (x86, x86-64, ARMv7 (armhf))
+* Linux (x86, x86-64, ARMv7 (armhf), ARM64)
 * Windows 7 or later
 * macOS 10.9 (Mavericks) or later
 * Android

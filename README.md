@@ -58,6 +58,11 @@ The core provides some improvements over the DOSBox-SVN core:
   .conf file will not conflict with core options. The core options will be
   synced with the .conf file settings and marked as locked.
 
+  It's also possible to load the default DOSBox-core.conf file in the libretro
+  saves directory, if it exists. This is disabled by default but can be enabled
+  in the core options. This is equivalent to using the "-userconf" flag in
+  stand-alone dosbox.
+
 * Other general, under-the-hood improvements and bugfixes.
 
 DOSBox-core was originally based on the https://github.com/libretro/dosbox-svn

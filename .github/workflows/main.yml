@@ -98,76 +98,76 @@ jobs:
       env:
         CCI_TOKEN: ${{ secrets.CCI_TOKEN }}
 
-  build_macos:
-    runs-on: macos-11
-
-    env:
-      CC: gcc-11
-      CXX: g++-11
-      platform: osx
-      WITH_DYNAREC: x86_64
-      STATIC_LIBCXX: 1
-      BUNDLED_AUDIO_CODECS: 1
-      BUNDLED_LIBSNDFILE: 1
-      BUNDLED_SDL: 1
-      PKG_CONFIG_FLAGS: --static
-      MACOSX_DEPLOYMENT_TARGET: '10.9'
-      HOMEBREW_PREFIX: /Users/Shared/homebrew-dosbox-core
-      HOMEBREW_CELLAR: /Users/Shared/homebrew-dosbox-core/Cellar
-      HOMEBREW_SHELLENV_PREFIX: /Users/Shared/homebrew-dosbox-core
-
-    steps:
-    - run: echo "${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${PATH}" >> $GITHUB_PATH
-
-    - name: Install custom homebrew
-      run: |
-        git config --global --add safe.directory '*' || true
-        rm -rf "${HOMEBREW_PREFIX}"
-        mkdir "${HOMEBREW_PREFIX}"
-        cd "${HOMEBREW_PREFIX}"/..
-        curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-dosbox-core.tar.zst' | zstd -d | tar x
-
-    # Since macOS is developed by monkeys, we have to do this shit to get static linking against
-    # homebrew-installed libraries.
-    - name: Symlink static homebrew libs
-      run: |
-        cd "${HOMEBREW_PREFIX}"
-        mkdir static_libs
-        ln -s "${HOMEBREW_PREFIX}"/lib/*.a static_libs/
-
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-
-    - name: Remove /usr/local homebrew
-      working-directory: /usr/local
-      run: |
-        sudo mkdir /tmp/oldbrew
-        sudo mv * /tmp/oldbrew/
-
-    - name: Build
-      working-directory: ./libretro
-      run: |
-        cd deps/mpg123/
-        autoreconf -iv
-        cd ../../
-        make deps
-        export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs -undefined error"
-        make -j`sysctl -n hw.ncpu`
-        strip -u -r -S dosbox_core_libretro.dylib
-        zip -9 macOS-x64.zip dosbox_core_libretro.dylib
-
-    - name: Restore /usr/local homebrew
-      working-directory: /usr/local
-      run: |
-        sudo mv /tmp/oldbrew/* .
-
-    - name: Upload artifact
-      if: github.event_name == 'push'
-      uses: actions/upload-artifact@v3
-      with:
-        name: macOS-x64.zip
-        path: libretro/macOS-x64.zip
+#   build_macos:
+#     runs-on: macos-12
+#
+#     env:
+#       CC: gcc-11
+#       CXX: g++-11
+#       platform: osx
+#       WITH_DYNAREC: x86_64
+#       STATIC_LIBCXX: 1
+#       BUNDLED_AUDIO_CODECS: 1
+#       BUNDLED_LIBSNDFILE: 1
+#       BUNDLED_SDL: 1
+#       PKG_CONFIG_FLAGS: --static
+#       MACOSX_DEPLOYMENT_TARGET: '10.9'
+#       HOMEBREW_PREFIX: /Users/Shared/homebrew-dosbox-core
+#       HOMEBREW_CELLAR: /Users/Shared/homebrew-dosbox-core/Cellar
+#       HOMEBREW_SHELLENV_PREFIX: /Users/Shared/homebrew-dosbox-core
+#
+#     steps:
+#     - run: echo "${HOMEBREW_PREFIX}/bin:${HOMEBREW_PREFIX}/sbin:${PATH}" >> $GITHUB_PATH
+#
+#     - name: Install custom homebrew
+#       run: |
+#         git config --global --add safe.directory '*' || true
+#         rm -rf "${HOMEBREW_PREFIX}"
+#         mkdir "${HOMEBREW_PREFIX}"
+#         cd "${HOMEBREW_PREFIX}"/..
+#         curl -s -S -L 'https://github.com/realnc/stuff/releases/download/stuff/homebrew-dosbox-core.tar.zst' | zstd -d | tar x
+#
+#     # Since macOS is developed by monkeys, we have to do this shit to get static linking against
+#     # homebrew-installed libraries.
+#     - name: Symlink static homebrew libs
+#       run: |
+#         cd "${HOMEBREW_PREFIX}"
+#         mkdir static_libs
+#         ln -s "${HOMEBREW_PREFIX}"/lib/*.a static_libs/
+#
+#     - uses: actions/checkout@v3
+#       with:
+#         submodules: recursive
+#
+#     - name: Remove /usr/local homebrew
+#       working-directory: /usr/local
+#       run: |
+#         sudo mkdir /tmp/oldbrew
+#         sudo mv * /tmp/oldbrew/
+#
+#     - name: Build
+#       working-directory: ./libretro
+#       run: |
+#         cd deps/mpg123/
+#         autoreconf -iv
+#         cd ../../
+#         make deps
+#         export LDFLAGS="-L \"$PWD/deps_bin/lib\" -L ${HOMEBREW_PREFIX}/static_libs -undefined error"
+#         make -j`sysctl -n hw.ncpu`
+#         strip -u -r -S dosbox_core_libretro.dylib
+#         zip -9 macOS-x64.zip dosbox_core_libretro.dylib
+#
+#     - name: Restore /usr/local homebrew
+#       working-directory: /usr/local
+#       run: |
+#         sudo mv /tmp/oldbrew/* .
+#
+#     - name: Upload artifact
+#       if: github.event_name == 'push'
+#       uses: actions/upload-artifact@v3
+#       with:
+#         name: macOS-x64.zip
+#         path: libretro/macOS-x64.zip
 
   build_mxe:
     strategy:
@@ -224,7 +224,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [
       build_linux_intel,
-      build_macos,
+      #build_macos,
       build_mxe,
     ]
 

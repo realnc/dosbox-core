@@ -896,6 +896,13 @@ static void start_dosbox(const std::string cmd_line)
     /* Init the configuration system and add default values */
     DOSBOX_Init();
 
+    // Forcibly load default config if user says so.
+    if (const auto default_conf = retro_save_directory / "DOSBox-core.conf";
+        retro::core_options[CORE_OPT_LOAD_DEFAULT_CONF].toBool() && config_path != default_conf)
+    {
+        control->ParseConfigFile(from_u8string(default_conf.u8string()).c_str());
+    }
+
     /* Load config */
     if (!config_path.empty()) {
         control->ParseConfigFile(from_u8string(config_path.u8string()).c_str());

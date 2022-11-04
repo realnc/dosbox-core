@@ -424,6 +424,21 @@ CoreOptions core_options {
         "lock"
     },
     CoreOptionDefinition {
+        CORE_OPT_LOAD_DEFAULT_CONF,
+        "Always load DOSBox-core.conf",
+        "Always load the DOSBox-core.conf file if it exists in the libretro saves directory. "
+            "Normally, this is not done when loading a custom conf file as content. This is the "
+            "equivalent to using the \"-userconf\" option with stand-alone dosbox.\n"
+            "\n"
+            "A DOSBox-core.conf file based on the current dosbox settings can be generated with "
+            "the \"config -wcd\" command.",
+        {
+            true,
+            false,
+        },
+        false
+    },
+    CoreOptionDefinition {
         CORE_OPT_ADV_OPTIONS,
         "Show all options",
         "Show all options, including those that usually do not require changing.",

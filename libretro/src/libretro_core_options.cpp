@@ -402,60 +402,66 @@ namespace retro {
 CoreOptions core_options {
     "dosbox_core_",
 
-    CoreOptionDefinition {
-        CORE_OPT_OPTION_HANDLING,
-        "Core option handling",
-        "When configuring emulation settings using the loaded .conf file's INI properties or with "
-            "DOSBox commands (like \"config -set\",) there will be conflicts with the core options. "
-            "This setting specifies how those conflicts should be handled.\n"
-            "\n"
-            "Lock changed options: Lock the core option to a single value. No changes will be "
-            "allowed through the core options UI. The core option becomes purely informational, "
-            "simply displaying the current value that was set in the .conf file or through DOSBox "
-            "commands.\n"
-            "\n"
-            "Disable changed options: Disable and hide the core option. Its current value will not "
-            "be changed. If the frontend doesn't support option hiding, changing the option will "
-            "have no effect.",
-        {
-            { "lock", "lock changed options" },
-            { "disable", "disable changed options" },
+    CoreOptionCategory {
+        CORE_OPTCAT_CORE_OPTION_BEHAVIOR,
+        "Core option behavior",
+        "Options relating to the behavior of the core options themselves.",
+
+        CoreOptionDefinition {
+            CORE_OPT_OPTION_HANDLING,
+            "Core option handling",
+            "When configuring emulation settings using the loaded .conf file's INI properties or "
+                "with DOSBox commands (like \"config -set\",) there will be conflicts with the "
+                "core options. This setting specifies how those conflicts should be handled.\n"
+                "\n"
+                "Lock changed options: Lock the core option to a single value. No changes will be "
+                "allowed through the core options UI. The core option becomes purely "
+                "informational, simply displaying the current value that was set in the .conf file "
+                "or through DOSBox commands.\n"
+                "\n"
+                "Disable changed options: Disable and hide the core option. Its current value will "
+                "not be changed. If the frontend doesn't support option hiding, changing the "
+                "option will have no effect.",
+            {
+                { "lock", "lock changed options" },
+                { "disable", "disable changed options" },
+            },
+            "lock"
         },
-        "lock"
-    },
-    CoreOptionDefinition {
-        CORE_OPT_LOAD_DEFAULT_CONF,
-        "Always load DOSBox-core.conf",
-        "Always load the DOSBox-core.conf file if it exists in the libretro saves directory. "
-            "Normally, this is not done when loading a custom conf file as content. This is the "
-            "equivalent to using the \"-userconf\" option with stand-alone dosbox.\n"
-            "\n"
-            "A DOSBox-core.conf file based on the current dosbox settings can be generated with "
-            "the \"config -wcd\" command.",
-        {
-            true,
-            false,
+        CoreOptionDefinition {
+            CORE_OPT_LOAD_DEFAULT_CONF,
+            "Always load DOSBox-core.conf",
+            "Always load the DOSBox-core.conf file if it exists in the libretro saves directory. "
+                "Normally, this is not done when loading a custom conf file as content. This is the "
+                "equivalent to using the \"-userconf\" option with stand-alone dosbox.\n"
+                "\n"
+                "A DOSBox-core.conf file based on the current dosbox settings can be generated with "
+                "the \"config -wcd\" command.",
+            {
+                true,
+                false,
+            },
+            false
         },
-        false
-    },
-    CoreOptionDefinition {
-        CORE_OPT_ADV_OPTIONS,
-        "Show all options",
-        "Show all options, including those that usually do not require changing.",
-        {
-            true,
-            false,
+        CoreOptionDefinition {
+            CORE_OPT_ADV_OPTIONS,
+            "Show all options",
+            "Show all options, including those that usually do not require changing.",
+            {
+                true,
+                false,
+            },
+            false
         },
-        false
-    },
-    CoreOptionDefinition {
-        CORE_OPT_SHOW_KB_MAP_OPTIONS,
-        "Show keyboard mapping options",
-        {
-            true,
-            false,
+        CoreOptionDefinition {
+            CORE_OPT_SHOW_KB_MAP_OPTIONS,
+            "Show keyboard mapping options",
+            {
+                true,
+                false,
+            },
+            true
         },
-        true
     },
     CoreOptionCategory {
         CORE_OPTCAT_TIMING,

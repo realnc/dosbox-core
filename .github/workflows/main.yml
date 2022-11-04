@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
 
@@ -94,12 +94,12 @@ jobs:
     steps:
     - name: Trigger CircleCI ARM builds
       id: 'build_linux_arm'
-      uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.4
+      uses: CircleCI-Public/trigger-circleci-pipeline-action@v1.0.5
       env:
         CCI_TOKEN: ${{ secrets.CCI_TOKEN }}
 
   build_macos:
-    runs-on: macos-10.15
+    runs-on: macos-11
 
     env:
       CC: gcc-11
@@ -135,7 +135,7 @@ jobs:
         mkdir static_libs
         ln -s "${HOMEBREW_PREFIX}"/lib/*.a static_libs/
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
 
@@ -190,7 +190,7 @@ jobs:
       WITH_DYNAREC: ${{ matrix.config.dynarec }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: recursive
 

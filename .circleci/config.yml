@@ -104,7 +104,7 @@ jobs:
   upload-linux:
     resource_class: small
     docker:
-      - image:  cimg/go:1.16
+      - image:  cimg/go:1.19
 
     steps:
       - attach_workspace:

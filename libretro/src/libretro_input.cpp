@@ -899,9 +899,15 @@ void libretro_input_init()
         JOYSTICK_Enable(1, false);
     }
 
-    // Virtual keyboard only works on ports 0 and 1.
-    if (active_port_count > 0) {
-        const bool vkbd_enabled = retro::core_options[CORE_OPT_VKBD_ENABLED].toBool();
+    if (const bool vkbd_enabled = retro::core_options[CORE_OPT_VKBD_ENABLED].toBool();
+        active_port_count == 0)
+    {
+        // When no joypad is assigned to any DOS port, allow vkbd toggling from libretro port 0.
+        if (vkbd_enabled) {
+            addVKBDButton(0);
+        }
+    } else {
+        // Otherwise only allow vkbd toggling from connected DOS joypads.
         bool port_taken = false;
 
         if (first_retro_port <= 1 && vkbd_enabled) {

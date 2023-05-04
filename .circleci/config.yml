@@ -24,16 +24,22 @@ workflows:
           image_tag: 'linux-arm64v8'
           dynarec: 'arm64'
           file_arch: 'arm64'
+          context:
+            - global-org
       - build-linux:
           name: build-linux-arm32v7
           image_tag: 'linux-arm32v7'
           dynarec: 'arm'
           file_arch: 'armhf'
+          context:
+            - global-org
       - upload-linux:
           filters:
             branches:
               only:
                 - 'libretro'
+          context:
+            - global-org
           requires:
             - build-linux-arm64v8
             - build-linux-arm32v7

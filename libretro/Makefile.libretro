@@ -95,6 +95,7 @@ else ifeq ($(platform),unix)
 		WITH_DYNAREC := x86
 	else ifneq ($(findstring aarch64,$(UNAMEM)),)
 		WITH_DYNAREC := arm64
+		COMMONFLAGS += -DPAGESIZE=$(shell getconf PAGESIZE)
 	else ifneq ($(findstring arm64,$(UNAMEM)),)
 		WITH_DYNAREC := arm64
 	else ifneq ($(findstring arm,$(UNAMEM)),)

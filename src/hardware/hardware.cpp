@@ -895,6 +895,7 @@ void CAPTURE_AddWave(Bit32u freq, Bitu len, Bit16s * data) {
 		} while (--left);
 #else
 		memcpy(buf, read, left*4);
+		//read += left*2; //Not needed here as len doesn't loop, but see below
 #endif
 		capture.video.audiorate = freq;
 	}
@@ -932,6 +933,7 @@ void CAPTURE_AddWave(Bit32u freq, Bitu len, Bit16s * data) {
 			} while (--left);
 #else
 			memcpy(buf, read, left*4);
+			read += left*2; //len loops
 #endif
 		}
 	}

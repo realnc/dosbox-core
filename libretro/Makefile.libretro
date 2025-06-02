@@ -63,8 +63,8 @@ AS:=$(cross_prefix)$(AS)
 CC:=$(cross_prefix)$(CC)
 CXX:=$(cross_prefix)$(CXX)
 LD:=$(cross_prefix)$(LD)
-CMAKE=$(cross_prefix)cmake
-PKGCONFIG=$(cross_prefix)pkg-config
+CMAKE=cmake
+PKGCONFIG=pkg-config
 
 platform ?= unix
 ifneq ($(findstring MINGW,$(UNAME)),)

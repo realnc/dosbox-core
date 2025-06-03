@@ -194,9 +194,13 @@ variables. For example:
     CC=gcc-9 CXX=g++-9 make ...
 
 If you want to cross-compile, you should set `TARGET_TRIPLET` to the prefix
-string of your cross compilation toolchain. For example:
+string of your cross compilation toolchain. If your toolchain uses wrappers for
+cmake and pkg-config, pass their full names when calling make. For example:
 
-    make TARGET_TRIPLET="i686-w64-mingw32.static" ...
+    make TARGET_TRIPLET="i686-w64-mingw32.static" \
+      PKGCONFIG="i686-w64-mingw32.static-pkg-config" \
+      CMAKE="i686-w64-mingw32.static-cmake" \
+      ...
 
 If you want to use a different CMake generator when building dependencies that
 use CMake, set the `CMAKE_GENERATOR` variable. By default, it's set to `Ninja`.

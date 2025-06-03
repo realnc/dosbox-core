@@ -83,9 +83,9 @@ libretro-build-windows-x64:
     - sleep 1
     - touch libretro/deps/sdl_net/configure
     - touch libretro/deps/mpg123/configure
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - LDFLAGS="-Wl,--no-undefined" make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - make PKGCONFIG="${TARGET_TRIPLET}-pkg-config" CMAKE="${TARGET_TRIPLET}-cmake" -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
+    - make PKGCONFIG="${TARGET_TRIPLET}-pkg-config" CMAKE="${TARGET_TRIPLET}-cmake" -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - LDFLAGS="-Wl,--no-undefined" make PKGCONFIG="${TARGET_TRIPLET}-pkg-config" CMAKE="${TARGET_TRIPLET}-cmake" -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - x86_64-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
 # Windows 32-bit
@@ -119,9 +119,9 @@ libretro-build-windows-i686:
     - sleep 1
     - touch libretro/deps/sdl_net/configure
     - touch libretro/deps/mpg123/configure
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
-    - make -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
-    - LDFLAGS="-Wl,--no-undefined" make -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
+    - make PKGCONFIG="${TARGET_TRIPLET}-pkg-config" CMAKE="${TARGET_TRIPLET}-cmake" -C ${MAKEFILE_PATH} -f ${MAKEFILE} clean
+    - make PKGCONFIG="${TARGET_TRIPLET}-pkg-config" CMAKE="${TARGET_TRIPLET}-cmake" -C ${MAKEFILE_PATH} -f ${MAKEFILE} deps
+    - LDFLAGS="-Wl,--no-undefined" make PKGCONFIG="${TARGET_TRIPLET}-pkg-config" CMAKE="${TARGET_TRIPLET}-cmake" -C ${MAKEFILE_PATH} -f ${MAKEFILE} -j${NUMPROC}
     - i686-w64-mingw32.static-strip ${MAKEFILE_PATH}/${CORENAME}_libretro.dll
 
 # Linux 64-bit

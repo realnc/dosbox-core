@@ -206,9 +206,9 @@ jobs:
         sleep 1
         touch deps/sdl_net/configure
         touch deps/mpg123/configure
-        make deps
+        make PKGCONFIG="${{ matrix.config.triplet }}-pkg-config" CMAKE="${{ matrix.config.triplet }}-cmake" deps
         export LDFLAGS="-Wl,--no-undefined"
-        make -j`nproc`
+        make PKGCONFIG="${{ matrix.config.triplet }}-pkg-config" CMAKE="${{ matrix.config.triplet }}-cmake" -j`nproc`
         ${{ matrix.config.triplet }}-strip dosbox_core_libretro.dll
         zip -9 ${{ matrix.config.zip_name }} dosbox_core_libretro.dll
 

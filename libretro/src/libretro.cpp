@@ -1004,7 +1004,7 @@ void retro_get_system_info(retro_system_info* const info)
 {
     info->library_name = retro_library_name.c_str();
     info->library_version = CORE_VERSION;
-    info->valid_extensions = "exe|com|bat|conf|cue|iso|img";
+    info->valid_extensions = "exe|com|bat|conf|cue|iso|img|/";
     info->need_fullpath = true;
     info->block_extract = false;
 }

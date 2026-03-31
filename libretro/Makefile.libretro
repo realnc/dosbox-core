@@ -173,6 +173,24 @@ else
 	LDFLAGS += -Wl,-Bdynamic
 	fpic = -fPIC
 endif
+
+CORE_DIR := ..
+DEPS_BIN_DIR = $(CURDIR)/deps_bin
+
+# webOS
+ifneq (,$(or $(findstring webos,$(CROSS_COMPILE)),$(findstring starfish,$(CROSS_COMPILE))))
+	TARGET_TRIPLET = $(patsubst %-,%,$(CROSS_COMPILE))
+	WITH_FLUIDSYNTH = 1
+	WITH_FAKE_SDL = 1
+	ifneq (,$(findstring aarch64,$(CROSS_COMPILE)))
+		WITH_DYNAREC = arm64
+	else
+		WITH_DYNAREC = arm
+	endif
+	INCFLAGS += -I$(DEPS_BIN_DIR)/include -I$(DEPS_BIN_DIR)/munt_build/include -I$(DEPS_BIN_DIR)/opus/include
+	LDFLAGS += -L$(DEPS_BIN_DIR)/lib
+endif
+
 ifeq ($(DEBUG), 1)
 	COMMONFLAGS += -O0 -g
 	CMAKE_BUILD_TYPE = Debug
@@ -199,12 +217,10 @@ ifeq ($(WITH_VOODOO), 1)
 	COMMONFLAGS += -DWITH_VOODOO
 endif
 
-CORE_DIR := ..
-INCFLAGS :=
+INCFLAGS ?=
 SOURCES_C :=
 SOURCES_CXX :=
 
-DEPS_BIN_DIR = $(CURDIR)/deps_bin
 ifeq ($(BUNDLED_SDL), 1)
 	include deps/sdl.makefile
 	include deps/sdl_net.makefile

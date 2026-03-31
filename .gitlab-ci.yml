@@ -42,6 +42,11 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/android-jni.yml'
 
+  #################################### MISC ##################################
+  # webOS 32-bit (LGTV)
+  - project: 'libretro-infrastructure/ci-templates'
+    file: '/webos-make.yml'
+
 # Stages for building
 stages:
   - build-prepare
@@ -288,3 +293,10 @@ android-x86:
     - $NDK_ROOT/ndk-build --no-print-directory -j$NUMPROC -C $JNI_PATH/jni $PLATFORM_ARGS
     - mv $JNI_PATH/libs/$ANDROID_ABI/libretro.so $LIBNAME
     - if [ $STRIP_CORE_LIB -eq 1 ]; then $NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip $LIBNAME; fi
+
+#################################### MISC ##################################
+# webOS 32-bit
+libretro-build-webos-armv7a:
+  extends:
+    - .libretro-webos-armv7a-make-default
+    - .core-defs
